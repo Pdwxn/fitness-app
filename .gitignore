@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+vendor/
+db.sqlite3
+
+# Django
+server/.env
+
+# Node
+node_modules/
+.next/
+out/
+
+# Frontend env
+client/.env.local
+
+# OS/editor
+.DS_Store
+.vscode/
