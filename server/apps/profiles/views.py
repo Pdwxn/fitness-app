@@ -2,7 +2,27 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import UserHealthData
-from .serializers import ProfileSerializer, UserHealthDataSerializer
+from .serializers import OnboardingCompleteSerializer, ProfileSerializer, UserHealthDataSerializer
+
+
+PROFILE_REQUIRED_FIELDS = ("full_name", "gender", "age", "weight_kg", "height_cm")
+HEALTH_REQUIRED_FIELDS = ("activity_level", "equipment_type", "routine_type")
+
+
+def is_onboarding_complete(user):
+    profile_complete = all(getattr(user, field) not in (None, "") for field in PROFILE_REQUIRED_FIELDS)
+    try:
+        health_data = user.health_data
+    except UserHealthData.DoesNotExist:
+        return False
+
+    health_complete = all(getattr(health_data, field) not in (None, "") for field in HEALTH_REQUIRED_FIELDS)
+    has_goals = bool(health_data.physical_goals)
+    home_equipment_complete = (
+        health_data.equipment_type != UserHealthData.EquipmentType.HOME
+        or bool(health_data.available_equipment)
+    )
+    return profile_complete and health_complete and has_goals and home_equipment_complete
 
 
 class ProfileView(APIView):
@@ -32,3 +52,39 @@ class ProfileHealthView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+
+class OnboardingStatusView(APIView):
+    def get(self, request):
+        return Response({"completed": is_onboarding_complete(request.user)})
+
+
+class OnboardingCompleteView(APIView):
+    def post(self, request):
+        serializer = OnboardingCompleteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        profile_serializer = ProfileSerializer(
+            request.user,
+            data=serializer.validated_data["profile"],
+            partial=True,
+        )
+        profile_serializer.is_valid(raise_exception=True)
+        profile_serializer.save()
+
+        health_data, _ = UserHealthData.objects.get_or_create(user=request.user)
+        health_serializer = UserHealthDataSerializer(
+            health_data,
+            data=serializer.validated_data["health"],
+            partial=True,
+        )
+        health_serializer.is_valid(raise_exception=True)
+        health_serializer.save()
+
+        return Response(
+            {
+                "completed": is_onboarding_complete(request.user),
+                "profile": profile_serializer.data,
+                "health": health_serializer.data,
+            }
+        )
