@@ -26,7 +26,21 @@ export async function middleware(request: NextRequest) {
     return intlResponse;
   }
 
-  const { response, user } = await updateSupabaseSession(request);
+  let authSession;
+  try {
+    authSession = await updateSupabaseSession(request);
+  } catch {
+    if (PROTECTED_SEGMENTS.has(firstSegment)) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = `/${locale}/auth/login`;
+      loginUrl.searchParams.set("next", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    return intlResponse;
+  }
+
+  const { response, user } = authSession;
 
   if (PROTECTED_SEGMENTS.has(firstSegment) && !user) {
     const loginUrl = request.nextUrl.clone();
