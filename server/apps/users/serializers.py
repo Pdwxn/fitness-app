@@ -9,6 +9,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "full_name",
+            "gender",
+            "age",
+            "weight_kg",
+            "height_cm",
             "preferred_language",
             "preferred_units",
             "created_at",
