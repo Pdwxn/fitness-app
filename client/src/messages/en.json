@@ -9,19 +9,44 @@
     "apiStatusLabel": "API status",
     "online": "Online",
     "offline": "Offline",
-    "healthcheck": "Healthcheck"
+    "healthcheck": "Healthcheck",
+    "sessionTitle": "Session",
+    "sessionActive": "Active session",
+    "sessionInactive": "You are not logged in",
+    "sessionHint": "Log in to prepare your onboarding and personalized routine.",
+    "login": "Log in",
+    "register": "Create account",
+    "logout": "Log out",
+    "logoutLoading": "Logging out..."
   },
   "Auth": {
     "login": {
       "title": "Log in",
       "description": "Access your routine, progress, and saved preferences.",
-      "placeholder": "The functional login form will be implemented in the next ticket.",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Log in",
+      "loading": "Logging in...",
+      "error": "Could not log in.",
+      "google": "Continue with Google",
+      "googleLoading": "Opening Google...",
+      "googleError": "Could not log in with Google.",
       "registerLink": "Create account"
     },
     "register": {
       "title": "Create your account",
       "description": "Prepare your profile to generate personalized AI routines.",
-      "placeholder": "The functional register form will be implemented in the next ticket.",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "submit": "Create account",
+      "loading": "Creating account...",
+      "passwordMismatch": "Passwords do not match.",
+      "success": "Account created. Check your email to confirm registration.",
+      "error": "Could not create the account.",
+      "google": "Sign up with Google",
+      "googleLoading": "Opening Google...",
+      "googleError": "Could not sign up with Google.",
       "loginLink": "I already have an account"
     }
   }

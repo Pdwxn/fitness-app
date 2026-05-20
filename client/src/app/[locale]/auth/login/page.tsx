@@ -1,6 +1,9 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 
+import { GoogleOAuthButton } from "@/components/auth/GoogleOAuthButton";
+import { LoginForm } from "@/components/auth/LoginForm";
+
 export default async function LoginPage({
   params,
 }: Readonly<{
@@ -19,9 +22,23 @@ export default async function LoginPage({
         <h1 className="mt-4 text-4xl font-black tracking-tight">{t("title")}</h1>
         <p className="mt-3 text-base leading-7 text-[#5c5349]">{t("description")}</p>
 
-        <div className="mt-8 rounded-2xl bg-[#17130f] p-4 text-sm text-[#f7f3ec]">
-          {t("placeholder")}
-        </div>
+        <LoginForm
+          locale={locale}
+          labels={{
+            email: t("email"),
+            password: t("password"),
+            submit: t("submit"),
+            loading: t("loading"),
+            error: t("error"),
+          }}
+        />
+
+        <GoogleOAuthButton
+          locale={locale}
+          label={t("google")}
+          loadingLabel={t("googleLoading")}
+          errorLabel={t("googleError")}
+        />
 
         <Link
           href={`/${locale}/auth/register`}

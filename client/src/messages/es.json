@@ -9,19 +9,44 @@
     "apiStatusLabel": "Estado API",
     "online": "Online",
     "offline": "Offline",
-    "healthcheck": "Healthcheck"
+    "healthcheck": "Healthcheck",
+    "sessionTitle": "Sesión",
+    "sessionActive": "Sesión activa",
+    "sessionInactive": "No has iniciado sesión",
+    "sessionHint": "Inicia sesión para preparar tu onboarding y rutina personalizada.",
+    "login": "Iniciar sesión",
+    "register": "Crear cuenta",
+    "logout": "Cerrar sesión",
+    "logoutLoading": "Cerrando..."
   },
   "Auth": {
     "login": {
       "title": "Inicia sesión",
       "description": "Accede a tu rutina, progreso y preferencias guardadas.",
-      "placeholder": "El formulario funcional de login se implementa en el siguiente ticket.",
+      "email": "Email",
+      "password": "Contraseña",
+      "submit": "Entrar",
+      "loading": "Entrando...",
+      "error": "No se pudo iniciar sesión.",
+      "google": "Continuar con Google",
+      "googleLoading": "Abriendo Google...",
+      "googleError": "No se pudo iniciar sesión con Google.",
       "registerLink": "Crear cuenta"
     },
     "register": {
       "title": "Crea tu cuenta",
       "description": "Prepara tu perfil para generar rutinas personalizadas con IA.",
-      "placeholder": "El formulario funcional de registro se implementa en el siguiente ticket.",
+      "email": "Email",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar contraseña",
+      "submit": "Crear cuenta",
+      "loading": "Creando cuenta...",
+      "passwordMismatch": "Las contraseñas no coinciden.",
+      "success": "Cuenta creada. Revisa tu email para confirmar el registro.",
+      "error": "No se pudo crear la cuenta.",
+      "google": "Registrarme con Google",
+      "googleLoading": "Abriendo Google...",
+      "googleError": "No se pudo registrar con Google.",
       "loginLink": "Ya tengo cuenta"
     }
   }

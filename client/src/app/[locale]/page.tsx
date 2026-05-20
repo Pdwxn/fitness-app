@@ -1,10 +1,25 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import Link from "next/link";
 
+import { LogoutButton } from "@/components/auth/LogoutButton";
 import { getHealthCheck } from "@/lib/api";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 async function loadBackendStatus() {
   try {
     return await getHealthCheck();
+  } catch {
+    return null;
+  }
+}
+
+async function loadSessionUser() {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return user;
   } catch {
     return null;
   }
@@ -18,8 +33,9 @@ export default async function Home({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [backendStatus, t] = await Promise.all([
+  const [backendStatus, sessionUser, t] = await Promise.all([
     loadBackendStatus(),
+    loadSessionUser(),
     getTranslations("Home"),
   ]);
 
@@ -61,6 +77,42 @@ export default async function Home({
             </p>
           </div>
         </div>
+
+        <section className="rounded-[2rem] border border-[#ded2bf] bg-white/85 p-5 shadow-sm">
+          <p className="text-sm font-medium text-[#8b5e34]">{t("sessionTitle")}</p>
+          {sessionUser ? (
+            <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-2xl font-bold">{t("sessionActive")}</p>
+                <p className="mt-1 break-all text-sm text-[#5c5349]">
+                  {sessionUser.email ?? sessionUser.id}
+                </p>
+              </div>
+              <LogoutButton label={t("logout")} loadingLabel={t("logoutLoading")} />
+            </div>
+          ) : (
+            <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-2xl font-bold">{t("sessionInactive")}</p>
+                <p className="mt-1 text-sm text-[#5c5349]">{t("sessionHint")}</p>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Link
+                  href={`/${locale}/auth/login`}
+                  className="rounded-full bg-[#17130f] px-5 py-3 text-center text-sm font-bold text-white"
+                >
+                  {t("login")}
+                </Link>
+                <Link
+                  href={`/${locale}/auth/register`}
+                  className="rounded-full border border-[#17130f] px-5 py-3 text-center text-sm font-bold"
+                >
+                  {t("register")}
+                </Link>
+              </div>
+            </div>
+          )}
+        </section>
       </section>
 
       <section className="mt-12 rounded-3xl border border-[#ded2bf] bg-white/80 p-5 shadow-sm">
