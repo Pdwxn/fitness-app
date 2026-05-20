@@ -10,5 +10,19 @@
     "online": "Online",
     "offline": "Offline",
     "healthcheck": "Healthcheck"
+  },
+  "Auth": {
+    "login": {
+      "title": "Log in",
+      "description": "Access your routine, progress, and saved preferences.",
+      "placeholder": "The functional login form will be implemented in the next ticket.",
+      "registerLink": "Create account"
+    },
+    "register": {
+      "title": "Create your account",
+      "description": "Prepare your profile to generate personalized AI routines.",
+      "placeholder": "The functional register form will be implemented in the next ticket.",
+      "loginLink": "I already have an account"
+    }
   }
 }

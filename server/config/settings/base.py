@@ -15,6 +15,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "apps.health",
+    "apps.users",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

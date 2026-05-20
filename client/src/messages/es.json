@@ -10,5 +10,19 @@
     "online": "Online",
     "offline": "Offline",
     "healthcheck": "Healthcheck"
+  },
+  "Auth": {
+    "login": {
+      "title": "Inicia sesión",
+      "description": "Accede a tu rutina, progreso y preferencias guardadas.",
+      "placeholder": "El formulario funcional de login se implementa en el siguiente ticket.",
+      "registerLink": "Crear cuenta"
+    },
+    "register": {
+      "title": "Crea tu cuenta",
+      "description": "Prepara tu perfil para generar rutinas personalizadas con IA.",
+      "placeholder": "El formulario funcional de registro se implementa en el siguiente ticket.",
+      "loginLink": "Ya tengo cuenta"
+    }
   }
 }
