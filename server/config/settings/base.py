@@ -16,6 +16,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "apps.health",
     "apps.users",
+    "apps.profiles",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
