@@ -6,12 +6,16 @@ export type HealthCheck = {
 };
 
 export async function getHealthCheck(): Promise<HealthCheck> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/health/`, {
+  return apiFetch<HealthCheck>("/api/v1/health/", {
     cache: "no-store",
   });
+}
+
+export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, init);
 
   if (!response.ok) {
-    throw new Error("Backend healthcheck failed");
+    throw new Error(`API request failed: ${response.status}`);
   }
 
   return response.json();

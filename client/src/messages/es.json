@@ -1,0 +1,14 @@
+{
+  "Home": {
+    "badge": "Sprint 1.5",
+    "eyebrow": "Fitness AI App",
+    "title": "Base lista para construir el producto.",
+    "description": "Monorepo inicial con Next.js 15, Tailwind CSS, Django REST, rutas localizadas y una base Offline-First.",
+    "frontendLabel": "Frontend",
+    "backendLabel": "Backend",
+    "apiStatusLabel": "Estado API",
+    "online": "Online",
+    "offline": "Offline",
+    "healthcheck": "Healthcheck"
+  }
+}

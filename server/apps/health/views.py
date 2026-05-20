@@ -8,5 +8,3 @@ class HealthCheckView(APIView):
 
     def get(self, request):
         return Response({"status": "ok", "service": "fitness-api"})
-
-# Create your views here.
