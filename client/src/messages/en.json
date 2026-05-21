@@ -54,6 +54,7 @@
     "title": "Let's build your routine",
     "description": "Complete six quick steps so the app can prepare a routine around your body, goals, and equipment.",
     "draftLoaded": "Your draft is saved locally as you progress.",
+    "validationError": "Complete the required fields before continuing.",
     "actions": {
       "next": "Next",
       "previous": "Previous",

@@ -3,6 +3,12 @@
 import { useEffect, useState } from "react";
 
 import { StepIndicator } from "./StepIndicator";
+import { Step1Personal } from "./steps/Step1Personal";
+import { Step2Activity } from "./steps/Step2Activity";
+import { Step3Goals } from "./steps/Step3Goals";
+import { Step4Health } from "./steps/Step4Health";
+import { Step5Equipment } from "./steps/Step5Equipment";
+import { Step6RoutineType } from "./steps/Step6RoutineType";
 import { TOTAL_STEPS, useOnboardingStore } from "@/store/onboardingStore";
 
 type OnboardingFormProps = {
@@ -13,17 +19,39 @@ type OnboardingFormProps = {
     previous: string;
     finish: string;
     draftLoaded: string;
+    validationError: string;
     steps: string[];
     placeholders: string[];
   };
 };
 
+function StepContent({ currentStep }: { currentStep: number }) {
+  switch (currentStep) {
+    case 1:
+      return <Step1Personal />;
+    case 2:
+      return <Step2Activity />;
+    case 3:
+      return <Step3Goals />;
+    case 4:
+      return <Step4Health />;
+    case 5:
+      return <Step5Equipment />;
+    case 6:
+      return <Step6RoutineType />;
+    default:
+      return null;
+  }
+}
+
 export function OnboardingForm({ labels }: OnboardingFormProps) {
   const currentStep = useOnboardingStore((state) => state.currentStep);
   const nextStep = useOnboardingStore((state) => state.nextStep);
   const previousStep = useOnboardingStore((state) => state.previousStep);
+  const data = useOnboardingStore((state) => state.data);
   const hydrateFromStorage = useOnboardingStore((state) => state.hydrateFromStorage);
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     hydrateFromStorage();
@@ -32,6 +60,50 @@ export function OnboardingForm({ labels }: OnboardingFormProps) {
 
   const isFirstStep = currentStep === 1;
   const isLastStep = currentStep === TOTAL_STEPS;
+
+  function canContinue() {
+    const { profile, health } = data;
+
+    if (currentStep === 1) {
+      return Boolean(
+        profile.full_name &&
+          profile.gender &&
+          profile.age &&
+          profile.age >= 13 &&
+          profile.age <= 100 &&
+          profile.weight_kg &&
+          profile.weight_kg >= 20 &&
+          profile.weight_kg <= 400 &&
+          profile.height_cm &&
+          profile.height_cm >= 80 &&
+          profile.height_cm <= 250,
+      );
+    }
+
+    if (currentStep === 2) return Boolean(health.activity_level);
+    if (currentStep === 3) return health.physical_goals.length > 0;
+    if (currentStep === 4) {
+      return health.injuries.every((injury) => injury.area.trim() && injury.description.trim());
+    }
+    if (currentStep === 5) {
+      return Boolean(
+        health.equipment_type &&
+          (health.equipment_type !== "home" || health.available_equipment.length > 0),
+      );
+    }
+    if (currentStep === 6) return Boolean(health.routine_type);
+    return true;
+  }
+
+  function handleNext() {
+    if (!canContinue()) {
+      setError(labels.validationError);
+      return;
+    }
+
+    setError(null);
+    nextStep();
+  }
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 bg-[#f7f3ec] px-5 py-8 text-[#17130f] md:max-w-3xl md:px-10 lg:max-w-5xl">
@@ -60,9 +132,14 @@ export function OnboardingForm({ labels }: OnboardingFormProps) {
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#8b5e34]">
             {labels.steps[currentStep - 1]}
           </p>
-          <div className="mt-6 rounded-3xl border border-dashed border-[#ded2bf] bg-[#f7f3ec] p-6 text-[#5c5349]">
-            {labels.placeholders[currentStep - 1]}
+          <div className="mt-6 rounded-3xl bg-[#f7f3ec] p-4 text-[#17130f] md:p-6">
+            <StepContent currentStep={currentStep} />
           </div>
+          {error ? (
+            <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+              {error}
+            </p>
+          ) : null}
         </div>
 
         <div className="mt-8 flex gap-3">
@@ -76,7 +153,7 @@ export function OnboardingForm({ labels }: OnboardingFormProps) {
           </button>
           <button
             type="button"
-            onClick={nextStep}
+            onClick={handleNext}
             disabled={isLastStep}
             className="w-1/2 rounded-full bg-[#17130f] px-5 py-3 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-40"
           >

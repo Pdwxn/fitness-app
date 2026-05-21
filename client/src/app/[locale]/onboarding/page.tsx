@@ -20,6 +20,7 @@ export default async function OnboardingPage({
         previous: t("actions.previous"),
         finish: t("actions.finish"),
         draftLoaded: t("draftLoaded"),
+        validationError: t("validationError"),
         steps: [
           t("steps.personal"),
           t("steps.activity"),
