@@ -49,5 +49,31 @@
       "googleError": "Could not sign up with Google.",
       "loginLink": "I already have an account"
     }
+  },
+  "Onboarding": {
+    "title": "Let's build your routine",
+    "description": "Complete six quick steps so the app can prepare a routine around your body, goals, and equipment.",
+    "draftLoaded": "Your draft is saved locally as you progress.",
+    "actions": {
+      "next": "Next",
+      "previous": "Previous",
+      "finish": "Finish"
+    },
+    "steps": {
+      "personal": "Personal",
+      "activity": "Activity",
+      "goals": "Goals",
+      "health": "Health",
+      "equipment": "Equipment",
+      "routine": "Routine"
+    },
+    "placeholders": {
+      "personal": "The name, gender, age, weight, height, and units form will go here.",
+      "activity": "The activity level selection will go here.",
+      "goals": "The multi-select goals and specific goal field will go here.",
+      "health": "The injuries or discomfort list will go here.",
+      "equipment": "The gym, home, or calisthenics selection will go here.",
+      "routine": "The routine type selection will go here."
+    }
   }
 }

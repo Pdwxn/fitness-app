@@ -49,5 +49,31 @@
       "googleError": "No se pudo registrar con Google.",
       "loginLink": "Ya tengo cuenta"
     }
+  },
+  "Onboarding": {
+    "title": "Construyamos tu rutina",
+    "description": "Completa seis pasos rápidos para que la app prepare una rutina ajustada a tu cuerpo, objetivos y equipo.",
+    "draftLoaded": "El borrador se guarda localmente mientras avanzas.",
+    "actions": {
+      "next": "Siguiente",
+      "previous": "Anterior",
+      "finish": "Finalizar"
+    },
+    "steps": {
+      "personal": "Datos personales",
+      "activity": "Actividad",
+      "goals": "Metas",
+      "health": "Salud",
+      "equipment": "Equipo",
+      "routine": "Rutina"
+    },
+    "placeholders": {
+      "personal": "Aquí irá el formulario de nombre, género, edad, peso, altura y unidades.",
+      "activity": "Aquí irá la selección del nivel de actividad.",
+      "goals": "Aquí irá la selección múltiple de metas y la meta específica.",
+      "health": "Aquí irá la lista de lesiones o molestias.",
+      "equipment": "Aquí irá la selección de gimnasio, casa o calistenia.",
+      "routine": "Aquí irá la selección del tipo de rutina."
+    }
   }
 }
