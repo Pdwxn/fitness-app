@@ -55,10 +55,18 @@
     "description": "Completa seis pasos rápidos para que la app prepare una rutina ajustada a tu cuerpo, objetivos y equipo.",
     "draftLoaded": "El borrador se guarda localmente mientras avanzas.",
     "validationError": "Completa los campos requeridos antes de continuar.",
+    "submitError": "No se pudo completar el onboarding. Inténtalo nuevamente.",
+    "loadingStatus": "Revisando estado del onboarding...",
     "actions": {
       "next": "Siguiente",
       "previous": "Anterior",
-      "finish": "Finalizar"
+      "finish": "Finalizar",
+      "submitting": "Guardando..."
+    },
+    "completed": {
+      "title": "Onboarding completado",
+      "description": "Ya tenemos la información necesaria para preparar tu rutina.",
+      "backHome": "Volver al inicio"
     },
     "steps": {
       "personal": "Datos personales",
@@ -75,6 +83,75 @@
       "health": "Aquí irá la lista de lesiones o molestias.",
       "equipment": "Aquí irá la selección de gimnasio, casa o calistenia.",
       "routine": "Aquí irá la selección del tipo de rutina."
+    },
+    "form": {
+      "personal": {
+        "fullName": "Nombre completo",
+        "fullNamePlaceholder": "Ej: Ana Pérez",
+        "gender": "Género",
+        "age": "Edad",
+        "weightKg": "Peso (kg)",
+        "weightLb": "Peso (lb)",
+        "heightCm": "Altura (cm)",
+        "heightFt": "Altura (ft/in)",
+        "genderOptions": {
+          "male": "Hombre",
+          "female": "Mujer",
+          "prefer_not_to_say": "Prefiero no decir"
+        }
+      },
+      "activity": {
+        "options": {
+          "sedentary": { "label": "Sedentario", "description": "Sin ejercicio regular" },
+          "light": { "label": "Ligero", "description": "1-2 días por semana" },
+          "moderate": { "label": "Moderado", "description": "3-4 días por semana" },
+          "active": { "label": "Activo", "description": "5 días por semana" },
+          "very_active": { "label": "Muy activo", "description": "6-7 días por semana" }
+        }
+      },
+      "goals": {
+        "specificGoal": "Meta específica opcional",
+        "specificGoalPlaceholder": "Ej: Quiero desarrollar glúteos y hombros",
+        "options": {
+          "lose_weight": "Perder peso",
+          "gain_muscle": "Ganar músculo",
+          "endurance": "Mejorar resistencia",
+          "flexibility": "Mejorar flexibilidad",
+          "general_fitness": "Fitness general"
+        }
+      },
+      "health": {
+        "hint": "Agrega molestias o lesiones. Puedes dejarlo vacío.",
+        "areaPlaceholder": "Área: rodilla izquierda",
+        "descriptionPlaceholder": "Descripción",
+        "remove": "Eliminar",
+        "add": "Agregar lesión o molestia"
+      },
+      "equipment": {
+        "types": {
+          "gym": { "label": "Gimnasio", "description": "Máquinas, barras, mancuernas y cables" },
+          "home": { "label": "Casa", "description": "Equipo limitado o entrenamiento en casa" },
+          "calisthenics": { "label": "Calistenia", "description": "Peso corporal, dominadas y paralelas" }
+        },
+        "home": {
+          "dumbbells": "Mancuernas",
+          "pull_up_bar": "Barra de dominadas",
+          "bands": "Bandas",
+          "kettlebell": "Kettlebell",
+          "bench": "Banco",
+          "trx": "TRX",
+          "bodyweight_only": "Solo peso corporal"
+        }
+      },
+      "routine": {
+        "warning": "Con tu equipamiento actual, una rutina de 5 días puede ser difícil de completar.",
+        "options": {
+          "push_pull_legs": { "label": "Push / Pull / Legs", "description": "Empuje, jalón y piernas" },
+          "upper_lower": { "label": "Torso / Pierna", "description": "Alterna tren superior e inferior" },
+          "hybrid": { "label": "Híbrido", "description": "Flexible para 3-5 días" },
+          "5_days": { "label": "5 días", "description": "Un grupo muscular por día" }
+        }
+      }
     }
   }
 }

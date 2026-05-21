@@ -55,10 +55,18 @@
     "description": "Complete six quick steps so the app can prepare a routine around your body, goals, and equipment.",
     "draftLoaded": "Your draft is saved locally as you progress.",
     "validationError": "Complete the required fields before continuing.",
+    "submitError": "Could not complete onboarding. Try again.",
+    "loadingStatus": "Checking onboarding status...",
     "actions": {
       "next": "Next",
       "previous": "Previous",
-      "finish": "Finish"
+      "finish": "Finish",
+      "submitting": "Saving..."
+    },
+    "completed": {
+      "title": "Onboarding complete",
+      "description": "We already have the information needed to prepare your routine.",
+      "backHome": "Back home"
     },
     "steps": {
       "personal": "Personal",
@@ -75,6 +83,75 @@
       "health": "The injuries or discomfort list will go here.",
       "equipment": "The gym, home, or calisthenics selection will go here.",
       "routine": "The routine type selection will go here."
+    },
+    "form": {
+      "personal": {
+        "fullName": "Full name",
+        "fullNamePlaceholder": "Example: Ana Perez",
+        "gender": "Gender",
+        "age": "Age",
+        "weightKg": "Weight (kg)",
+        "weightLb": "Weight (lb)",
+        "heightCm": "Height (cm)",
+        "heightFt": "Height (ft/in)",
+        "genderOptions": {
+          "male": "Male",
+          "female": "Female",
+          "prefer_not_to_say": "Prefer not to say"
+        }
+      },
+      "activity": {
+        "options": {
+          "sedentary": { "label": "Sedentary", "description": "No regular exercise" },
+          "light": { "label": "Light", "description": "1-2 days per week" },
+          "moderate": { "label": "Moderate", "description": "3-4 days per week" },
+          "active": { "label": "Active", "description": "5 days per week" },
+          "very_active": { "label": "Very active", "description": "6-7 days per week" }
+        }
+      },
+      "goals": {
+        "specificGoal": "Specific goal optional",
+        "specificGoalPlaceholder": "Example: I want to build glutes and shoulders",
+        "options": {
+          "lose_weight": "Lose weight",
+          "gain_muscle": "Gain muscle",
+          "endurance": "Improve endurance",
+          "flexibility": "Improve flexibility",
+          "general_fitness": "General fitness"
+        }
+      },
+      "health": {
+        "hint": "Add discomfort or injuries. You can leave this empty.",
+        "areaPlaceholder": "Area: left knee",
+        "descriptionPlaceholder": "Description",
+        "remove": "Remove",
+        "add": "Add injury or discomfort"
+      },
+      "equipment": {
+        "types": {
+          "gym": { "label": "Gym", "description": "Machines, barbells, dumbbells, and cables" },
+          "home": { "label": "Home", "description": "Limited equipment or home training" },
+          "calisthenics": { "label": "Calisthenics", "description": "Bodyweight, pull-ups, and dips" }
+        },
+        "home": {
+          "dumbbells": "Dumbbells",
+          "pull_up_bar": "Pull-up bar",
+          "bands": "Bands",
+          "kettlebell": "Kettlebell",
+          "bench": "Bench",
+          "trx": "TRX",
+          "bodyweight_only": "Bodyweight only"
+        }
+      },
+      "routine": {
+        "warning": "With your current equipment, a 5-day routine may be hard to complete.",
+        "options": {
+          "push_pull_legs": { "label": "Push / Pull / Legs", "description": "Push, pull, and legs" },
+          "upper_lower": { "label": "Upper / Lower", "description": "Alternate upper and lower body" },
+          "hybrid": { "label": "Hybrid", "description": "Flexible for 3-5 days" },
+          "5_days": { "label": "5 days", "description": "One muscle group per day" }
+        }
+      }
     }
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { StepIndicator } from "./StepIndicator";
 import { Step1Personal } from "./steps/Step1Personal";
@@ -9,9 +10,11 @@ import { Step3Goals } from "./steps/Step3Goals";
 import { Step4Health } from "./steps/Step4Health";
 import { Step5Equipment } from "./steps/Step5Equipment";
 import { Step6RoutineType } from "./steps/Step6RoutineType";
+import { authenticatedClientFetch } from "@/lib/api/authenticated-client";
 import { TOTAL_STEPS, useOnboardingStore } from "@/store/onboardingStore";
 
 type OnboardingFormProps = {
+  locale: string;
   labels: {
     title: string;
     description: string;
@@ -20,6 +23,12 @@ type OnboardingFormProps = {
     finish: string;
     draftLoaded: string;
     validationError: string;
+    submitError: string;
+    completedTitle: string;
+    completedDescription: string;
+    backHome: string;
+    loadingStatus: string;
+    submitting: string;
     steps: string[];
     placeholders: string[];
   };
@@ -44,19 +53,48 @@ function StepContent({ currentStep }: { currentStep: number }) {
   }
 }
 
-export function OnboardingForm({ labels }: OnboardingFormProps) {
+type OnboardingStatusResponse = {
+  completed: boolean;
+};
+
+export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
+  const router = useRouter();
   const currentStep = useOnboardingStore((state) => state.currentStep);
   const nextStep = useOnboardingStore((state) => state.nextStep);
   const previousStep = useOnboardingStore((state) => state.previousStep);
   const data = useOnboardingStore((state) => state.data);
+  const reset = useOnboardingStore((state) => state.reset);
+  const clearStorage = useOnboardingStore((state) => state.clearStorage);
   const hydrateFromStorage = useOnboardingStore((state) => state.hydrateFromStorage);
   const [hasHydrated, setHasHydrated] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoadingStatus, setIsLoadingStatus] = useState(true);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     hydrateFromStorage();
     setHasHydrated(true);
   }, [hydrateFromStorage]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    authenticatedClientFetch<OnboardingStatusResponse>("/api/v1/onboarding/status/")
+      .then((response) => {
+        if (!cancelled) setIsCompleted(response.completed);
+      })
+      .catch(() => {
+        if (!cancelled) setIsCompleted(false);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingStatus(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const isFirstStep = currentStep === 1;
   const isLastStep = currentStep === TOTAL_STEPS;
@@ -103,6 +141,72 @@ export function OnboardingForm({ labels }: OnboardingFormProps) {
 
     setError(null);
     nextStep();
+  }
+
+  async function handleSubmit() {
+    if (!canContinue()) {
+      setError(labels.validationError);
+      return;
+    }
+
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const response = await authenticatedClientFetch<OnboardingStatusResponse>(
+        "/api/v1/onboarding/complete/",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        },
+      );
+
+      if (response.completed) {
+        clearStorage();
+        reset();
+        router.push(`/${locale}`);
+        router.refresh();
+        return;
+      }
+
+      setError(labels.submitError);
+    } catch {
+      setError(labels.submitError);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  if (isLoadingStatus) {
+    return (
+      <main className="mx-auto flex min-h-screen w-full max-w-md items-center justify-center bg-[#f7f3ec] px-5 py-8 text-[#17130f]">
+        <p className="rounded-3xl bg-white/85 px-5 py-4 text-sm font-bold shadow-sm">
+          {labels.loadingStatus}
+        </p>
+      </main>
+    );
+  }
+
+  if (isCompleted) {
+    return (
+      <main className="mx-auto flex min-h-screen w-full max-w-md items-center justify-center bg-[#f7f3ec] px-5 py-8 text-[#17130f]">
+        <section className="rounded-[2rem] border border-[#ded2bf] bg-white/85 p-6 text-center shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#8b5e34]">
+            FIT AI
+          </p>
+          <h1 className="mt-4 text-4xl font-black tracking-tight">{labels.completedTitle}</h1>
+          <p className="mt-3 text-base leading-7 text-[#5c5349]">{labels.completedDescription}</p>
+          <button
+            type="button"
+            onClick={() => router.push(`/${locale}`)}
+            className="mt-6 rounded-full bg-[#17130f] px-5 py-3 text-sm font-bold text-white"
+          >
+            {labels.backHome}
+          </button>
+        </section>
+      </main>
+    );
   }
 
   return (
@@ -153,11 +257,11 @@ export function OnboardingForm({ labels }: OnboardingFormProps) {
           </button>
           <button
             type="button"
-            onClick={handleNext}
-            disabled={isLastStep}
+            onClick={isLastStep ? handleSubmit : handleNext}
+            disabled={isSubmitting}
             className="w-1/2 rounded-full bg-[#17130f] px-5 py-3 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {isLastStep ? labels.finish : labels.next}
+            {isSubmitting ? labels.submitting : isLastStep ? labels.finish : labels.next}
           </button>
         </div>
       </section>

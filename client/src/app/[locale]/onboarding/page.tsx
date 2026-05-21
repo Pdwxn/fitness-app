@@ -13,6 +13,7 @@ export default async function OnboardingPage({
 
   return (
     <OnboardingForm
+      locale={locale}
       labels={{
         title: t("title"),
         description: t("description"),
@@ -21,6 +22,12 @@ export default async function OnboardingPage({
         finish: t("actions.finish"),
         draftLoaded: t("draftLoaded"),
         validationError: t("validationError"),
+        submitError: t("submitError"),
+        completedTitle: t("completed.title"),
+        completedDescription: t("completed.description"),
+        backHome: t("completed.backHome"),
+        loadingStatus: t("loadingStatus"),
+        submitting: t("actions.submitting"),
         steps: [
           t("steps.personal"),
           t("steps.activity"),

@@ -1,14 +1,12 @@
+import { useTranslations } from "next-intl";
+
 import { useOnboardingStore } from "@/store/onboardingStore";
 import type { RoutineType } from "@/types/onboarding";
 
-const routines: Array<{ value: RoutineType; label: string; description: string }> = [
-  { value: "push_pull_legs", label: "Push / Pull / Legs", description: "Empuje, jalón y piernas" },
-  { value: "upper_lower", label: "Torso / Pierna", description: "Alterna tren superior e inferior" },
-  { value: "hybrid", label: "Híbrido", description: "Flexible para 3-5 días" },
-  { value: "5_days", label: "5 días", description: "Un grupo muscular por día" },
-];
+const routines: RoutineType[] = ["push_pull_legs", "upper_lower", "hybrid", "5_days"];
 
 export function Step6RoutineType() {
+  const t = useTranslations("Onboarding.form.routine");
   const health = useOnboardingStore((state) => state.data.health);
   const updateHealth = useOnboardingStore((state) => state.updateHealth);
   const showWarning =
@@ -21,24 +19,24 @@ export function Step6RoutineType() {
       <div className="grid gap-3">
         {routines.map((routine) => (
           <button
-            key={routine.value}
+            key={routine}
             type="button"
-            onClick={() => updateHealth({ routine_type: routine.value })}
+            onClick={() => updateHealth({ routine_type: routine })}
             className={`rounded-3xl border p-4 text-left transition ${
-              health.routine_type === routine.value
+              health.routine_type === routine
                 ? "border-[#17130f] bg-[#17130f] text-white"
                 : "border-[#ded2bf] bg-white"
             }`}
           >
-            <span className="block text-lg font-black">{routine.label}</span>
-            <span className="mt-1 block text-sm opacity-70">{routine.description}</span>
+            <span className="block text-lg font-black">{t(`options.${routine}.label`)}</span>
+            <span className="mt-1 block text-sm opacity-70">{t(`options.${routine}.description`)}</span>
           </button>
         ))}
       </div>
 
       {showWarning ? (
         <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
-          Con tu equipamiento actual, una rutina de 5 días puede ser difícil de completar.
+          {t("warning")}
         </p>
       ) : null}
     </div>
