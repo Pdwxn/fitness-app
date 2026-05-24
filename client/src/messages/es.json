@@ -169,10 +169,30 @@
   "Dashboard": {
     "title": "Tu centro fitness",
     "description": "Aquí verás tu rutina activa, progreso y próximos entrenamientos.",
-    "base": {
-      "eyebrow": "Dashboard base",
-      "title": "Tu perfil ya puede conectarse a una rutina",
-      "description": "En este sprint dejamos lista la navegación privada y el estado post-onboarding. La generación de rutina llegará en el siguiente bloque."
+    "states": {
+      "loading": "Cargando estado de tu perfil...",
+      "error": "No pudimos revisar tu onboarding. Intenta recargar la página."
+    },
+    "onboardingRequired": {
+      "eyebrow": "Falta onboarding",
+      "title": "Completa tu perfil antes de continuar",
+      "description": "Necesitamos tus datos, objetivos y equipo disponible para preparar la rutina personalizada.",
+      "cta": "Completar onboarding"
+    },
+    "routinePending": {
+      "eyebrow": "Perfil listo",
+      "title": "Tu rutina está lista para generarse pronto",
+      "description": "Ya tenemos tu onboarding. En el siguiente sprint conectaremos la generación mensual con IA y guardaremos tu rutina activa.",
+      "cta": "Generación próximamente"
+    },
+    "stats": {
+      "title": "Vista rápida",
+      "completedDays": "Días completados",
+      "streak": "Racha",
+      "activeRoutine": "Rutina activa",
+      "lastSync": "Último sync",
+      "pending": "Pendiente",
+      "never": "Nunca"
     }
   },
   "Progress": {

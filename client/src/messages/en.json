@@ -169,10 +169,30 @@
   "Dashboard": {
     "title": "Your fitness hub",
     "description": "Your active routine, progress, and upcoming workouts will live here.",
-    "base": {
-      "eyebrow": "Base dashboard",
-      "title": "Your profile is ready to connect to a routine",
-      "description": "This sprint sets up private navigation and the post-onboarding state. Routine generation comes in the next block."
+    "states": {
+      "loading": "Loading your profile status...",
+      "error": "We could not check your onboarding. Try refreshing the page."
+    },
+    "onboardingRequired": {
+      "eyebrow": "Onboarding required",
+      "title": "Complete your profile before continuing",
+      "description": "We need your body data, goals, and available equipment to prepare your personalized routine.",
+      "cta": "Complete onboarding"
+    },
+    "routinePending": {
+      "eyebrow": "Profile ready",
+      "title": "Your routine is ready to be generated soon",
+      "description": "Your onboarding is complete. In the next sprint we will connect monthly AI generation and save your active routine.",
+      "cta": "Generation coming soon"
+    },
+    "stats": {
+      "title": "Quick view",
+      "completedDays": "Completed days",
+      "streak": "Streak",
+      "activeRoutine": "Active routine",
+      "lastSync": "Last sync",
+      "pending": "Pending",
+      "never": "Never"
     }
   },
   "Progress": {
