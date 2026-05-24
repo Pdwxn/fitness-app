@@ -8,14 +8,23 @@ type StatsPreviewProps = {
     pending: string;
     never: string;
   };
+  completedDays: number;
+  streak: number;
+  activeRoutine: string;
   lastSync: string | null;
 };
 
-export function StatsPreview({ labels, lastSync }: StatsPreviewProps) {
+export function StatsPreview({
+  labels,
+  completedDays,
+  streak,
+  activeRoutine,
+  lastSync,
+}: StatsPreviewProps) {
   const stats = [
-    { label: labels.completedDays, value: "0" },
-    { label: labels.streak, value: "0" },
-    { label: labels.activeRoutine, value: labels.pending },
+    { label: labels.completedDays, value: String(completedDays) },
+    { label: labels.streak, value: String(streak) },
+    { label: labels.activeRoutine, value: activeRoutine || labels.pending },
     { label: labels.lastSync, value: lastSync ?? labels.never },
   ];
 

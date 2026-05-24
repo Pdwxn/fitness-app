@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-import { authenticatedClientFetch } from "@/lib/api/authenticated-client";
-import { getFromStorage, STORAGE_KEYS } from "@/lib/storage";
+import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
+import { useRoutineCache } from "@/hooks/useRoutineCache";
 
 import { OnboardingRequiredCard } from "./OnboardingRequiredCard";
 import { RoutinePendingCard } from "./RoutinePendingCard";
@@ -38,10 +36,6 @@ type DashboardContentProps = {
   };
 };
 
-type OnboardingStatusResponse = {
-  completed: boolean;
-};
-
 function formatLastSync(timestamp: number | null) {
   if (!timestamp) return null;
   return new Intl.DateTimeFormat(undefined, {
@@ -53,22 +47,9 @@ function formatLastSync(timestamp: number | null) {
 }
 
 export function DashboardContent({ locale, labels }: DashboardContentProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
-  const [lastSync, setLastSync] = useState<string | null>(null);
-
-  useEffect(() => {
-    setLastSync(formatLastSync(getFromStorage<number>(STORAGE_KEYS.LAST_SYNC)));
-
-    authenticatedClientFetch<OnboardingStatusResponse>("/api/v1/onboarding/status/")
-      .then((response) => {
-        setIsOnboardingComplete(response.completed);
-        setHasError(false);
-      })
-      .catch(() => setHasError(true))
-      .finally(() => setIsLoading(false));
-  }, []);
+  const { isLoading, hasError, isComplete } = useOnboardingStatus();
+  const { routine, stats, lastSync } = useRoutineCache();
+  const activeRoutine = routine ? `${routine.month}/${routine.year}` : labels.stats.pending;
 
   if (isLoading) {
     return (
@@ -86,7 +67,7 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
     );
   }
 
-  if (!isOnboardingComplete) {
+  if (!isComplete) {
     return (
       <OnboardingRequiredCard
         href={`/${locale}/onboarding`}
@@ -101,7 +82,13 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
   return (
     <div className="flex flex-col gap-5">
       <RoutinePendingCard {...labels.routinePending} />
-      <StatsPreview labels={labels.stats} lastSync={lastSync} />
+      <StatsPreview
+        labels={labels.stats}
+        completedDays={stats?.completed_days ?? 0}
+        streak={0}
+        activeRoutine={activeRoutine}
+        lastSync={formatLastSync(lastSync)}
+      />
     </div>
   );
 }
