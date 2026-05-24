@@ -161,6 +161,7 @@
     "logout": "Log out",
     "logoutLoading": "Logging out...",
     "nav": {
+      "sidebarTitle": "Panel",
       "dashboard": "Home",
       "progress": "Progress",
       "profile": "Profile"
@@ -183,7 +184,12 @@
       "eyebrow": "Profile ready",
       "title": "Your routine is ready to be generated soon",
       "description": "Your onboarding is complete. In the next sprint we will connect monthly AI generation and save your active routine.",
-      "cta": "Generation coming soon"
+      "cta": "Generation coming soon",
+      "badges": {
+        "duration": "4 weeks",
+        "ai": "AI ready",
+        "offline": "Offline cache"
+      }
     },
     "stats": {
       "title": "Quick view",

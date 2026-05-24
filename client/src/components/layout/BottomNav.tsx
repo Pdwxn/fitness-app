@@ -11,9 +11,10 @@ type NavItem = {
 
 type BottomNavProps = {
   items: NavItem[];
+  sidebarTitle: string;
 };
 
-export function BottomNav({ items }: BottomNavProps) {
+export function BottomNav({ items, sidebarTitle }: BottomNavProps) {
   const pathname = usePathname();
 
   return (
@@ -41,7 +42,7 @@ export function BottomNav({ items }: BottomNavProps) {
       <aside className="hidden md:fixed md:left-0 md:top-0 md:flex md:h-screen md:w-64 md:flex-col md:border-r md:border-[#ded2bf] md:bg-white md:p-5">
         <div className="rounded-[2rem] bg-[#17130f] p-5 text-white">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/60">FIT AI</p>
-          <p className="mt-3 text-2xl font-black">Dashboard</p>
+          <p className="mt-3 text-2xl font-black">{sidebarTitle}</p>
         </div>
         <nav className="mt-6 flex flex-col gap-2">
           {items.map((item) => {

@@ -30,6 +30,11 @@ export default async function DashboardPage({
             title: t("routinePending.title"),
             description: t("routinePending.description"),
             cta: t("routinePending.cta"),
+            badges: [
+              t("routinePending.badges.duration"),
+              t("routinePending.badges.ai"),
+              t("routinePending.badges.offline"),
+            ],
           },
           stats: {
             title: t("stats.title"),

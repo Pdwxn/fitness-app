@@ -3,9 +3,10 @@ type RoutinePendingCardProps = {
   title: string;
   description: string;
   cta: string;
+  badges: [string, string, string];
 };
 
-export function RoutinePendingCard({ eyebrow, title, description, cta }: RoutinePendingCardProps) {
+export function RoutinePendingCard({ eyebrow, title, description, cta, badges }: RoutinePendingCardProps) {
   return (
     <section className="overflow-hidden rounded-[2rem] border border-[#ded2bf] bg-[#17130f] text-white shadow-xl">
       <div className="p-6">
@@ -21,9 +22,9 @@ export function RoutinePendingCard({ eyebrow, title, description, cta }: Routine
         </button>
       </div>
       <div className="grid grid-cols-3 border-t border-white/10 text-center text-sm font-bold text-white/60">
-        <div className="p-4">4 weeks</div>
-        <div className="border-x border-white/10 p-4">AI ready</div>
-        <div className="p-4">Offline cache</div>
+        <div className="p-4">{badges[0]}</div>
+        <div className="border-x border-white/10 p-4">{badges[1]}</div>
+        <div className="p-4">{badges[2]}</div>
       </div>
     </section>
   );

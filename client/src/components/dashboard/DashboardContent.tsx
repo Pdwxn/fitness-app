@@ -23,6 +23,7 @@ type DashboardContentProps = {
       title: string;
       description: string;
       cta: string;
+      badges: [string, string, string];
     };
     stats: {
       title: string;
