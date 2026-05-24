@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     "apps.health",
     "apps.users",
     "apps.profiles",
+    "apps.routines",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
