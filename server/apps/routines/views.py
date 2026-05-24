@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
@@ -5,6 +6,7 @@ from rest_framework.views import APIView
 
 from .models import Routine, RoutineDay, RoutineWeek
 from .serializers import RoutineDaySerializer, RoutineSerializer, RoutineWeekSerializer
+from .services.dev_seed import seed_dev_routine
 
 
 def get_active_routine_queryset(user):
@@ -60,3 +62,24 @@ class ActiveRoutineDayView(APIView):
         )
         serializer = RoutineDaySerializer(day)
         return Response(serializer.data)
+
+
+class DevSeedRoutineView(APIView):
+    def post(self, request):
+        if not settings.DEBUG:
+            return Response(
+                {"detail": "Not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        routine, created = seed_dev_routine(request.user)
+        serializer = RoutineSerializer(
+            Routine.objects.prefetch_related("weeks__days__exercises").get(id=routine.id)
+        )
+        return Response(
+            {
+                "created": created,
+                "routine": serializer.data,
+            },
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )

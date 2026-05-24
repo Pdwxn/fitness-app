@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import ActiveRoutineDayView, ActiveRoutineView, ActiveRoutineWeekView
+from .views import ActiveRoutineDayView, ActiveRoutineView, ActiveRoutineWeekView, DevSeedRoutineView
 
 
 urlpatterns = [
@@ -15,4 +15,5 @@ urlpatterns = [
         ActiveRoutineDayView.as_view(),
         name="active-routine-day",
     ),
+    path("dev/seed/", DevSeedRoutineView.as_view(), name="dev-seed-routine"),
 ]
