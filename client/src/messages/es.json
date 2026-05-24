@@ -153,5 +153,40 @@
         }
       }
     }
+  },
+  "PrivateLayout": {
+    "signedInAs": "Sesión activa",
+    "anonymous": "Usuario",
+    "sessionUnavailable": "Sesión no disponible",
+    "logout": "Cerrar sesión",
+    "logoutLoading": "Cerrando...",
+    "nav": {
+      "dashboard": "Inicio",
+      "progress": "Progreso",
+      "profile": "Perfil"
+    }
+  },
+  "Dashboard": {
+    "title": "Tu centro fitness",
+    "description": "Aquí verás tu rutina activa, progreso y próximos entrenamientos.",
+    "base": {
+      "eyebrow": "Dashboard base",
+      "title": "Tu perfil ya puede conectarse a una rutina",
+      "description": "En este sprint dejamos lista la navegación privada y el estado post-onboarding. La generación de rutina llegará en el siguiente bloque."
+    }
+  },
+  "Progress": {
+    "title": "Progreso",
+    "description": "Seguimiento de rachas, días completados y estadísticas de entrenamiento.",
+    "eyebrow": "Próximamente",
+    "cardTitle": "Estadísticas en preparación",
+    "cardDescription": "Esta pantalla recibirá los logs diarios y métricas offline-first cuando construyamos el tracker."
+  },
+  "Profile": {
+    "title": "Perfil",
+    "description": "Gestiona tus datos personales, idioma, unidades y preferencias de entrenamiento.",
+    "eyebrow": "Próximamente",
+    "cardTitle": "Perfil editable en preparación",
+    "cardDescription": "Esta pantalla usará los endpoints de perfil creados en el Sprint 3."
   }
 }
