@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { BottomNav } from "./BottomNav";
 import { PrivateHeader } from "./PrivateHeader";
+import { SilentSync } from "./SilentSync";
 
 type AppShellProps = {
   locale: string;
@@ -20,6 +21,7 @@ export async function AppShell({ locale, title, description, children }: AppShel
 
   return (
     <div className="min-h-screen bg-[#f7f3ec] pb-24 text-[#17130f] md:pb-0 md:pl-64">
+      <SilentSync />
       <BottomNav items={navItems} sidebarTitle={t("sidebarTitle")} />
       <main className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-3xl md:px-10 lg:max-w-5xl">
         <PrivateHeader title={title} description={description} />
