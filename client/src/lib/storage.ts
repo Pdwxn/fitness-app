@@ -5,6 +5,7 @@ export const STORAGE_KEYS = {
   PENDING_SYNC: "fit_pending_sync",
   STATS: "fit_stats_cache",
   LAST_SYNC: "fit_last_sync_ts",
+  ONBOARDING_STATUS: "fit_onboarding_status",
   ONBOARDING_DRAFT: "fit_onboarding_draft",
 } as const;
 

@@ -11,6 +11,7 @@ import { Step4Health } from "./steps/Step4Health";
 import { Step5Equipment } from "./steps/Step5Equipment";
 import { Step6RoutineType } from "./steps/Step6RoutineType";
 import { authenticatedClientFetch } from "@/lib/api/authenticated-client";
+import { setInStorage, STORAGE_KEYS } from "@/lib/storage";
 import { TOTAL_STEPS, useOnboardingStore } from "@/store/onboardingStore";
 
 type OnboardingFormProps = {
@@ -82,7 +83,10 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
 
     authenticatedClientFetch<OnboardingStatusResponse>("/api/v1/onboarding/status/")
       .then((response) => {
-        if (!cancelled) setIsCompleted(response.completed);
+        if (!cancelled) {
+          setIsCompleted(response.completed);
+          setInStorage(STORAGE_KEYS.ONBOARDING_STATUS, response);
+        }
       })
       .catch(() => {
         if (!cancelled) setIsCompleted(false);
@@ -163,6 +167,7 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
       );
 
       if (response.completed) {
+        setInStorage(STORAGE_KEYS.ONBOARDING_STATUS, response);
         clearStorage();
         reset();
         router.push(`/${locale}`);
