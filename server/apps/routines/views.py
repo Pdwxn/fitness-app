@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from .models import Routine, RoutineDay, RoutineWeek
 from .serializers import RoutineDaySerializer, RoutineSerializer, RoutineWeekSerializer
 from .services.dev_seed import seed_dev_routine
+from .services.generation_service import generate_and_persist_routine
 
 
 def get_active_routine_queryset(user):
@@ -82,4 +83,17 @@ class DevSeedRoutineView(APIView):
                 "routine": serializer.data,
             },
             status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )
+
+
+class GenerateRoutineView(APIView):
+    def post(self, request):
+        routine = generate_and_persist_routine(request.user)
+        serializer = RoutineSerializer(routine)
+        return Response(
+            {
+                "detail": "Routine generated successfully.",
+                "routine": serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
         )
