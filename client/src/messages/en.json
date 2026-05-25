@@ -61,12 +61,18 @@
       "next": "Next",
       "previous": "Previous",
       "finish": "Finish",
-      "submitting": "Saving..."
+      "submitting": "Saving profile...",
+      "generating": "Generating routine..."
     },
     "completed": {
       "title": "Onboarding complete",
       "description": "We already have the information needed to prepare your routine.",
-      "backHome": "Back home"
+      "backHome": "Go to dashboard"
+    },
+    "generationFailed": {
+      "title": "Your profile is ready",
+      "description": "We saved your onboarding, but could not generate the routine right now. The dashboard will show the pending state while we retry later.",
+      "goToDashboard": "Go to dashboard"
     },
     "steps": {
       "personal": "Personal",

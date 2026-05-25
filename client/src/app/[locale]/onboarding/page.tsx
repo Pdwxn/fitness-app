@@ -28,6 +28,10 @@ export default async function OnboardingPage({
         backHome: t("completed.backHome"),
         loadingStatus: t("loadingStatus"),
         submitting: t("actions.submitting"),
+        generating: t("actions.generating"),
+        generationFailedTitle: t("generationFailed.title"),
+        generationFailedDescription: t("generationFailed.description"),
+        goToDashboard: t("generationFailed.goToDashboard"),
         steps: [
           t("steps.personal"),
           t("steps.activity"),

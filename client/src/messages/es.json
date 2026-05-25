@@ -61,12 +61,18 @@
       "next": "Siguiente",
       "previous": "Anterior",
       "finish": "Finalizar",
-      "submitting": "Guardando..."
+      "submitting": "Guardando perfil...",
+      "generating": "Generando rutina..."
     },
     "completed": {
       "title": "Onboarding completado",
       "description": "Ya tenemos la información necesaria para preparar tu rutina.",
-      "backHome": "Volver al inicio"
+      "backHome": "Ir al dashboard"
+    },
+    "generationFailed": {
+      "title": "Tu perfil está listo",
+      "description": "Guardamos tu onboarding, pero no pudimos generar la rutina ahora. El dashboard mostrará el estado pendiente mientras reintentamos más adelante.",
+      "goToDashboard": "Ir al dashboard"
     },
     "steps": {
       "personal": "Datos personales",

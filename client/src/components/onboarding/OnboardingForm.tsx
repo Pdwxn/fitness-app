@@ -13,6 +13,7 @@ import { Step6RoutineType } from "./steps/Step6RoutineType";
 import { authenticatedClientFetch } from "@/lib/api/authenticated-client";
 import { setInStorage, STORAGE_KEYS } from "@/lib/storage";
 import { TOTAL_STEPS, useOnboardingStore } from "@/store/onboardingStore";
+import type { Routine } from "@/types/routine";
 
 type OnboardingFormProps = {
   locale: string;
@@ -30,6 +31,10 @@ type OnboardingFormProps = {
     backHome: string;
     loadingStatus: string;
     submitting: string;
+    generating: string;
+    generationFailedTitle: string;
+    generationFailedDescription: string;
+    goToDashboard: string;
     steps: string[];
     placeholders: string[];
   };
@@ -58,6 +63,14 @@ type OnboardingStatusResponse = {
   completed: boolean;
 };
 
+type OnboardingCompleteResponse = OnboardingStatusResponse & {
+  routine_generated: boolean;
+  routine: Routine | null;
+  generation_error: { detail: string; code: string } | null;
+};
+
+type SubmitState = "idle" | "saving" | "generating";
+
 export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
   const router = useRouter();
   const currentStep = useOnboardingStore((state) => state.currentStep);
@@ -71,7 +84,8 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const [generationFailed, setGenerationFailed] = useState(false);
 
   useEffect(() => {
     hydrateFromStorage();
@@ -154,10 +168,12 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
     }
 
     setError(null);
-    setIsSubmitting(true);
+    setGenerationFailed(false);
+    setSubmitState("saving");
 
     try {
-      const response = await authenticatedClientFetch<OnboardingStatusResponse>(
+      setSubmitState("generating");
+      const response = await authenticatedClientFetch<OnboardingCompleteResponse>(
         "/api/v1/onboarding/complete/",
         {
           method: "POST",
@@ -167,10 +183,21 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
       );
 
       if (response.completed) {
-        setInStorage(STORAGE_KEYS.ONBOARDING_STATUS, response);
+        setInStorage(STORAGE_KEYS.ONBOARDING_STATUS, { completed: response.completed });
+        if (response.routine) {
+          setInStorage(STORAGE_KEYS.ROUTINE, response.routine);
+          setInStorage(STORAGE_KEYS.LAST_SYNC, Date.now());
+        }
         clearStorage();
         reset();
-        router.push(`/${locale}`);
+        if (response.routine) {
+          router.push(`/${locale}/dashboard`);
+          router.refresh();
+          return;
+        }
+
+        setGenerationFailed(Boolean(response.generation_error));
+        setIsCompleted(true);
         router.refresh();
         return;
       }
@@ -179,9 +206,12 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
     } catch {
       setError(labels.submitError);
     } finally {
-      setIsSubmitting(false);
+      setSubmitState("idle");
     }
   }
+
+  const isSubmitting = submitState !== "idle";
+  const submitLabel = submitState === "generating" ? labels.generating : labels.submitting;
 
   if (isLoadingStatus) {
     return (
@@ -200,14 +230,18 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#8b5e34]">
             FIT AI
           </p>
-          <h1 className="mt-4 text-4xl font-black tracking-tight">{labels.completedTitle}</h1>
-          <p className="mt-3 text-base leading-7 text-[#5c5349]">{labels.completedDescription}</p>
+          <h1 className="mt-4 text-4xl font-black tracking-tight">
+            {generationFailed ? labels.generationFailedTitle : labels.completedTitle}
+          </h1>
+          <p className="mt-3 text-base leading-7 text-[#5c5349]">
+            {generationFailed ? labels.generationFailedDescription : labels.completedDescription}
+          </p>
           <button
             type="button"
-            onClick={() => router.push(`/${locale}`)}
+            onClick={() => router.push(`/${locale}/dashboard`)}
             className="mt-6 rounded-full bg-[#17130f] px-5 py-3 text-sm font-bold text-white"
           >
-            {labels.backHome}
+            {generationFailed ? labels.goToDashboard : labels.backHome}
           </button>
         </section>
       </main>
@@ -266,7 +300,7 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
             disabled={isSubmitting}
             className="w-1/2 rounded-full bg-[#17130f] px-5 py-3 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {isSubmitting ? labels.submitting : isLastStep ? labels.finish : labels.next}
+            {isSubmitting ? submitLabel : isLastStep ? labels.finish : labels.next}
           </button>
         </div>
       </section>
