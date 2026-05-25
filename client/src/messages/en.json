@@ -257,6 +257,23 @@
     "weight": "Weight",
     "seconds": "sec",
     "variants": "Variants",
+    "tracker": {
+      "title": "Log progress",
+      "description": "Mark what you completed today. It saves on this device first and syncs when online.",
+      "completedDay": "Day completed",
+      "dayNote": "Day note",
+      "dayNotePlaceholder": "Example: Felt strong, reduced intensity due to shoulder discomfort...",
+      "exerciseCompleted": "Exercise completed",
+      "actualSets": "Sets",
+      "actualReps": "Reps",
+      "actualWeight": "Kg",
+      "exerciseNote": "Note",
+      "exerciseNotePlaceholder": "Optional",
+      "save": "Save progress",
+      "saving": "Saving...",
+      "savedLocal": "Saved locally. It will sync when connection is available.",
+      "synced": "Progress saved and sync attempted."
+    },
     "states": {
       "loading": "Loading routine day...",
       "error": "We could not load this day. Try refreshing the page.",

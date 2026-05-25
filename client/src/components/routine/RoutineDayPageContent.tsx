@@ -4,6 +4,8 @@ import Link from "next/link";
 
 import { useRoutineCache } from "@/hooks/useRoutineCache";
 
+import { DailyLogForm } from "./DailyLogForm";
+
 type RoutineDayPageContentProps = {
   dayId: string;
   locale: string;
@@ -19,6 +21,23 @@ type RoutineDayPageContentProps = {
     weight: string;
     seconds: string;
     variants: string;
+    tracker: {
+      title: string;
+      description: string;
+      completedDay: string;
+      dayNote: string;
+      dayNotePlaceholder: string;
+      exerciseCompleted: string;
+      actualSets: string;
+      actualReps: string;
+      actualWeight: string;
+      exerciseNote: string;
+      exerciseNotePlaceholder: string;
+      save: string;
+      saving: string;
+      savedLocal: string;
+      synced: string;
+    };
   };
 };
 
@@ -47,6 +66,7 @@ export function RoutineDayPageContent({ dayId, locale, labels }: RoutineDayPageC
         <StatusCard message={labels.restDay} />
       ) : (
         <div className="grid gap-4">
+          <DailyLogForm day={day} labels={labels.tracker} />
           {day.exercises.map((exercise) => (
             <article key={exercise.id} className="rounded-[2rem] border border-[#ded2bf] bg-white/85 p-6 shadow-sm">
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">

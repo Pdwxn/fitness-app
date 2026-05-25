@@ -29,6 +29,23 @@ export default async function RoutineDayPage({
           weight: t("weight"),
           seconds: t("seconds"),
           variants: t("variants"),
+          tracker: {
+            title: t("tracker.title"),
+            description: t("tracker.description"),
+            completedDay: t("tracker.completedDay"),
+            dayNote: t("tracker.dayNote"),
+            dayNotePlaceholder: t("tracker.dayNotePlaceholder"),
+            exerciseCompleted: t("tracker.exerciseCompleted"),
+            actualSets: t("tracker.actualSets"),
+            actualReps: t("tracker.actualReps"),
+            actualWeight: t("tracker.actualWeight"),
+            exerciseNote: t("tracker.exerciseNote"),
+            exerciseNotePlaceholder: t("tracker.exerciseNotePlaceholder"),
+            save: t("tracker.save"),
+            saving: t("tracker.saving"),
+            savedLocal: t("tracker.savedLocal"),
+            synced: t("tracker.synced"),
+          },
         }}
       />
     </AppShell>

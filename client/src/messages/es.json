@@ -257,6 +257,23 @@
     "weight": "Peso",
     "seconds": "seg",
     "variants": "Variantes",
+    "tracker": {
+      "title": "Registrar progreso",
+      "description": "Marca lo que completaste hoy. Se guarda primero en este dispositivo y se sincroniza cuando haya conexión.",
+      "completedDay": "Día completado",
+      "dayNote": "Nota del día",
+      "dayNotePlaceholder": "Ej: Me sentí fuerte, bajé intensidad por molestia en hombro...",
+      "exerciseCompleted": "Ejercicio completado",
+      "actualSets": "Series",
+      "actualReps": "Reps",
+      "actualWeight": "Kg",
+      "exerciseNote": "Nota",
+      "exerciseNotePlaceholder": "Opcional",
+      "save": "Guardar progreso",
+      "saving": "Guardando...",
+      "savedLocal": "Guardado localmente. Se sincronizará cuando haya conexión.",
+      "synced": "Progreso guardado y sincronización intentada."
+    },
     "states": {
       "loading": "Cargando día de rutina...",
       "error": "No pudimos cargar el día. Intenta recargar la página.",
