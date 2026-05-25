@@ -307,8 +307,33 @@
   "Profile": {
     "title": "Perfil",
     "description": "Gestiona tus datos personales, idioma, unidades y preferencias de entrenamiento.",
-    "eyebrow": "Próximamente",
-    "cardTitle": "Perfil editable en preparación",
-    "cardDescription": "Esta pantalla usará los endpoints de perfil creados en el Sprint 3."
+    "personal": {
+      "eyebrow": "Datos personales",
+      "title": "Tu información base",
+      "description": "Estos datos alimentan las recomendaciones y se guardan en formato métrico internamente."
+    },
+    "fitness": {
+      "eyebrow": "Fitness",
+      "title": "Preferencias de entrenamiento",
+      "description": "Actualiza objetivos, equipo y limitaciones para mantener tu perfil preparado para futuras rutinas.",
+      "activity": "Nivel de actividad",
+      "goals": "Objetivos físicos",
+      "equipment": "Tipo de equipo",
+      "homeEquipment": "Equipo disponible en casa",
+      "routine": "Tipo de rutina",
+      "injuries": "Lesiones o molestias"
+    },
+    "actions": {
+      "savePersonal": "Guardar datos personales",
+      "saveFitness": "Guardar datos fitness",
+      "saving": "Guardando..."
+    },
+    "states": {
+      "loading": "Cargando perfil...",
+      "loadError": "No pudimos cargar tu perfil. Intenta recargar la página.",
+      "saveError": "No pudimos guardar los cambios.",
+      "savedProfile": "Datos personales guardados.",
+      "savedHealth": "Datos fitness guardados."
+    }
   }
 }

@@ -7,6 +7,8 @@ export const STORAGE_KEYS = {
   LAST_SYNC: "fit_last_sync_ts",
   ONBOARDING_STATUS: "fit_onboarding_status",
   ONBOARDING_DRAFT: "fit_onboarding_draft",
+  PROFILE: "fit_profile_cache",
+  HEALTH_PROFILE: "fit_health_profile_cache",
 } as const;
 
 type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];

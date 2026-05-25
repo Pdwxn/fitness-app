@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { PlaceholderCard } from "@/components/dashboard/PlaceholderCard";
 import { AppShell } from "@/components/layout/AppShell";
+import { ProfileContent } from "@/components/profile/ProfileContent";
 
 export default async function ProfilePage({
   params,
@@ -14,7 +14,7 @@ export default async function ProfilePage({
 
   return (
     <AppShell locale={locale} title={t("title")} description={t("description")}>
-      <PlaceholderCard eyebrow={t("eyebrow")} title={t("cardTitle")} description={t("cardDescription")} />
+      <ProfileContent locale={locale} />
     </AppShell>
   );
 }

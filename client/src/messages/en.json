@@ -307,8 +307,33 @@
   "Profile": {
     "title": "Profile",
     "description": "Manage your personal data, language, units, and training preferences.",
-    "eyebrow": "Coming soon",
-    "cardTitle": "Editable profile is being prepared",
-    "cardDescription": "This screen will use the profile endpoints created in Sprint 3."
+    "personal": {
+      "eyebrow": "Personal data",
+      "title": "Your base information",
+      "description": "These details power recommendations and are stored internally in metric format."
+    },
+    "fitness": {
+      "eyebrow": "Fitness",
+      "title": "Training preferences",
+      "description": "Update goals, equipment, and limitations so your profile stays ready for future routines.",
+      "activity": "Activity level",
+      "goals": "Physical goals",
+      "equipment": "Equipment type",
+      "homeEquipment": "Available home equipment",
+      "routine": "Routine type",
+      "injuries": "Injuries or discomfort"
+    },
+    "actions": {
+      "savePersonal": "Save personal data",
+      "saveFitness": "Save fitness data",
+      "saving": "Saving..."
+    },
+    "states": {
+      "loading": "Loading profile...",
+      "loadError": "We could not load your profile. Try refreshing the page.",
+      "saveError": "We could not save your changes.",
+      "savedProfile": "Personal data saved.",
+      "savedHealth": "Fitness data saved."
+    }
   }
 }
