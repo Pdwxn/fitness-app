@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     "apps.users",
     "apps.profiles",
     "apps.routines",
+    "apps.progress",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
