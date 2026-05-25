@@ -1,7 +1,7 @@
 import json
 
 from django.conf import settings
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ValidationError
 
 
 FITNESS_KNOWLEDGE_BASE = """
@@ -95,6 +95,12 @@ class GeminiConfigurationError(APIException):
     default_code = "gemini_not_configured"
 
 
+class GeminiResponseError(APIException):
+    status_code = 502
+    default_detail = "Gemini returned an invalid routine response."
+    default_code = "invalid_gemini_response"
+
+
 def build_routine_prompt(user, previous_month_notes=None):
     health = user.health_data
     previous_month_notes = previous_month_notes or []
@@ -184,3 +190,178 @@ def generate_routine_with_gemini(user, previous_month_notes=None):
     prompt = build_routine_prompt(user, previous_month_notes=previous_month_notes)
     response = model.generate_content(prompt)
     return response.text
+
+
+def parse_gemini_routine_response(raw_response):
+    if isinstance(raw_response, dict):
+        return validate_routine_payload(raw_response)
+
+    if not isinstance(raw_response, str) or not raw_response.strip():
+        raise GeminiResponseError("Gemini returned an empty response.")
+
+    raw = raw_response.strip()
+    if raw.startswith("```"):
+        raw = raw.removeprefix("```").strip()
+        if raw.startswith("json"):
+            raw = raw.removeprefix("json").strip()
+        if raw.endswith("```"):
+            raw = raw.removesuffix("```").strip()
+
+    start = raw.find("{")
+    end = raw.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        raise GeminiResponseError("Gemini response does not contain a JSON object.")
+
+    try:
+        payload = json.loads(raw[start : end + 1])
+    except json.JSONDecodeError as exc:
+        raise GeminiResponseError("Gemini response is not valid JSON.") from exc
+
+    try:
+        return validate_routine_payload(payload)
+    except ValidationError as exc:
+        raise GeminiResponseError(exc.detail) from exc
+
+
+def validate_routine_payload(payload):
+    if not isinstance(payload, dict):
+        raise ValidationError("Routine payload must be a JSON object.")
+
+    weeks = payload.get("weeks")
+    if not isinstance(weeks, list) or len(weeks) != 4:
+        raise ValidationError({"weeks": "Routine must include exactly 4 weeks."})
+
+    normalized_weeks = []
+    seen_weeks = set()
+    for week in weeks:
+        normalized_week = validate_week_payload(week)
+        week_number = normalized_week["week_number"]
+        if week_number in seen_weeks:
+            raise ValidationError({"weeks": f"Week {week_number} is duplicated."})
+        seen_weeks.add(week_number)
+        normalized_weeks.append(normalized_week)
+
+    expected_weeks = {1, 2, 3, 4}
+    if seen_weeks != expected_weeks:
+        raise ValidationError({"weeks": "Routine weeks must be numbered 1 through 4."})
+
+    normalized_weeks.sort(key=lambda week: week["week_number"])
+    return {"weeks": normalized_weeks}
+
+
+def validate_week_payload(week):
+    if not isinstance(week, dict):
+        raise ValidationError("Each week must be an object.")
+
+    week_number = coerce_int(week.get("week_number"), "week_number")
+    if week_number < 1 or week_number > 4:
+        raise ValidationError({"week_number": "Week number must be between 1 and 4."})
+
+    days = week.get("days")
+    if not isinstance(days, list) or len(days) != 7:
+        raise ValidationError({"days": f"Week {week_number} must include exactly 7 days."})
+
+    normalized_days = []
+    seen_days = set()
+    for day in days:
+        normalized_day = validate_day_payload(day)
+        day_number = normalized_day["day_number"]
+        if day_number in seen_days:
+            raise ValidationError({"days": f"Day {day_number} is duplicated in week {week_number}."})
+        seen_days.add(day_number)
+        normalized_days.append(normalized_day)
+
+    expected_days = {1, 2, 3, 4, 5, 6, 7}
+    if seen_days != expected_days:
+        raise ValidationError({"days": f"Week {week_number} days must be numbered 1 through 7."})
+
+    normalized_days.sort(key=lambda day: day["day_number"])
+    return {
+        "week_number": week_number,
+        "focus": clean_text(week.get("focus", ""), 120),
+        "notes": clean_text(week.get("notes", "")),
+        "days": normalized_days,
+    }
+
+
+def validate_day_payload(day):
+    if not isinstance(day, dict):
+        raise ValidationError("Each day must be an object.")
+
+    day_number = coerce_int(day.get("day_number"), "day_number")
+    if day_number < 1 or day_number > 7:
+        raise ValidationError({"day_number": "Day number must be between 1 and 7."})
+
+    is_rest_day = bool(day.get("is_rest_day", False))
+    exercises = day.get("exercises", [])
+    if not isinstance(exercises, list):
+        raise ValidationError({"exercises": "Exercises must be a list."})
+
+    normalized_exercises = []
+    for order, exercise in enumerate(exercises, start=1):
+        normalized_exercises.append(validate_exercise_payload(exercise, order))
+
+    return {
+        "day_number": day_number,
+        "day_name": clean_required_text(day.get("day_name"), "day_name", 40),
+        "is_rest_day": is_rest_day,
+        "exercises": normalized_exercises,
+    }
+
+
+def validate_exercise_payload(exercise, fallback_order):
+    if not isinstance(exercise, dict):
+        raise ValidationError("Each exercise must be an object.")
+
+    sets = exercise.get("sets")
+    rest_seconds = exercise.get("rest_seconds")
+    weight_kg = exercise.get("weight_kg")
+
+    return {
+        "name": clean_required_text(exercise.get("name"), "name", 120),
+        "muscle_group": clean_text(exercise.get("muscle_group", ""), 80),
+        "sets": coerce_int(sets, "sets") if sets not in (None, "") else None,
+        "reps": clean_text(exercise.get("reps", ""), 40),
+        "weight_kg": coerce_decimal_string(weight_kg, "weight_kg") if weight_kg not in (None, "") else None,
+        "rest_seconds": coerce_int(rest_seconds, "rest_seconds") if rest_seconds not in (None, "") else None,
+        "instructions": clean_text(exercise.get("instructions", "")),
+        "search_term": clean_text(exercise.get("search_term", ""), 120),
+        "variants": exercise.get("variants", []) if isinstance(exercise.get("variants", []), list) else [],
+        "order": coerce_int(exercise.get("order", fallback_order), "order"),
+    }
+
+
+def clean_required_text(value, field_name, max_length=None):
+    cleaned = clean_text(value, max_length)
+    if not cleaned:
+        raise ValidationError({field_name: "This field is required."})
+    return cleaned
+
+
+def clean_text(value, max_length=None):
+    if value is None:
+        return ""
+    cleaned = str(value).strip()
+    if max_length is not None:
+        return cleaned[:max_length]
+    return cleaned
+
+
+def coerce_int(value, field_name):
+    try:
+        result = int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValidationError({field_name: "Must be an integer."}) from exc
+    if result < 0:
+        raise ValidationError({field_name: "Must be zero or greater."})
+    return result
+
+
+def coerce_decimal_string(value, field_name):
+    try:
+        result = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValidationError({field_name: "Must be a number."}) from exc
+    if result < 0:
+        raise ValidationError({field_name: "Must be zero or greater."})
+    return f"{result:.2f}"
