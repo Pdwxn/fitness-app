@@ -1,5 +1,7 @@
 from rest_framework.response import Response
+from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
+from django.utils import timezone
 
 from .models import UserHealthData
 from .serializers import OnboardingCompleteSerializer, ProfileSerializer, UserHealthDataSerializer
@@ -61,6 +63,10 @@ class OnboardingStatusView(APIView):
 
 class OnboardingCompleteView(APIView):
     def post(self, request):
+        from apps.routines.models import Routine
+        from apps.routines.serializers import RoutineSerializer
+        from apps.routines.services.generation_service import generate_and_persist_routine
+
         serializer = OnboardingCompleteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -81,9 +87,35 @@ class OnboardingCompleteView(APIView):
         health_serializer.is_valid(raise_exception=True)
         health_serializer.save()
 
+        completed = is_onboarding_complete(request.user)
+        routine = None
+        routine_generated = False
+        generation_error = None
+
+        if completed:
+            today = timezone.now().date()
+            routine = Routine.objects.filter(
+                user=request.user,
+                month=today.month,
+                year=today.year,
+            ).prefetch_related("weeks__days__exercises").first()
+
+            if routine is None:
+                try:
+                    routine = generate_and_persist_routine(request.user)
+                    routine_generated = True
+                except APIException as exc:
+                    generation_error = {
+                        "detail": exc.detail,
+                        "code": exc.get_codes(),
+                    }
+
         return Response(
             {
-                "completed": is_onboarding_complete(request.user),
+                "completed": completed,
+                "routine_generated": routine_generated,
+                "routine": RoutineSerializer(routine).data if routine else None,
+                "generation_error": generation_error,
                 "profile": profile_serializer.data,
                 "health": health_serializer.data,
             }
