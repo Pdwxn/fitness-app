@@ -25,7 +25,6 @@ type DashboardContentProps = {
       eyebrow: string;
       title: string;
       description: string;
-      cta: string;
       badges: [string, string, string];
     };
     stats: {

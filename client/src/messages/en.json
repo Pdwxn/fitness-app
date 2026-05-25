@@ -187,14 +187,13 @@
       "cta": "Complete onboarding"
     },
     "routinePending": {
-      "eyebrow": "Profile ready",
-      "title": "Your routine is ready to be generated soon",
-      "description": "Your onboarding is complete. In the next sprint we will connect monthly AI generation and save your active routine.",
-      "cta": "Generation coming soon",
+      "eyebrow": "Routine pending",
+      "title": "Your profile is ready, but there is no active routine yet",
+      "description": "The routine is generated automatically after onboarding. If it does not appear, AI generation likely failed or is still pending; your profile data is already saved.",
       "badges": {
-        "duration": "4 weeks",
-        "ai": "AI ready",
-        "offline": "Offline cache"
+        "duration": "Profile saved",
+        "ai": "AI pending",
+        "offline": "No active routine"
       }
     },
     "stats": {

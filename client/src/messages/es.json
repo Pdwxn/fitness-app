@@ -187,14 +187,13 @@
       "cta": "Completar onboarding"
     },
     "routinePending": {
-      "eyebrow": "Perfil listo",
-      "title": "Tu rutina está lista para generarse pronto",
-      "description": "Ya tenemos tu onboarding. En el siguiente sprint conectaremos la generación mensual con IA y guardaremos tu rutina activa.",
-      "cta": "Generación próximamente",
+      "eyebrow": "Rutina pendiente",
+      "title": "Tu perfil está listo, pero aún no hay rutina activa",
+      "description": "La rutina se genera automáticamente al completar onboarding. Si no aparece, probablemente la generación con IA falló o quedó pendiente; tus datos ya están guardados.",
       "badges": {
-        "duration": "4 semanas",
-        "ai": "IA lista",
-        "offline": "Cache offline"
+        "duration": "Perfil guardado",
+        "ai": "IA pendiente",
+        "offline": "Sin rutina activa"
       }
     },
     "stats": {
