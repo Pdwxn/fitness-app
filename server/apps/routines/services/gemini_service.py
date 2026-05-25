@@ -101,6 +101,18 @@ class GeminiResponseError(APIException):
     default_code = "invalid_gemini_response"
 
 
+class GeminiGenerationError(APIException):
+    status_code = 502
+    default_detail = "Gemini could not generate a routine right now."
+    default_code = "gemini_generation_failed"
+
+
+class GeminiQuotaError(APIException):
+    status_code = 429
+    default_detail = "Gemini quota exceeded. Check your API key plan, billing, or rate limits."
+    default_code = "gemini_quota_exceeded"
+
+
 def build_routine_prompt(user, previous_month_notes=None):
     health = user.health_data
     previous_month_notes = previous_month_notes or []
@@ -183,13 +195,29 @@ def generate_routine_with_gemini(user, previous_month_notes=None):
     if not settings.GEMINI_API_KEY:
         raise GeminiConfigurationError()
 
-    import google.generativeai as genai
+    try:
+        import google.generativeai as genai
+    except ImportError as exc:
+        raise GeminiConfigurationError("Gemini package is not installed.") from exc
 
-    genai.configure(api_key=settings.GEMINI_API_KEY)
-    model = genai.GenerativeModel("gemini-1.5-flash")
-    prompt = build_routine_prompt(user, previous_month_notes=previous_month_notes)
-    response = model.generate_content(prompt)
-    return response.text
+    try:
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        model = genai.GenerativeModel(settings.GEMINI_MODEL)
+        prompt = build_routine_prompt(user, previous_month_notes=previous_month_notes)
+        response = model.generate_content(
+            prompt,
+            generation_config={
+                "temperature": 0.4,
+                "max_output_tokens": 32768,
+                "response_mime_type": "application/json",
+            },
+        )
+        return response.text
+    except Exception as exc:
+        message = str(exc)
+        if "quota" in message.lower() or "429" in message:
+            raise GeminiQuotaError() from exc
+        raise GeminiGenerationError(str(exc)) from exc
 
 
 def parse_gemini_routine_response(raw_response):
@@ -215,6 +243,10 @@ def parse_gemini_routine_response(raw_response):
     try:
         payload = json.loads(raw[start : end + 1])
     except json.JSONDecodeError as exc:
+        if "Unterminated string" in str(exc) or end == len(raw) - 1:
+            raise GeminiResponseError(
+                "Gemini response was truncated before valid JSON completed."
+            ) from exc
         raise GeminiResponseError("Gemini response is not valid JSON.") from exc
 
     try:

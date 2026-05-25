@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -88,7 +89,14 @@ class DevSeedRoutineView(APIView):
 
 class GenerateRoutineView(APIView):
     def post(self, request):
-        routine = generate_and_persist_routine(request.user)
+        try:
+            routine = generate_and_persist_routine(request.user)
+        except APIException as exc:
+            return Response(
+                {"detail": exc.detail, "code": exc.get_codes()},
+                status=exc.status_code,
+            )
+
         serializer = RoutineSerializer(routine)
         return Response(
             {
