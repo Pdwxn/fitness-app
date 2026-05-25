@@ -1,4 +1,5 @@
 import hashlib
+from datetime import timedelta
 
 from django.db import transaction
 from django.utils import timezone
@@ -27,24 +28,102 @@ def ensure_user_can_generate_routine(user, today=None):
     if not is_onboarding_complete(user):
         raise OnboardingIncompleteError()
 
-    if Routine.objects.filter(user=user, month=today.month, year=today.year).exists():
+    if get_current_month_routine(user, today=today) is not None:
         raise MonthlyRoutineExistsError()
 
 
 def generate_and_persist_routine(user, previous_month_notes=None, today=None):
+    routine, _ = generate_monthly_routine_if_needed(
+        user,
+        today=today,
+        previous_month_notes=previous_month_notes,
+        return_existing=False,
+    )
+    return routine
+
+
+def get_current_month_routine(user, today=None):
     today = today or timezone.now().date()
-    ensure_user_can_generate_routine(user, today=today)
+    return Routine.objects.filter(
+        user=user,
+        month=today.month,
+        year=today.year,
+    ).prefetch_related("weeks__days__exercises").first()
+
+
+def can_generate_monthly_routine(user, today=None):
+    return is_onboarding_complete(user) and get_current_month_routine(user, today=today) is None
+
+
+def generate_monthly_routine_if_needed(
+    user,
+    today=None,
+    previous_month_notes=None,
+    return_existing=True,
+):
+    today = today or timezone.now().date()
+    if not is_onboarding_complete(user):
+        raise OnboardingIncompleteError()
+
+    existing_routine = get_current_month_routine(user, today=today)
+    if existing_routine is not None:
+        if return_existing:
+            return existing_routine, False
+        raise MonthlyRoutineExistsError()
+
+    if previous_month_notes is None:
+        previous_month_notes = get_previous_month_notes(user, today=today)
 
     prompt = build_routine_prompt(user, previous_month_notes=previous_month_notes)
     raw_response = generate_routine_with_gemini(user, previous_month_notes=previous_month_notes)
     routine_data = parse_gemini_routine_response(raw_response)
-    return persist_generated_routine(
+    routine = persist_generated_routine(
         user=user,
         routine_data=routine_data,
         raw_response=raw_response,
         prompt=prompt,
         today=today,
     )
+    return routine, True
+
+
+def get_previous_month_notes(user, today=None):
+    from apps.progress.models import DailyLog
+
+    today = today or timezone.now().date()
+    start_of_current_month = today.replace(day=1)
+    last_day_previous_month = start_of_current_month - timedelta(days=1)
+    start_of_previous_month = last_day_previous_month.replace(day=1)
+
+    logs = DailyLog.objects.filter(
+        user=user,
+        date__gte=start_of_previous_month,
+        date__lt=start_of_current_month,
+    ).select_related("routine_day")
+
+    notes = []
+    for log in logs:
+        exercise_notes = [
+            {
+                "exercise_name": exercise.get("exercise_name", ""),
+                "completed": exercise.get("completed", False),
+                "note": exercise.get("note", ""),
+            }
+            for exercise in log.exercises_done
+            if exercise.get("note") or not exercise.get("completed", False)
+        ]
+        if log.day_note or exercise_notes:
+            notes.append(
+                {
+                    "date": log.date.isoformat(),
+                    "day_name": log.routine_day.day_name,
+                    "completed": log.completed,
+                    "day_note": log.day_note,
+                    "exercise_notes": exercise_notes,
+                }
+            )
+
+    return notes
 
 
 def persist_generated_routine(user, routine_data, raw_response, prompt, today=None):

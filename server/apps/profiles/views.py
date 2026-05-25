@@ -1,8 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
-from django.utils import timezone
-
 from .models import UserHealthData
 from .serializers import OnboardingCompleteSerializer, ProfileSerializer, UserHealthDataSerializer
 
@@ -63,9 +61,8 @@ class OnboardingStatusView(APIView):
 
 class OnboardingCompleteView(APIView):
     def post(self, request):
-        from apps.routines.models import Routine
         from apps.routines.serializers import RoutineSerializer
-        from apps.routines.services.generation_service import generate_and_persist_routine
+        from apps.routines.services.generation_service import generate_monthly_routine_if_needed
 
         serializer = OnboardingCompleteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -93,22 +90,13 @@ class OnboardingCompleteView(APIView):
         generation_error = None
 
         if completed:
-            today = timezone.now().date()
-            routine = Routine.objects.filter(
-                user=request.user,
-                month=today.month,
-                year=today.year,
-            ).prefetch_related("weeks__days__exercises").first()
-
-            if routine is None:
-                try:
-                    routine = generate_and_persist_routine(request.user)
-                    routine_generated = True
-                except APIException as exc:
-                    generation_error = {
-                        "detail": exc.detail,
-                        "code": exc.get_codes(),
-                    }
+            try:
+                routine, routine_generated = generate_monthly_routine_if_needed(request.user)
+            except APIException as exc:
+                generation_error = {
+                    "detail": exc.detail,
+                    "code": exc.get_codes(),
+                }
 
         return Response(
             {

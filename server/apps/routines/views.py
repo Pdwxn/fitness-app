@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from .models import Routine, RoutineDay, RoutineWeek
 from .serializers import RoutineDaySerializer, RoutineSerializer, RoutineWeekSerializer
 from .services.dev_seed import seed_dev_routine
-from .services.generation_service import generate_and_persist_routine
+from .services.generation_service import generate_monthly_routine_if_needed
 
 
 def get_active_routine_queryset(user):
@@ -90,7 +90,7 @@ class DevSeedRoutineView(APIView):
 class GenerateRoutineView(APIView):
     def post(self, request):
         try:
-            routine = generate_and_persist_routine(request.user)
+            routine, _ = generate_monthly_routine_if_needed(request.user, return_existing=False)
         except APIException as exc:
             return Response(
                 {"detail": exc.detail, "code": exc.get_codes()},
