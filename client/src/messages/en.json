@@ -199,6 +199,37 @@
       "lastSync": "Last sync",
       "pending": "Pending",
       "never": "Never"
+    },
+    "activeRoutine": {
+      "eyebrow": "Active routine",
+      "title": "Monthly plan",
+      "description": "Your personalized routine is saved. Review the week, pick a day, and prepare your next workout.",
+      "cta": "View full routine",
+      "weeks": "Weeks",
+      "activeDays": "Active days",
+      "nextWorkout": "First workout",
+      "restDay": "Rest"
+    },
+    "weeklyPreview": {
+      "title": "Weekly view",
+      "week": "Week",
+      "restDay": "Rest",
+      "exercises": "exercises",
+      "selectedDay": {
+        "title": "Exercises",
+        "restDay": "Rest day. Focus on recovery, light mobility, and sleep.",
+        "sets": "sets",
+        "reps": "reps",
+        "rest": "Rest",
+        "weight": "Weight",
+        "seconds": "sec",
+        "empty": "Select a training day to see its exercises."
+      }
+    },
+    "routineStates": {
+      "loading": "Looking for your active routine...",
+      "error": "We could not load your routine. Try refreshing the page.",
+      "offlineFallback": "You are viewing the latest routine saved on this device."
     }
   },
   "Progress": {

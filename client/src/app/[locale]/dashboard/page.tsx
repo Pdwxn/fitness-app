@@ -45,6 +45,37 @@ export default async function DashboardPage({
             pending: t("stats.pending"),
             never: t("stats.never"),
           },
+          activeRoutine: {
+            eyebrow: t("activeRoutine.eyebrow"),
+            title: t("activeRoutine.title"),
+            description: t("activeRoutine.description"),
+            cta: t("activeRoutine.cta"),
+            weeks: t("activeRoutine.weeks"),
+            activeDays: t("activeRoutine.activeDays"),
+            nextWorkout: t("activeRoutine.nextWorkout"),
+            restDay: t("activeRoutine.restDay"),
+          },
+          weeklyPreview: {
+            title: t("weeklyPreview.title"),
+            week: t("weeklyPreview.week"),
+            restDay: t("weeklyPreview.restDay"),
+            exercises: t("weeklyPreview.exercises"),
+            selectedDay: {
+              title: t("weeklyPreview.selectedDay.title"),
+              restDay: t("weeklyPreview.selectedDay.restDay"),
+              sets: t("weeklyPreview.selectedDay.sets"),
+              reps: t("weeklyPreview.selectedDay.reps"),
+              rest: t("weeklyPreview.selectedDay.rest"),
+              weight: t("weeklyPreview.selectedDay.weight"),
+              seconds: t("weeklyPreview.selectedDay.seconds"),
+              empty: t("weeklyPreview.selectedDay.empty"),
+            },
+          },
+          routineStates: {
+            loading: t("routineStates.loading"),
+            error: t("routineStates.error"),
+            offlineFallback: t("routineStates.offlineFallback"),
+          },
         }}
       />
     </AppShell>

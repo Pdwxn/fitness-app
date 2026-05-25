@@ -199,6 +199,37 @@
       "lastSync": "Último sync",
       "pending": "Pendiente",
       "never": "Nunca"
+    },
+    "activeRoutine": {
+      "eyebrow": "Rutina activa",
+      "title": "Plan mensual",
+      "description": "Tu rutina personalizada ya está guardada. Revisa la semana, elige un día y prepara tu siguiente entrenamiento.",
+      "cta": "Ver rutina completa",
+      "weeks": "Semanas",
+      "activeDays": "Días activos",
+      "nextWorkout": "Primer entreno",
+      "restDay": "Descanso"
+    },
+    "weeklyPreview": {
+      "title": "Vista semanal",
+      "week": "Semana",
+      "restDay": "Descanso",
+      "exercises": "ejercicios",
+      "selectedDay": {
+        "title": "Ejercicios",
+        "restDay": "Día de descanso. Enfócate en recuperación, movilidad ligera y sueño.",
+        "sets": "series",
+        "reps": "reps",
+        "rest": "Descanso",
+        "weight": "Peso",
+        "seconds": "seg",
+        "empty": "Selecciona un día de entrenamiento para ver sus ejercicios."
+      }
+    },
+    "routineStates": {
+      "loading": "Buscando tu rutina activa...",
+      "error": "No pudimos cargar tu rutina. Intenta recargar la página.",
+      "offlineFallback": "Estás viendo la última rutina guardada en este dispositivo."
     }
   },
   "Progress": {
