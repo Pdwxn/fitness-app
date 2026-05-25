@@ -194,7 +194,7 @@
     "stats": {
       "title": "Vista rápida",
       "completedDays": "Días completados",
-      "streak": "Racha",
+      "totalExercises": "Ejercicios",
       "activeRoutine": "Rutina activa",
       "lastSync": "Último sync",
       "pending": "Pendiente",
@@ -283,9 +283,21 @@
   "Progress": {
     "title": "Progreso",
     "description": "Seguimiento de rachas, días completados y estadísticas de entrenamiento.",
-    "eyebrow": "Próximamente",
-    "cardTitle": "Estadísticas en preparación",
-    "cardDescription": "Esta pantalla recibirá los logs diarios y métricas offline-first cuando construyamos el tracker."
+    "recentLogs": "Logs recientes",
+    "emptyLogs": "Todavía no has registrado entrenamientos.",
+    "completed": "Completado",
+    "notCompleted": "No completado",
+    "viewDay": "Ver día",
+    "states": {
+      "loading": "Cargando progreso...",
+      "error": "No pudimos cargar tu progreso. Intenta recargar la página.",
+      "offlineFallback": "Estás viendo progreso guardado en este dispositivo."
+    },
+    "stats": {
+      "completedDays": "Días completados",
+      "totalExercises": "Ejercicios completados",
+      "pendingSync": "Pendientes de sync"
+    }
   },
   "Profile": {
     "title": "Perfil",

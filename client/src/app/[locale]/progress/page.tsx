@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { PlaceholderCard } from "@/components/dashboard/PlaceholderCard";
 import { AppShell } from "@/components/layout/AppShell";
+import { ProgressContent } from "@/components/progress/ProgressContent";
 
 export default async function ProgressPage({
   params,
@@ -14,7 +14,22 @@ export default async function ProgressPage({
 
   return (
     <AppShell locale={locale} title={t("title")} description={t("description")}>
-      <PlaceholderCard eyebrow={t("eyebrow")} title={t("cardTitle")} description={t("cardDescription")} />
+      <ProgressContent
+        locale={locale}
+        labels={{
+          loading: t("states.loading"),
+          error: t("states.error"),
+          offlineFallback: t("states.offlineFallback"),
+          completedDays: t("stats.completedDays"),
+          totalExercises: t("stats.totalExercises"),
+          pendingSync: t("stats.pendingSync"),
+          recentLogs: t("recentLogs"),
+          emptyLogs: t("emptyLogs"),
+          completed: t("completed"),
+          notCompleted: t("notCompleted"),
+          viewDay: t("viewDay"),
+        }}
+      />
     </AppShell>
   );
 }

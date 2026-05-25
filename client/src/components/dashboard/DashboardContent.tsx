@@ -1,6 +1,7 @@
 "use client";
 
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
+import { useProgressStats } from "@/hooks/useProgressStats";
 import { useRoutineCache } from "@/hooks/useRoutineCache";
 
 import { ActiveRoutineCard } from "./ActiveRoutineCard";
@@ -30,7 +31,7 @@ type DashboardContentProps = {
     stats: {
       title: string;
       completedDays: string;
-      streak: string;
+      totalExercises: string;
       activeRoutine: string;
       lastSync: string;
       pending: string;
@@ -84,12 +85,12 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
   const { isLoading, hasError, isComplete } = useOnboardingStatus();
   const {
     routine,
-    stats,
     lastSync,
     isLoading: isRoutineLoading,
     hasError: hasRoutineError,
     isOfflineFallback,
   } = useRoutineCache();
+  const { stats } = useProgressStats();
   const activeRoutine = routine ? `${routine.month}/${routine.year}` : labels.stats.pending;
 
   if (isLoading) {
@@ -160,7 +161,7 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
       <StatsPreview
         labels={labels.stats}
         completedDays={stats?.completed_days ?? 0}
-        streak={0}
+        totalExercises={stats?.total_exercises_completed ?? 0}
         activeRoutine={activeRoutine}
         lastSync={formatLastSync(lastSync)}
       />

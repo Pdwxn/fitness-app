@@ -39,7 +39,7 @@ export default async function DashboardPage({
           stats: {
             title: t("stats.title"),
             completedDays: t("stats.completedDays"),
-            streak: t("stats.streak"),
+            totalExercises: t("stats.totalExercises"),
             activeRoutine: t("stats.activeRoutine"),
             lastSync: t("stats.lastSync"),
             pending: t("stats.pending"),

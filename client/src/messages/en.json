@@ -194,7 +194,7 @@
     "stats": {
       "title": "Quick view",
       "completedDays": "Completed days",
-      "streak": "Streak",
+      "totalExercises": "Exercises",
       "activeRoutine": "Active routine",
       "lastSync": "Last sync",
       "pending": "Pending",
@@ -283,9 +283,21 @@
   "Progress": {
     "title": "Progress",
     "description": "Track streaks, completed days, and training statistics.",
-    "eyebrow": "Coming soon",
-    "cardTitle": "Stats are being prepared",
-    "cardDescription": "This screen will receive daily logs and offline-first metrics when we build the tracker."
+    "recentLogs": "Recent logs",
+    "emptyLogs": "You have not logged workouts yet.",
+    "completed": "Completed",
+    "notCompleted": "Not completed",
+    "viewDay": "View day",
+    "states": {
+      "loading": "Loading progress...",
+      "error": "We could not load your progress. Try refreshing the page.",
+      "offlineFallback": "You are viewing progress saved on this device."
+    },
+    "stats": {
+      "completedDays": "Completed days",
+      "totalExercises": "Completed exercises",
+      "pendingSync": "Pending sync"
+    }
   },
   "Profile": {
     "title": "Profile",

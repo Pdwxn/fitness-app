@@ -2,14 +2,14 @@ type StatsPreviewProps = {
   labels: {
     title: string;
     completedDays: string;
-    streak: string;
+    totalExercises: string;
     activeRoutine: string;
     lastSync: string;
     pending: string;
     never: string;
   };
   completedDays: number;
-  streak: number;
+  totalExercises: number;
   activeRoutine: string;
   lastSync: string | null;
 };
@@ -17,13 +17,13 @@ type StatsPreviewProps = {
 export function StatsPreview({
   labels,
   completedDays,
-  streak,
+  totalExercises,
   activeRoutine,
   lastSync,
 }: StatsPreviewProps) {
   const stats = [
     { label: labels.completedDays, value: String(completedDays) },
-    { label: labels.streak, value: String(streak) },
+    { label: labels.totalExercises, value: String(totalExercises) },
     { label: labels.activeRoutine, value: activeRoutine || labels.pending },
     { label: labels.lastSync, value: lastSync ?? labels.never },
   ];
