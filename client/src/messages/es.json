@@ -323,6 +323,36 @@
       "routine": "Tipo de rutina",
       "injuries": "Lesiones o molestias"
     },
+    "routine": {
+      "eyebrow": "Rutina mensual",
+      "activeTitle": "Tienes una rutina activa este mes",
+      "activeDescription": "El perfil puede cambiar sin borrar tu rutina actual. Las futuras generaciones mensuales usarán tus datos actualizados.",
+      "outdatedTitle": "Tu rutina activa no corresponde al mes actual",
+      "outdatedDescription": "La app conserva tu última rutina activa mientras el ciclo mensual prepara una nueva automáticamente.",
+      "emptyTitle": "No hay rutina activa guardada",
+      "emptyDescription": "Si ya completaste onboarding, la generación automática pudo fallar o quedar pendiente. No hay botón manual en el dashboard.",
+      "month": "Mes",
+      "status": "Estado",
+      "weeks": "Semanas",
+      "lastSync": "Último sync",
+      "active": "Activa",
+      "outdated": "Mes anterior",
+      "missing": "Pendiente",
+      "notAvailable": "No disponible",
+      "never": "Nunca"
+    },
+    "settings": {
+      "eyebrow": "Settings",
+      "title": "Preferencias locales",
+      "description": "Idioma, unidades y estado offline. Por ahora se apoyan en perfil y cache local.",
+      "language": "Idioma",
+      "units": "Unidades",
+      "syncStatus": "Estado offline",
+      "pendingSync": "Pendientes de sync",
+      "onlineCache": "Cache al día",
+      "offlineFallback": "Modo offline",
+      "saveHint": "Los cambios de idioma y unidades se guardan con el botón de datos personales."
+    },
     "actions": {
       "savePersonal": "Guardar datos personales",
       "saveFitness": "Guardar datos fitness",

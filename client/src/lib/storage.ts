@@ -9,6 +9,7 @@ export const STORAGE_KEYS = {
   ONBOARDING_DRAFT: "fit_onboarding_draft",
   PROFILE: "fit_profile_cache",
   HEALTH_PROFILE: "fit_health_profile_cache",
+  SETTINGS: "fit_settings_cache",
 } as const;
 
 type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];

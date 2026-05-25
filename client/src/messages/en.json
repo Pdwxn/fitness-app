@@ -323,6 +323,36 @@
       "routine": "Routine type",
       "injuries": "Injuries or discomfort"
     },
+    "routine": {
+      "eyebrow": "Monthly routine",
+      "activeTitle": "You have an active routine this month",
+      "activeDescription": "Profile changes do not delete your current routine. Future monthly generations will use your updated data.",
+      "outdatedTitle": "Your active routine is not for the current month",
+      "outdatedDescription": "The app keeps your latest active routine while the monthly cycle prepares a new one automatically.",
+      "emptyTitle": "No active routine saved",
+      "emptyDescription": "If onboarding is complete, automatic generation may have failed or stayed pending. There is no manual button on the dashboard.",
+      "month": "Month",
+      "status": "Status",
+      "weeks": "Weeks",
+      "lastSync": "Last sync",
+      "active": "Active",
+      "outdated": "Previous month",
+      "missing": "Pending",
+      "notAvailable": "Not available",
+      "never": "Never"
+    },
+    "settings": {
+      "eyebrow": "Settings",
+      "title": "Local preferences",
+      "description": "Language, units, and offline state. For now they rely on profile data and local cache.",
+      "language": "Language",
+      "units": "Units",
+      "syncStatus": "Offline state",
+      "pendingSync": "Pending sync",
+      "onlineCache": "Cache up to date",
+      "offlineFallback": "Offline mode",
+      "saveHint": "Language and unit changes are saved with the personal data button."
+    },
     "actions": {
       "savePersonal": "Save personal data",
       "saveFitness": "Save fitness data",

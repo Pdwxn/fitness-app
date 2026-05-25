@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
 import { ApiError, authenticatedClientFetch } from "@/lib/api/authenticated-client";
+import { useRoutineCache } from "@/hooks/useRoutineCache";
 import { cmToFeetInches, feetInchesToCm, kgToLb, lbToKg } from "@/lib/units";
 import { getFromStorage, setInStorage, STORAGE_KEYS } from "@/lib/storage";
 import type {
@@ -19,6 +20,11 @@ import type {
   RoutineType,
   UnitSystem,
 } from "@/types/onboarding";
+
+type SettingsCache = {
+  preferred_language: "es" | "en";
+  preferred_units: UnitSystem;
+};
 
 type ProfileResponse = OnboardingProfile & {
   id: string;
@@ -76,6 +82,22 @@ export function ProfileContent({ locale }: { locale: string }) {
   const [savingSection, setSavingSection] = useState<"profile" | "health" | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pendingSyncCount, setPendingSyncCount] = useState(0);
+  const { routine, lastSync, isOfflineFallback } = useRoutineCache();
+  const now = new Date();
+  const hasCurrentMonthRoutine = Boolean(
+    routine && routine.month === now.getMonth() + 1 && routine.year === now.getFullYear(),
+  );
+  const routineTitle = hasCurrentMonthRoutine
+    ? t("routine.activeTitle")
+    : routine
+      ? t("routine.outdatedTitle")
+      : t("routine.emptyTitle");
+  const routineDescription = hasCurrentMonthRoutine
+    ? t("routine.activeDescription")
+    : routine
+      ? t("routine.outdatedDescription")
+      : t("routine.emptyDescription");
 
   const units = profile.preferred_units;
   const weightKg = profile.weight_kg ?? 70;
@@ -86,9 +108,15 @@ export function ProfileContent({ locale }: { locale: string }) {
     let cancelled = false;
     const cachedProfile = getFromStorage<OnboardingProfile>(STORAGE_KEYS.PROFILE);
     const cachedHealth = getFromStorage<OnboardingHealth>(STORAGE_KEYS.HEALTH_PROFILE);
+    const cachedSettings = getFromStorage<SettingsCache>(STORAGE_KEYS.SETTINGS);
+    const pendingSync = getFromStorage<unknown[]>(STORAGE_KEYS.PENDING_SYNC);
 
     if (cachedProfile) setProfile(cachedProfile);
+    if (!cachedProfile && cachedSettings) {
+      setProfile((current) => ({ ...current, ...cachedSettings }));
+    }
     if (cachedHealth) setHealth(cachedHealth);
+    setPendingSyncCount(pendingSync?.length ?? 0);
     if (cachedProfile || cachedHealth) setIsLoading(false);
 
     Promise.all([
@@ -165,6 +193,10 @@ export function ProfileContent({ locale }: { locale: string }) {
       });
       setProfile(response);
       setInStorage(STORAGE_KEYS.PROFILE, response);
+      setInStorage(STORAGE_KEYS.SETTINGS, {
+        preferred_language: response.preferred_language,
+        preferred_units: response.preferred_units,
+      });
       setMessage(t("states.savedProfile"));
     } catch (saveError) {
       setError(saveError instanceof ApiError ? saveError.detail : t("states.saveError"));
@@ -207,6 +239,23 @@ export function ProfileContent({ locale }: { locale: string }) {
     <div className="flex flex-col gap-5">
       {message ? <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">{message}</p> : null}
       {error ? <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-800">{error}</p> : null}
+
+      <section className="overflow-hidden rounded-[2rem] border border-[#ded2bf] bg-[#17130f] text-white shadow-xl">
+        <div className="p-5 md:p-6">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/50">{t("routine.eyebrow")}</p>
+          <h2 className="mt-2 text-2xl font-black">{routineTitle}</h2>
+          <p className="mt-2 text-sm leading-6 text-white/70">{routineDescription}</p>
+        </div>
+        <div className="grid grid-cols-2 border-t border-white/10 text-sm md:grid-cols-4">
+          <Metric label={t("routine.month")} value={routine ? formatRoutineMonth(routine.month, routine.year, locale) : t("routine.notAvailable")} />
+          <Metric
+            label={t("routine.status")}
+            value={hasCurrentMonthRoutine ? t("routine.active") : routine ? t("routine.outdated") : t("routine.missing")}
+          />
+          <Metric label={t("routine.weeks")} value={routine ? String(routine.weeks.length) : "0"} />
+          <Metric label={t("routine.lastSync")} value={formatTimestamp(lastSync, locale, t("routine.never"))} />
+        </div>
+      </section>
 
       <section className="rounded-[2rem] border border-[#ded2bf] bg-white p-5 shadow-sm md:p-6">
         <div className="flex flex-col gap-1">
@@ -413,8 +462,88 @@ export function ProfileContent({ locale }: { locale: string }) {
           </SaveButton>
         </div>
       </section>
+
+      <section className="rounded-[2rem] border border-[#ded2bf] bg-white p-5 shadow-sm md:p-6">
+        <div className="flex flex-col gap-1">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#8b5e34]">{t("settings.eyebrow")}</p>
+          <h2 className="text-2xl font-black text-[#17130f]">{t("settings.title")}</h2>
+          <p className="text-sm text-[#5c5349]">{t("settings.description")}</p>
+        </div>
+
+        <div className="mt-5 grid gap-3 md:grid-cols-2">
+          <InfoTile label={t("settings.language")} value={profile.preferred_language === "en" ? "English" : "Español"} />
+          <InfoTile label={t("settings.units")} value={profile.preferred_units === "metric" ? "kg / cm" : "lb / ft"} />
+          <InfoTile label={t("settings.syncStatus")} value={isOfflineFallback ? t("settings.offlineFallback") : t("settings.onlineCache")} />
+          <InfoTile label={t("settings.pendingSync")} value={String(pendingSyncCount)} />
+        </div>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-semibold">{t("settings.language")}</p>
+            <div className="grid grid-cols-2 gap-2">
+              {(["es", "en"] as const).map((language) => (
+                <ChoiceButton
+                  key={language}
+                  selected={profile.preferred_language === language}
+                  onClick={() => updateProfile({ preferred_language: language })}
+                >
+                  {language === "es" ? "Español" : "English"}
+                </ChoiceButton>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-semibold">{t("settings.units")}</p>
+            <div className="grid grid-cols-2 gap-2">
+              {(["metric", "imperial"] as UnitSystem[]).map((option) => (
+                <ChoiceButton
+                  key={option}
+                  selected={profile.preferred_units === option}
+                  onClick={() => updateProfile({ preferred_units: option })}
+                >
+                  {option === "metric" ? "kg / cm" : "lb / ft"}
+                </ChoiceButton>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <p className="mt-4 text-xs font-semibold text-[#5c5349]">{t("settings.saveHint")}</p>
+      </section>
     </div>
   );
+}
+
+function Metric({ label, value }: Readonly<{ label: string; value: string }>) {
+  return (
+    <div className="border-t border-white/10 p-4 md:border-t-0 md:border-r md:border-white/10">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40">{label}</p>
+      <p className="mt-1 text-base font-black text-white">{value}</p>
+    </div>
+  );
+}
+
+function InfoTile({ label, value }: Readonly<{ label: string; value: string }>) {
+  return (
+    <div className="rounded-3xl border border-[#ded2bf] bg-[#fbf8f2] p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8b5e34]">{label}</p>
+      <p className="mt-1 text-lg font-black text-[#17130f]">{value}</p>
+    </div>
+  );
+}
+
+function formatRoutineMonth(month: number, year: number, locale: string) {
+  return new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(new Date(year, month - 1, 1));
+}
+
+function formatTimestamp(value: number | null, locale: string, fallback: string) {
+  if (!value) return fallback;
+  return new Intl.DateTimeFormat(locale, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
 function ChoiceButton({
