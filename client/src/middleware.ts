@@ -5,7 +5,7 @@ import { routing } from "@/i18n/routing";
 import { updateSupabaseSession } from "@/lib/supabase/middleware";
 
 const intlMiddleware = createMiddleware(routing);
-const PROTECTED_SEGMENTS = new Set(["onboarding", "dashboard", "progress", "profile"]);
+const PROTECTED_SEGMENTS = new Set(["onboarding", "dashboard", "progress", "profile", "routine"]);
 const AUTH_SEGMENTS = new Set(["login", "register"]);
 
 function getRouteParts(pathname: string) {

@@ -149,7 +149,11 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
             href={`/${locale}/routine`}
             labels={labels.activeRoutine}
           />
-          <WeeklyRoutinePreview routine={routine} labels={labels.weeklyPreview} />
+          <WeeklyRoutinePreview
+            routine={routine}
+            dayHref={(dayId) => `/${locale}/routine/${dayId}`}
+            labels={labels.weeklyPreview}
+          />
         </>
       ) : null}
 

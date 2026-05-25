@@ -232,6 +232,37 @@
       "offlineFallback": "Estás viendo la última rutina guardada en este dispositivo."
     }
   },
+  "Routine": {
+    "title": "Rutina activa",
+    "description": "Consulta tu plan mensual completo, semana por semana.",
+    "week": "Semana",
+    "restDay": "Descanso",
+    "exercises": "ejercicios",
+    "viewDay": "Ver detalle del día",
+    "states": {
+      "loading": "Cargando tu rutina...",
+      "error": "No pudimos cargar tu rutina. Intenta recargar la página.",
+      "empty": "Aún no tienes una rutina activa generada.",
+      "offlineFallback": "Estás viendo la última rutina guardada en este dispositivo."
+    }
+  },
+  "RoutineDay": {
+    "title": "Detalle del día",
+    "description": "Revisa ejercicios, series, repeticiones, pesos sugeridos e instrucciones.",
+    "back": "Volver a rutina",
+    "restDay": "Día de descanso",
+    "sets": "series",
+    "reps": "reps",
+    "rest": "Descanso",
+    "weight": "Peso",
+    "seconds": "seg",
+    "variants": "Variantes",
+    "states": {
+      "loading": "Cargando día de rutina...",
+      "error": "No pudimos cargar el día. Intenta recargar la página.",
+      "notFound": "No encontramos este día en tu rutina activa."
+    }
+  },
   "Progress": {
     "title": "Progreso",
     "description": "Seguimiento de rachas, días completados y estadísticas de entrenamiento.",

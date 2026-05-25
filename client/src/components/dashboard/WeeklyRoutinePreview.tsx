@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 import type { Routine, RoutineDay } from "@/types/routine";
 
@@ -8,6 +9,7 @@ import { ExercisePreviewList } from "./ExercisePreviewList";
 
 type WeeklyRoutinePreviewProps = {
   routine: Routine;
+  dayHref?: (dayId: string) => string;
   labels: {
     title: string;
     week: string;
@@ -30,7 +32,7 @@ function getFirstTrainingDay(days: RoutineDay[]) {
   return days.find((day) => !day.is_rest_day) ?? days[0] ?? null;
 }
 
-export function WeeklyRoutinePreview({ routine, labels }: WeeklyRoutinePreviewProps) {
+export function WeeklyRoutinePreview({ routine, dayHref, labels }: WeeklyRoutinePreviewProps) {
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
   const selectedWeek = routine.weeks[selectedWeekIndex] ?? routine.weeks[0];
   const [selectedDayId, setSelectedDayId] = useState<string | null>(
@@ -72,30 +74,42 @@ export function WeeklyRoutinePreview({ routine, labels }: WeeklyRoutinePreviewPr
             {selectedWeek.days.map((day) => {
               const isSelected = selectedDay?.id === day.id;
               return (
-                <button
+                <article
                   key={day.id}
-                  type="button"
-                  onClick={() => setSelectedDayId(day.id)}
                   className={`rounded-3xl border p-4 text-left transition ${
                     isSelected
                       ? "border-[#17130f] bg-[#17130f] text-white shadow-lg"
                       : "border-transparent bg-[#f7f3ec] text-[#17130f] hover:border-[#d8c6aa]"
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-[0.16em] opacity-60">
-                        {labels.week} {selectedWeek.week_number} · {day.day_number}
-                      </p>
-                      <p className="mt-1 text-lg font-black">{day.day_name}</p>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDayId(day.id)}
+                    className="w-full text-left"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.16em] opacity-60">
+                          {labels.week} {selectedWeek.week_number} · {day.day_number}
+                        </p>
+                        <p className="mt-1 text-lg font-black">{day.day_name}</p>
+                      </div>
+                      <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-black">
+                        {day.is_rest_day
+                          ? labels.restDay
+                          : `${day.exercises.length} ${labels.exercises}`}
+                      </span>
                     </div>
-                    <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-black">
-                      {day.is_rest_day
-                        ? labels.restDay
-                        : `${day.exercises.length} ${labels.exercises}`}
-                    </span>
-                  </div>
-                </button>
+                  </button>
+                  {dayHref ? (
+                    <Link
+                      href={dayHref(day.id)}
+                      className="mt-3 inline-flex text-sm font-black underline-offset-4 hover:underline"
+                    >
+                      {day.day_name}
+                    </Link>
+                  ) : null}
+                </article>
               );
             })}
           </div>

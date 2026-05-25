@@ -232,6 +232,37 @@
       "offlineFallback": "You are viewing the latest routine saved on this device."
     }
   },
+  "Routine": {
+    "title": "Active routine",
+    "description": "Review your full monthly plan, week by week.",
+    "week": "Week",
+    "restDay": "Rest",
+    "exercises": "exercises",
+    "viewDay": "View day details",
+    "states": {
+      "loading": "Loading your routine...",
+      "error": "We could not load your routine. Try refreshing the page.",
+      "empty": "You do not have an active generated routine yet.",
+      "offlineFallback": "You are viewing the latest routine saved on this device."
+    }
+  },
+  "RoutineDay": {
+    "title": "Day details",
+    "description": "Review exercises, sets, reps, suggested weights, and instructions.",
+    "back": "Back to routine",
+    "restDay": "Rest day",
+    "sets": "sets",
+    "reps": "reps",
+    "rest": "Rest",
+    "weight": "Weight",
+    "seconds": "sec",
+    "variants": "Variants",
+    "states": {
+      "loading": "Loading routine day...",
+      "error": "We could not load this day. Try refreshing the page.",
+      "notFound": "We could not find this day in your active routine."
+    }
+  },
   "Progress": {
     "title": "Progress",
     "description": "Track streaks, completed days, and training statistics.",
