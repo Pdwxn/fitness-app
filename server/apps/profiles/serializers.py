@@ -10,6 +10,21 @@ class ProfileSerializer(UserProfileSerializer):
     class Meta(UserProfileSerializer.Meta):
         model = UserProfile
 
+    def validate_age(self, value):
+        if value is not None and not 13 <= value <= 100:
+            raise serializers.ValidationError("Age must be between 13 and 100.")
+        return value
+
+    def validate_weight_kg(self, value):
+        if value is not None and not 20 <= value <= 400:
+            raise serializers.ValidationError("Weight must be between 20kg and 400kg.")
+        return value
+
+    def validate_height_cm(self, value):
+        if value is not None and not 80 <= value <= 250:
+            raise serializers.ValidationError("Height must be between 80cm and 250cm.")
+        return value
+
 
 class UserHealthDataSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,6 +42,33 @@ class UserHealthDataSerializer(serializers.ModelSerializer):
             "updated_at",
         )
         read_only_fields = ("id", "created_at", "updated_at")
+
+    def validate_physical_goals(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Physical goals must be a list.")
+        return value
+
+    def validate_injuries(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Injuries must be a list.")
+        return value
+
+    def validate_available_equipment(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Available equipment must be a list.")
+        return value
+
+    def validate(self, attrs):
+        equipment_type = attrs.get("equipment_type", getattr(self.instance, "equipment_type", ""))
+        available_equipment = attrs.get(
+            "available_equipment",
+            getattr(self.instance, "available_equipment", []),
+        )
+        if equipment_type == UserHealthData.EquipmentType.HOME and not available_equipment:
+            raise serializers.ValidationError(
+                {"available_equipment": "Select available equipment for home workouts."}
+            )
+        return attrs
 
 
 class OnboardingCompleteSerializer(serializers.Serializer):

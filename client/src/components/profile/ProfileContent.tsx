@@ -357,7 +357,7 @@ export function ProfileContent({ locale }: { locale: string }) {
         </div>
 
         <div className="mt-5 flex flex-col gap-6">
-          <OptionGroup title={t("fitness.activity")}> 
+          <OptionGroup title={t("fitness.activity")}>
             {activityLevels.map((option) => (
               <ChoiceButton key={option} selected={health.activity_level === option} onClick={() => updateHealth({ activity_level: option })}>
                 <span className="block font-black">{onboarding(`activity.options.${option}.label`)}</span>
@@ -384,7 +384,7 @@ export function ProfileContent({ locale }: { locale: string }) {
             />
           </label>
 
-          <OptionGroup title={t("fitness.equipment")}> 
+          <OptionGroup title={t("fitness.equipment")}>
             {equipmentTypes.map((option) => (
               <ChoiceButton
                 key={option}
@@ -412,7 +412,7 @@ export function ProfileContent({ locale }: { locale: string }) {
             </OptionGroup>
           ) : null}
 
-          <OptionGroup title={t("fitness.routine")}> 
+          <OptionGroup title={t("fitness.routine")}>
             {routineTypes.map((routine) => (
               <ChoiceButton key={routine} selected={health.routine_type === routine} onClick={() => updateHealth({ routine_type: routine })}>
                 <span className="block font-black">{onboarding(`routine.options.${routine}.label`)}</span>

@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.response import Response
@@ -74,30 +75,31 @@ class DailyLogBatchView(APIView):
         updated = 0
         logs = []
 
-        for log_data in serializer.validated_data["logs"]:
-            routine_day_id = log_data.pop("routine_day_id")
-            routine_day = RoutineDay.objects.get(id=routine_day_id, week__routine__user=request.user)
-            log_id = log_data.pop("id", None)
-            lookup = Q(user=request.user, routine_day=routine_day, date=log_data["date"])
-            if log_id:
-                lookup |= Q(id=log_id, user=request.user)
+        with transaction.atomic():
+            for log_data in serializer.validated_data["logs"]:
+                routine_day_id = log_data.pop("routine_day_id")
+                routine_day = RoutineDay.objects.get(id=routine_day_id, week__routine__user=request.user)
+                log_id = log_data.pop("id", None)
+                lookup = Q(user=request.user, routine_day=routine_day, date=log_data["date"])
+                if log_id:
+                    lookup |= Q(id=log_id, user=request.user)
 
-            existing = DailyLog.objects.filter(lookup).first()
-            if existing:
-                for field, value in log_data.items():
-                    setattr(existing, field, value)
-                existing.routine_day = routine_day
-                existing.save()
-                updated += 1
-                logs.append(existing)
-            else:
-                log = DailyLog.objects.create(
-                    user=request.user,
-                    routine_day=routine_day,
-                    **log_data,
-                )
-                created += 1
-                logs.append(log)
+                existing = DailyLog.objects.filter(lookup).first()
+                if existing:
+                    for field, value in log_data.items():
+                        setattr(existing, field, value)
+                    existing.routine_day = routine_day
+                    existing.save()
+                    updated += 1
+                    logs.append(existing)
+                else:
+                    log = DailyLog.objects.create(
+                        user=request.user,
+                        routine_day=routine_day,
+                        **log_data,
+                    )
+                    created += 1
+                    logs.append(log)
 
         return Response(
             {
