@@ -35,7 +35,7 @@ export function useDailyLogs(options: UseDailyLogsOptions = {}) {
         if (cancelled) return;
 
         const mergedLogs = mergeLogs(remoteLogs, pendingLogs);
-        const allCachedLogs = mergeLogs(cachedLogs, mergedLogs);
+        const allCachedLogs = mergeLogs(mergedLogs, cachedLogs);
         setLogs(filterLogs(mergedLogs, options.routineDayId));
         setInStorage(STORAGE_KEYS.DAILY_LOGS, allCachedLogs);
         updateStatsLocally(allCachedLogs);

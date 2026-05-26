@@ -83,22 +83,25 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
 
   async function handleSave() {
     setIsSaving(true);
-    const log: DailyLog = {
-      id: logId,
-      routine_day_id: day.id,
-      date,
-      completed,
-      day_note: dayNote,
-      exercises_done: exerciseLogs,
-    };
+    try {
+      const log: DailyLog = {
+        id: logId,
+        routine_day_id: day.id,
+        date,
+        completed,
+        day_note: dayNote,
+        exercises_done: exerciseLogs,
+      };
 
-    saveLogLocally(log);
-    setSaveStatus(labels.savedLocal);
+      saveLogLocally(log);
+      setSaveStatus(labels.savedLocal);
 
-    await syncPendingLogs();
-    refreshLogs();
-    setSaveStatus(getPendingLogs().length ? labels.savedLocal : labels.synced);
-    setIsSaving(false);
+      await syncPendingLogs();
+      refreshLogs();
+      setSaveStatus(getPendingLogs().length ? labels.savedLocal : labels.synced);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   if (day.is_rest_day) return null;

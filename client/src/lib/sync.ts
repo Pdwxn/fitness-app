@@ -68,7 +68,7 @@ export function getPendingLogs() {
 
 export async function syncPendingLogs() {
   const pending = getFromStorage<DailyLog[]>(STORAGE_KEYS.PENDING_SYNC);
-  if (!pending?.length) return;
+  if (!pending?.length) return true;
 
   try {
     const response = await authenticatedClientFetch<DailyLogBatchResponse>("/api/v1/progress/logs/batch/", {
@@ -85,8 +85,10 @@ export async function syncPendingLogs() {
     setInStorage(STORAGE_KEYS.DAILY_LOGS, mergedLogs);
     updateStatsLocally(mergedLogs);
     setInStorage(STORAGE_KEYS.LAST_SYNC, Date.now());
+    return true;
   } catch {
     // Backend may be asleep on the free tier. Keep data local and retry later.
+    return false;
   }
 }
 

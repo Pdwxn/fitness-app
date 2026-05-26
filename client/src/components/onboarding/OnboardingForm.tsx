@@ -11,7 +11,7 @@ import { Step4Health } from "./steps/Step4Health";
 import { Step5Equipment } from "./steps/Step5Equipment";
 import { Step6RoutineType } from "./steps/Step6RoutineType";
 import { authenticatedClientFetch } from "@/lib/api/authenticated-client";
-import { setInStorage, STORAGE_KEYS } from "@/lib/storage";
+import { getFromStorage, setInStorage, STORAGE_KEYS } from "@/lib/storage";
 import { TOTAL_STEPS, useOnboardingStore } from "@/store/onboardingStore";
 import type { Routine } from "@/types/routine";
 
@@ -94,6 +94,12 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
 
   useEffect(() => {
     let cancelled = false;
+    const cachedStatus = getFromStorage<OnboardingStatusResponse>(STORAGE_KEYS.ONBOARDING_STATUS);
+
+    if (cachedStatus) {
+      setIsCompleted(cachedStatus.completed);
+      setIsLoadingStatus(false);
+    }
 
     authenticatedClientFetch<OnboardingStatusResponse>("/api/v1/onboarding/status/")
       .then((response) => {
@@ -103,7 +109,7 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
         }
       })
       .catch(() => {
-        if (!cancelled) setIsCompleted(false);
+        if (!cancelled && !cachedStatus) setIsCompleted(false);
       })
       .finally(() => {
         if (!cancelled) setIsLoadingStatus(false);
