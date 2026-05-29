@@ -91,19 +91,20 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
   } = useRoutineCache();
   const { stats } = useProgressStats();
   const activeRoutine = routine ? `${routine.month}/${routine.year}` : labels.stats.pending;
+  const completedDays = stats?.completed_days ?? 0;
 
   if (isLoading) {
     return (
-      <section className="rounded-[2rem] border border-[#ded2bf] bg-white/85 p-6 shadow-sm">
-        <p className="text-sm font-bold text-[#5c5349]">{labels.loading}</p>
+      <section className="apex-card rounded-[2rem] p-6">
+        <p className="text-sm font-bold text-white/65">{labels.loading}</p>
       </section>
     );
   }
 
   if (hasError) {
     return (
-      <section className="rounded-[2rem] border border-red-100 bg-red-50 p-6 shadow-sm">
-        <p className="text-sm font-bold text-red-700">{labels.error}</p>
+      <section className="rounded-[2rem] border border-red-400/30 bg-red-500/10 p-6 shadow-sm">
+        <p className="text-sm font-bold text-red-200">{labels.error}</p>
       </section>
     );
   }
@@ -122,21 +123,28 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
 
   return (
     <div className="flex flex-col gap-5">
+      <section className="relative overflow-hidden rounded-[2rem] p-1">
+        <div className="pointer-events-none absolute right-0 top-0 size-44 rounded-full bg-[#a6ff00]/20 blur-3xl" />
+        <p className="text-xl text-white/70">Good evening,</p>
+        <h2 className="mt-1 text-6xl font-black tracking-tight text-[#a6ff00]">Apex athlete 👋</h2>
+        <p className="mt-3 text-lg font-bold text-white/65">🔥 {Math.max(1, completedDays)} day streak</p>
+      </section>
+
       {isOfflineFallback ? (
-        <section className="rounded-[2rem] border border-amber-200 bg-amber-50 p-4 shadow-sm">
-          <p className="text-sm font-bold text-amber-800">{labels.routineStates.offlineFallback}</p>
+        <section className="rounded-[2rem] border border-amber-300/30 bg-amber-400/10 p-4 shadow-sm">
+          <p className="text-sm font-bold text-amber-100">{labels.routineStates.offlineFallback}</p>
         </section>
       ) : null}
 
       {hasRoutineError ? (
-        <section className="rounded-[2rem] border border-red-100 bg-red-50 p-6 shadow-sm">
-          <p className="text-sm font-bold text-red-700">{labels.routineStates.error}</p>
+        <section className="rounded-[2rem] border border-red-400/30 bg-red-500/10 p-6 shadow-sm">
+          <p className="text-sm font-bold text-red-200">{labels.routineStates.error}</p>
         </section>
       ) : null}
 
       {isRoutineLoading ? (
-        <section className="rounded-[2rem] border border-[#ded2bf] bg-white/85 p-6 shadow-sm">
-          <p className="text-sm font-bold text-[#5c5349]">{labels.routineStates.loading}</p>
+        <section className="apex-card rounded-[2rem] p-6">
+          <p className="text-sm font-bold text-white/65">{labels.routineStates.loading}</p>
         </section>
       ) : null}
 

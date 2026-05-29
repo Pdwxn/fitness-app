@@ -46,8 +46,8 @@ export function LoginForm({ locale, labels }: LoginFormProps) {
   }
 
   return (
-    <form className="mt-8 flex flex-col gap-4" onSubmit={handleSubmit}>
-      <label className="flex flex-col gap-2 text-sm font-semibold">
+    <form className="mt-8 flex flex-col gap-5" onSubmit={handleSubmit}>
+      <label className="flex flex-col gap-3 text-xs font-black uppercase tracking-[0.22em] text-white/65">
         {labels.email}
         <input
           type="email"
@@ -55,11 +55,12 @@ export function LoginForm({ locale, labels }: LoginFormProps) {
           onChange={(event) => setEmail(event.target.value)}
           required
           autoComplete="email"
-          className="rounded-2xl border border-[#ded2bf] bg-white px-4 py-3 text-base outline-none transition focus:border-[#8b5e34]"
+          placeholder="you@email.com"
+          className="apex-input rounded-2xl px-4 py-4 text-base normal-case tracking-normal placeholder:text-white/35"
         />
       </label>
 
-      <label className="flex flex-col gap-2 text-sm font-semibold">
+      <label className="flex flex-col gap-3 text-xs font-black uppercase tracking-[0.22em] text-white/65">
         {labels.password}
         <input
           type="password"
@@ -67,12 +68,13 @@ export function LoginForm({ locale, labels }: LoginFormProps) {
           onChange={(event) => setPassword(event.target.value)}
           required
           autoComplete="current-password"
-          className="rounded-2xl border border-[#ded2bf] bg-white px-4 py-3 text-base outline-none transition focus:border-[#8b5e34]"
+          placeholder="••••••••••"
+          className="apex-input rounded-2xl px-4 py-4 text-base normal-case tracking-normal placeholder:text-white/35"
         />
       </label>
 
       {error ? (
-        <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+        <p className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-200">
           {error}
         </p>
       ) : null}
@@ -80,7 +82,7 @@ export function LoginForm({ locale, labels }: LoginFormProps) {
       <button
         type="submit"
         disabled={isLoading}
-        className="mt-2 rounded-full bg-[#17130f] px-5 py-3 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+        className="apex-button mt-2 rounded-2xl px-5 py-4 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isLoading ? labels.loading : labels.submit}
       </button>

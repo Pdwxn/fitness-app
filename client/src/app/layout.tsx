@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fitness AI App",
-  description: "Personalized AI fitness routines with offline-first progress tracking.",
+  title: "Apex Fit",
+  description: "Personalized routines, real progress, powered by AI.",
 };
 
 export const viewport: Viewport = {

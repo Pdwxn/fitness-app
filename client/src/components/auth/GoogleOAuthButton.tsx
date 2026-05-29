@@ -44,12 +44,12 @@ export function GoogleOAuthButton({
         type="button"
         onClick={handleGoogleLogin}
         disabled={isLoading}
-        className="rounded-full border border-[#ded2bf] bg-white px-5 py-3 text-sm font-bold text-[#17130f] transition hover:border-[#8b5e34] disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-2xl border border-white/20 bg-white/[0.03] px-5 py-4 text-sm font-black text-white transition hover:border-[#a6ff00]/70 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isLoading ? loadingLabel : label}
+        {isLoading ? loadingLabel : `G  ${label}`}
       </button>
       {error ? (
-        <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+        <p className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-200">
           {error}
         </p>
       ) : null}

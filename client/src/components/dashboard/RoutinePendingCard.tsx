@@ -7,9 +7,9 @@ type RoutinePendingCardProps = {
 
 export function RoutinePendingCard({ eyebrow, title, description, badges }: RoutinePendingCardProps) {
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-[#ded2bf] bg-[#17130f] text-white shadow-xl">
+    <section className="apex-card overflow-hidden rounded-[2rem] text-white">
       <div className="p-6">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/50">{eyebrow}</p>
+        <p className="text-sm font-black uppercase tracking-[0.28em] text-[#a6ff00]">{eyebrow}</p>
         <h2 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">{title}</h2>
         <p className="mt-3 max-w-2xl text-base leading-7 text-white/70">{description}</p>
       </div>

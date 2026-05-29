@@ -1,11 +1,13 @@
 {
   "Home": {
-    "badge": "Sprint 1.5",
-    "eyebrow": "Fitness AI App",
-    "title": "The base is ready to build the product.",
-    "description": "Initial monorepo with Next.js 15, Tailwind CSS, Django REST, localized routes, and an Offline-First foundation.",
-    "frontendLabel": "Frontend",
-    "backendLabel": "Backend",
+    "badge": "v1.5",
+    "eyebrow": "AI Fitness App",
+    "title": "Train smarter. Progress every day.",
+    "description": "Personalized routines, real progress, powered by AI.",
+    "primaryCta": "Start your journey",
+    "secondaryCta": "View demo",
+    "frontendLabel": "AI Adaptive",
+    "backendLabel": "Real Progress",
     "apiStatusLabel": "API status",
     "online": "Online",
     "offline": "Offline",
@@ -17,11 +19,15 @@
     "login": "Log in",
     "register": "Create account",
     "logout": "Log out",
-    "logoutLoading": "Logging out..."
+    "logoutLoading": "Logging out...",
+    "offlineSync": "Offline Sync",
+    "adaptiveDescription": "Plans that adapt to you",
+    "progressDescription": "Track every rep, see results",
+    "offlineDescription": "Train anywhere, anytime"
   },
   "Auth": {
     "login": {
-      "title": "Log in",
+      "title": "Welcome back",
       "description": "Access your routine, progress, and saved preferences.",
       "email": "Email",
       "password": "Password",
@@ -34,8 +40,8 @@
       "registerLink": "Create account"
     },
     "register": {
-      "title": "Create your account",
-      "description": "Prepare your profile to generate personalized AI routines.",
+      "title": "Create account",
+      "description": "Start your Apex Fit journey with personalized AI routines.",
       "email": "Email",
       "password": "Password",
       "confirmPassword": "Confirm password",
@@ -167,15 +173,16 @@
     "logout": "Log out",
     "logoutLoading": "Logging out...",
     "nav": {
-      "sidebarTitle": "Panel",
+      "sidebarTitle": "Apex Panel",
       "dashboard": "Home",
+      "routine": "Routine",
       "progress": "Progress",
       "profile": "Profile"
     }
   },
   "Dashboard": {
-    "title": "Your fitness hub",
-    "description": "Your active routine, progress, and upcoming workouts will live here.",
+    "title": "Apex home",
+    "description": "Your active routine, progress, and next workout in one place.",
     "states": {
       "loading": "Loading your profile status...",
       "error": "We could not check your onboarding. Try refreshing the page."
@@ -247,7 +254,7 @@
     "states": {
       "loading": "Loading your routine...",
       "error": "We could not load your routine. Try refreshing the page.",
-      "empty": "You do not have an active generated routine yet.",
+      "empty": "No active routine yet. Apex Fit will generate it automatically after onboarding.",
       "offlineFallback": "You are viewing the latest routine saved on this device."
     }
   },
@@ -289,7 +296,7 @@
     "title": "Progress",
     "description": "Track streaks, completed days, and training statistics.",
     "recentLogs": "Recent logs",
-    "emptyLogs": "You have not logged workouts yet.",
+    "emptyLogs": "No workouts logged yet. Complete a routine day to start tracking progress.",
     "completed": "Completed",
     "notCompleted": "Not completed",
     "viewDay": "View day",

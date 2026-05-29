@@ -48,9 +48,9 @@ export function WeeklyRoutinePreview({ routine, dayHref, labels }: WeeklyRoutine
 
   return (
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
-      <section className="rounded-[2rem] border border-[#ded2bf] bg-white/85 p-6 shadow-sm">
+      <section className="apex-card rounded-[2rem] p-6 text-white">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-2xl font-black tracking-tight">{labels.title}</h3>
+          <h3 className="text-sm font-black uppercase tracking-[0.28em] text-[#a6ff00]">{labels.title}</h3>
           <div className="flex flex-wrap gap-2">
             {routine.weeks.map((week, index) => (
               <button
@@ -59,8 +59,8 @@ export function WeeklyRoutinePreview({ routine, dayHref, labels }: WeeklyRoutine
                 onClick={() => selectWeek(index)}
                 className={`rounded-full px-4 py-2 text-sm font-black transition ${
                   selectedWeek?.id === week.id
-                    ? "bg-[#17130f] text-white"
-                    : "bg-[#f7f3ec] text-[#5c5349] hover:bg-[#eadfce]"
+                    ? "bg-[#a6ff00] text-black"
+                    : "border border-white/10 bg-white/[0.04] text-white/60 hover:text-white"
                 }`}
               >
                 {labels.week} {week.week_number}
@@ -78,8 +78,8 @@ export function WeeklyRoutinePreview({ routine, dayHref, labels }: WeeklyRoutine
                   key={day.id}
                   className={`rounded-3xl border p-4 text-left transition ${
                     isSelected
-                      ? "border-[#17130f] bg-[#17130f] text-white shadow-lg"
-                      : "border-transparent bg-[#f7f3ec] text-[#17130f] hover:border-[#d8c6aa]"
+                      ? "border-[#a6ff00]/70 bg-[#a6ff00]/10 text-white shadow-[0_0_28px_rgba(166,255,0,0.12)]"
+                      : "border-white/10 bg-white/[0.05] text-white hover:border-white/25"
                   }`}
                 >
                   <button
@@ -94,7 +94,7 @@ export function WeeklyRoutinePreview({ routine, dayHref, labels }: WeeklyRoutine
                         </p>
                         <p className="mt-1 text-lg font-black">{day.day_name}</p>
                       </div>
-                      <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-black">
+                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-black text-white/70">
                         {day.is_rest_day
                           ? labels.restDay
                           : `${day.exercises.length} ${labels.exercises}`}

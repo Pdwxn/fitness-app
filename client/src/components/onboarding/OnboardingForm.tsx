@@ -221,8 +221,8 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
 
   if (isLoadingStatus) {
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-md items-center justify-center bg-[#f7f3ec] px-5 py-8 text-[#17130f]">
-        <p className="rounded-3xl bg-white/85 px-5 py-4 text-sm font-bold shadow-sm">
+      <main className="apex-bg mx-auto flex min-h-screen w-full max-w-md items-center justify-center px-5 py-8 text-white">
+        <p className="apex-card rounded-3xl px-5 py-4 text-sm font-bold text-white/70">
           {labels.loadingStatus}
         </p>
       </main>
@@ -231,21 +231,21 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
 
   if (isCompleted) {
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-md items-center justify-center bg-[#f7f3ec] px-5 py-8 text-[#17130f]">
-        <section className="rounded-[2rem] border border-[#ded2bf] bg-white/85 p-6 text-center shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#8b5e34]">
-            FIT AI
+      <main className="apex-bg mx-auto flex min-h-screen w-full max-w-md items-center justify-center px-5 py-8 text-white">
+        <section className="apex-card rounded-[2rem] p-6 text-center">
+          <p className="apex-logo text-2xl">
+            <span>APEX</span> <span className="apex-lime">FIT</span>
           </p>
           <h1 className="mt-4 text-4xl font-black tracking-tight">
             {generationFailed ? labels.generationFailedTitle : labels.completedTitle}
           </h1>
-          <p className="mt-3 text-base leading-7 text-[#5c5349]">
+          <p className="mt-3 text-base leading-7 text-white/65">
             {generationFailed ? labels.generationFailedDescription : labels.completedDescription}
           </p>
           <button
             type="button"
             onClick={() => router.push(`/${locale}/dashboard`)}
-            className="mt-6 rounded-full bg-[#17130f] px-5 py-3 text-sm font-bold text-white"
+            className="apex-button mt-6 rounded-2xl px-5 py-3 text-sm font-black"
           >
             {generationFailed ? labels.goToDashboard : labels.backHome}
           </button>
@@ -255,15 +255,16 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 bg-[#f7f3ec] px-5 py-8 text-[#17130f] md:max-w-3xl md:px-10 lg:max-w-5xl">
-      <header className="rounded-[2rem] bg-[#17130f] p-6 text-white shadow-xl">
-        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-white/60">
-          FIT AI
+    <main className="apex-bg mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 py-8 text-white md:max-w-3xl md:px-10 lg:max-w-5xl">
+      <header className="apex-card relative overflow-hidden rounded-[2rem] p-6 text-white">
+        <div className="pointer-events-none absolute -right-8 -top-10 size-48 rounded-full bg-[#a6ff00]/20 blur-3xl" />
+        <p className="apex-logo relative text-2xl">
+          <span>APEX</span> <span className="apex-lime">FIT</span>
         </p>
-        <h1 className="mt-4 text-4xl font-black tracking-tight md:text-5xl">
+        <h1 className="relative mt-4 text-4xl font-black tracking-tight md:text-5xl">
           {labels.title}
         </h1>
-        <p className="mt-3 text-base leading-7 text-white/70 md:text-lg">
+        <p className="relative mt-3 text-base leading-7 text-white/70 md:text-lg">
           {labels.description}
         </p>
       </header>
@@ -271,21 +272,21 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
       <StepIndicator currentStep={currentStep} labels={labels.steps} />
 
       {hasHydrated ? (
-        <p className="rounded-2xl border border-[#ded2bf] bg-white/70 px-4 py-3 text-sm font-medium text-[#5c5349]">
+        <p className="rounded-2xl border border-[#a6ff00]/20 bg-[#a6ff00]/10 px-4 py-3 text-sm font-medium text-[#d7ff8a]">
           {labels.draftLoaded}
         </p>
       ) : null}
 
-      <section className="flex min-h-[18rem] flex-col justify-between rounded-[2rem] border border-[#ded2bf] bg-white/85 p-6 shadow-sm">
+      <section className="apex-card flex min-h-[18rem] flex-col justify-between rounded-[2rem] p-6">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#8b5e34]">
+          <p className="text-sm font-black uppercase tracking-[0.28em] text-[#a6ff00]">
             {labels.steps[currentStep - 1]}
           </p>
-          <div className="mt-6 rounded-3xl bg-[#f7f3ec] p-4 text-[#17130f] md:p-6">
+          <div className="apex-onboarding mt-6 rounded-3xl border border-white/10 bg-black/25 p-4 text-white md:p-6">
             <StepContent currentStep={currentStep} />
           </div>
           {error ? (
-            <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+            <p className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-200">
               {error}
             </p>
           ) : null}
@@ -296,7 +297,7 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
             type="button"
             onClick={previousStep}
             disabled={isFirstStep}
-            className="w-1/2 rounded-full border border-[#17130f] px-5 py-3 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-40"
+            className="w-1/2 rounded-2xl border border-white/20 px-5 py-3 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-40"
           >
             {labels.previous}
           </button>
@@ -304,7 +305,7 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
             type="button"
             onClick={isLastStep ? handleSubmit : handleNext}
             disabled={isSubmitting}
-            className="w-1/2 rounded-full bg-[#17130f] px-5 py-3 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-40"
+            className="apex-button w-1/2 rounded-2xl px-5 py-3 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-40"
           >
             {isSubmitting ? submitLabel : isLastStep ? labels.finish : labels.next}
           </button>

@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #020303;
+  --foreground: #f7f7f2;
+  --apex-lime: #a6ff00;
+  --apex-lime-soft: #7bd900;
+  --apex-panel: rgba(255, 255, 255, 0.065);
+  --apex-border: rgba(255, 255, 255, 0.13);
+  --apex-muted: #a7a7a1;
 }
 
 @theme inline {
@@ -12,17 +17,100 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   padding-bottom: env(safe-area-inset-bottom);
   padding-top: env(safe-area-inset-top);
+}
+
+::selection {
+  background: var(--apex-lime);
+  color: #050606;
+}
+
+.apex-bg {
+  background:
+    radial-gradient(circle at 78% 8%, rgba(166, 255, 0, 0.18), transparent 30rem),
+    radial-gradient(circle at 10% 16%, rgba(166, 255, 0, 0.08), transparent 22rem),
+    linear-gradient(180deg, #050606 0%, #020303 55%, #000 100%);
+}
+
+.apex-card {
+  border: 1px solid var(--apex-border);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.apex-logo {
+  font-weight: 950;
+  font-style: italic;
+  letter-spacing: -0.07em;
+  text-transform: uppercase;
+}
+
+.apex-lime {
+  color: var(--apex-lime);
+}
+
+.apex-button {
+  background: linear-gradient(135deg, #c8ff00 0%, #8eff00 100%);
+  color: #050606;
+  box-shadow: 0 0 36px rgba(166, 255, 0, 0.28);
+}
+
+.apex-button-outline {
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.035);
+  color: #fff;
+}
+
+.apex-input {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.32);
+  color: #fff;
+}
+
+.apex-input:focus {
+  border-color: var(--apex-lime);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(166, 255, 0, 0.12);
+}
+
+.apex-onboarding input,
+.apex-onboarding textarea,
+.apex-onboarding select {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  color: #fff !important;
+}
+
+.apex-onboarding input:focus,
+.apex-onboarding textarea:focus,
+.apex-onboarding select:focus {
+  border-color: var(--apex-lime) !important;
+  box-shadow: 0 0 0 3px rgba(166, 255, 0, 0.12);
+}
+
+.apex-onboarding input::placeholder,
+.apex-onboarding textarea::placeholder {
+  color: rgba(255, 255, 255, 0.36);
+}
+
+.apex-onboarding label,
+.apex-onboarding p,
+.apex-onboarding span {
+  color: inherit;
+}
+
+.apex-onboarding button {
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+  color: #fff !important;
+}
+
+.apex-onboarding button:hover {
+  border-color: rgba(166, 255, 0, 0.7) !important;
 }

@@ -107,49 +107,49 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
   if (day.is_rest_day) return null;
 
   return (
-    <section className="rounded-[2rem] border border-[#ded2bf] bg-white/85 p-6 shadow-sm">
+    <section className="apex-card rounded-[2rem] p-6 text-white">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8b5e34]">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#a6ff00]">
             {labels.title}
           </p>
-          <p className="mt-2 text-sm leading-6 text-[#5c5349]">{labels.description}</p>
+          <p className="mt-2 text-sm leading-6 text-white/60">{labels.description}</p>
         </div>
-        <label className="flex items-center gap-2 rounded-full bg-[#f7f3ec] px-4 py-2 text-sm font-black text-[#17130f]">
+        <label className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm font-black text-white">
           <input
             type="checkbox"
             checked={completed}
             onChange={(event) => setCompleted(event.target.checked)}
-            className="size-4 accent-[#17130f]"
+            className="size-4 accent-[#a6ff00]"
           />
           {labels.completedDay}
         </label>
       </div>
 
       <label className="mt-5 block">
-        <span className="text-sm font-black text-[#17130f]">{labels.dayNote}</span>
+        <span className="text-sm font-black text-white">{labels.dayNote}</span>
         <textarea
           value={dayNote}
           onChange={(event) => setDayNote(event.target.value)}
           placeholder={labels.dayNotePlaceholder}
-          className="mt-2 min-h-24 w-full rounded-3xl border border-[#ded2bf] bg-[#f7f3ec] px-4 py-3 text-sm outline-none focus:border-[#8b5e34]"
+          className="apex-input mt-2 min-h-24 w-full rounded-3xl px-4 py-3 text-sm"
         />
       </label>
 
       <div className="mt-5 grid gap-4">
         {exerciseLogs.map((exerciseLog) => (
-          <article key={exerciseLog.exercise_id} className="rounded-3xl bg-[#f7f3ec] p-4">
+          <article key={exerciseLog.exercise_id} className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <h3 className="font-black tracking-tight">{exerciseLog.exercise_name}</h3>
-                <label className="mt-2 flex items-center gap-2 text-sm font-bold text-[#5c5349]">
+                <label className="mt-2 flex items-center gap-2 text-sm font-bold text-white/60">
                   <input
                     type="checkbox"
                     checked={exerciseLog.completed}
                     onChange={(event) =>
                       updateExerciseLog(exerciseLog.exercise_id, { completed: event.target.checked })
                     }
-                    className="size-4 accent-[#17130f]"
+                    className="size-4 accent-[#a6ff00]"
                   />
                   {labels.exerciseCompleted}
                 </label>
@@ -173,14 +173,14 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
               </div>
             </div>
             <label className="mt-3 block">
-              <span className="text-xs font-black uppercase tracking-[0.14em] text-[#8b5e34]">
+                <span className="text-xs font-black uppercase tracking-[0.14em] text-[#a6ff00]">
                 {labels.exerciseNote}
               </span>
               <input
                 value={exerciseLog.note}
                 onChange={(event) => updateExerciseLog(exerciseLog.exercise_id, { note: event.target.value })}
                 placeholder={labels.exerciseNotePlaceholder}
-                className="mt-2 w-full rounded-2xl border border-[#ded2bf] bg-white px-4 py-2 text-sm outline-none focus:border-[#8b5e34]"
+                className="apex-input mt-2 w-full rounded-2xl px-4 py-2 text-sm"
               />
             </label>
           </article>
@@ -192,11 +192,11 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
           type="button"
           onClick={handleSave}
           disabled={isSaving}
-          className="rounded-full bg-[#17130f] px-5 py-3 text-sm font-black text-white transition hover:bg-[#2b241e] disabled:opacity-60"
+          className="apex-button rounded-2xl px-5 py-3 text-sm font-black transition disabled:opacity-60"
         >
           {isSaving ? labels.saving : labels.save}
         </button>
-        {saveStatus ? <p className="text-sm font-bold text-[#5c5349]">{saveStatus}</p> : null}
+        {saveStatus ? <p className="text-sm font-bold text-white/60">{saveStatus}</p> : null}
       </div>
     </section>
   );
@@ -205,13 +205,13 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
 function NumberField({ label, value, onChange }: { label: string; value: number | null; onChange: (value: number | null) => void }) {
   return (
     <label className="block">
-      <span className="text-xs font-black uppercase tracking-[0.14em] text-[#8b5e34]">{label}</span>
+      <span className="text-xs font-black uppercase tracking-[0.14em] text-[#a6ff00]">{label}</span>
       <input
         type="number"
         min="0"
         value={value ?? ""}
         onChange={(event) => onChange(event.target.value ? Number(event.target.value) : null)}
-        className="mt-1 w-full rounded-2xl border border-[#ded2bf] bg-white px-3 py-2 text-sm outline-none focus:border-[#8b5e34]"
+        className="apex-input mt-1 w-full rounded-2xl px-3 py-2 text-sm"
       />
     </label>
   );
@@ -220,11 +220,11 @@ function NumberField({ label, value, onChange }: { label: string; value: number 
 function TextField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   return (
     <label className="block">
-      <span className="text-xs font-black uppercase tracking-[0.14em] text-[#8b5e34]">{label}</span>
+      <span className="text-xs font-black uppercase tracking-[0.14em] text-[#a6ff00]">{label}</span>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1 w-full rounded-2xl border border-[#ded2bf] bg-white px-3 py-2 text-sm outline-none focus:border-[#8b5e34]"
+        className="apex-input mt-1 w-full rounded-2xl px-3 py-2 text-sm"
       />
     </label>
   );

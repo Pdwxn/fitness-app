@@ -27,7 +27,7 @@ export function LogoutButton({ label, loadingLabel }: LogoutButtonProps) {
       type="button"
       onClick={handleLogout}
       disabled={isLoading}
-      className="rounded-full bg-[#17130f] px-5 py-3 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:border-[#a6ff00]/70 hover:text-[#a6ff00] disabled:cursor-not-allowed disabled:opacity-60"
     >
       {isLoading ? loadingLabel : label}
     </button>

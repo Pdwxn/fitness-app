@@ -1,19 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
-import { ApiError, authenticatedClientFetch } from "@/lib/api/authenticated-client";
 import { useRoutineCache } from "@/hooks/useRoutineCache";
-import { cmToFeetInches, feetInchesToCm, kgToLb, lbToKg } from "@/lib/units";
+import { ApiError, authenticatedClientFetch } from "@/lib/api/authenticated-client";
 import { getFromStorage, setInStorage, STORAGE_KEYS } from "@/lib/storage";
 import type {
   ActivityLevel,
   EquipmentType,
   Gender,
   HomeEquipment,
-  Injury,
   OnboardingHealth,
   OnboardingProfile,
   PhysicalGoal,
@@ -21,36 +18,15 @@ import type {
   UnitSystem,
 } from "@/types/onboarding";
 
-type SettingsCache = {
-  preferred_language: "es" | "en";
-  preferred_units: UnitSystem;
-};
-
-type ProfileResponse = OnboardingProfile & {
-  id: string;
-  created_at: string;
-  updated_at: string;
-};
-
-type HealthResponse = OnboardingHealth & {
-  id: string;
-  created_at: string;
-  updated_at: string;
-};
+type ProfileResponse = OnboardingProfile & { id: string; created_at: string; updated_at: string };
+type HealthResponse = OnboardingHealth & { id: string; created_at: string; updated_at: string };
+type SettingsCache = { preferred_language: "es" | "en"; preferred_units: UnitSystem };
 
 const genders: Gender[] = ["male", "female", "prefer_not_to_say"];
 const activityLevels: ActivityLevel[] = ["sedentary", "light", "moderate", "active", "very_active"];
 const goals: PhysicalGoal[] = ["lose_weight", "gain_muscle", "endurance", "flexibility", "general_fitness"];
 const equipmentTypes: EquipmentType[] = ["gym", "home", "calisthenics"];
-const homeEquipment: HomeEquipment[] = [
-  "dumbbells",
-  "pull_up_bar",
-  "bands",
-  "kettlebell",
-  "bench",
-  "trx",
-  "bodyweight_only",
-];
+const homeEquipment: HomeEquipment[] = ["dumbbells", "pull_up_bar", "bands", "kettlebell", "bench", "trx", "bodyweight_only"];
 const routineTypes: RoutineType[] = ["push_pull_legs", "upper_lower", "hybrid", "5_days"];
 
 const emptyProfile = (locale: string): OnboardingProfile => ({
@@ -83,26 +59,7 @@ export function ProfileContent({ locale }: { locale: string }) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
-  const { routine, lastSync, isOfflineFallback } = useRoutineCache();
-  const now = new Date();
-  const hasCurrentMonthRoutine = Boolean(
-    routine && routine.month === now.getMonth() + 1 && routine.year === now.getFullYear(),
-  );
-  const routineTitle = hasCurrentMonthRoutine
-    ? t("routine.activeTitle")
-    : routine
-      ? t("routine.outdatedTitle")
-      : t("routine.emptyTitle");
-  const routineDescription = hasCurrentMonthRoutine
-    ? t("routine.activeDescription")
-    : routine
-      ? t("routine.outdatedDescription")
-      : t("routine.emptyDescription");
-
-  const units = profile.preferred_units;
-  const weightKg = profile.weight_kg ?? 70;
-  const heightCm = profile.height_cm ?? 170;
-  const height = cmToFeetInches(heightCm);
+  const { routine, isOfflineFallback } = useRoutineCache();
 
   useEffect(() => {
     let cancelled = false;
@@ -112,9 +69,7 @@ export function ProfileContent({ locale }: { locale: string }) {
     const pendingSync = getFromStorage<unknown[]>(STORAGE_KEYS.PENDING_SYNC);
 
     if (cachedProfile) setProfile(cachedProfile);
-    if (!cachedProfile && cachedSettings) {
-      setProfile((current) => ({ ...current, ...cachedSettings }));
-    }
+    if (!cachedProfile && cachedSettings) setProfile((current) => ({ ...current, ...cachedSettings }));
     if (cachedHealth) setHealth(cachedHealth);
     setPendingSyncCount(pendingSync?.length ?? 0);
     if (cachedProfile || cachedHealth) setIsLoading(false);
@@ -136,8 +91,7 @@ export function ProfileContent({ locale }: { locale: string }) {
         setError(t("states.loadError"));
       })
       .finally(() => {
-        if (cancelled) return;
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       });
 
     return () => {
@@ -155,30 +109,6 @@ export function ProfileContent({ locale }: { locale: string }) {
     setHealth((current) => ({ ...current, ...value }));
     setMessage(null);
     setError(null);
-  }
-
-  function toggleGoal(goal: PhysicalGoal) {
-    updateHealth({
-      physical_goals: health.physical_goals.includes(goal)
-        ? health.physical_goals.filter((item) => item !== goal)
-        : [...health.physical_goals, goal],
-    });
-  }
-
-  function toggleEquipment(item: HomeEquipment) {
-    updateHealth({
-      available_equipment: health.available_equipment.includes(item)
-        ? health.available_equipment.filter((value) => value !== item)
-        : [...health.available_equipment, item],
-    });
-  }
-
-  function updateInjury(index: number, field: keyof Injury, value: string) {
-    updateHealth({
-      injuries: health.injuries.map((injury, itemIndex) =>
-        itemIndex === index ? { ...injury, [field]: value } : injury,
-      ),
-    });
   }
 
   async function saveProfile() {
@@ -209,12 +139,11 @@ export function ProfileContent({ locale }: { locale: string }) {
     setSavingSection("health");
     setMessage(null);
     setError(null);
-    const payload = {
-      ...health,
-      available_equipment: health.equipment_type === "home" ? health.available_equipment : [],
-    };
-
     try {
+      const payload = {
+        ...health,
+        available_equipment: health.equipment_type === "home" ? health.available_equipment : [],
+      };
       const response = await authenticatedClientFetch<HealthResponse>("/api/v1/profile/health/", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -231,406 +160,153 @@ export function ProfileContent({ locale }: { locale: string }) {
     }
   }
 
-  if (isLoading) {
-    return <StateCard title={t("states.loading")} />;
+  function toggleGoal(goal: PhysicalGoal) {
+    updateHealth({
+      physical_goals: health.physical_goals.includes(goal)
+        ? health.physical_goals.filter((item) => item !== goal)
+        : [...health.physical_goals, goal],
+    });
   }
 
+  function toggleEquipment(item: HomeEquipment) {
+    updateHealth({
+      available_equipment: health.available_equipment.includes(item)
+        ? health.available_equipment.filter((value) => value !== item)
+        : [...health.available_equipment, item],
+    });
+  }
+
+  if (isLoading) return <StateCard title={t("states.loading")} />;
+
+  const initials = (profile.full_name || "Apex Athlete")
+    .split(" ")
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
   return (
-    <div className="flex flex-col gap-5">
-      {message ? <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">{message}</p> : null}
-      {error ? <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-800">{error}</p> : null}
+    <div className="flex flex-col gap-5 text-white">
+      {message ? <p className="rounded-2xl border border-[#a6ff00]/30 bg-[#a6ff00]/10 px-4 py-3 text-sm font-bold text-[#d7ff8a]">{message}</p> : null}
+      {error ? <p className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-bold text-red-200">{error}</p> : null}
 
-      <section className="overflow-hidden rounded-[2rem] border border-[#ded2bf] bg-[#17130f] text-white shadow-xl">
-        <div className="p-5 md:p-6">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/50">{t("routine.eyebrow")}</p>
-          <h2 className="mt-2 text-2xl font-black">{routineTitle}</h2>
-          <p className="mt-2 text-sm leading-6 text-white/70">{routineDescription}</p>
-        </div>
-        <div className="grid grid-cols-2 border-t border-white/10 text-sm md:grid-cols-4">
-          <Metric label={t("routine.month")} value={routine ? formatRoutineMonth(routine.month, routine.year, locale) : t("routine.notAvailable")} />
-          <Metric
-            label={t("routine.status")}
-            value={hasCurrentMonthRoutine ? t("routine.active") : routine ? t("routine.outdated") : t("routine.missing")}
-          />
-          <Metric label={t("routine.weeks")} value={routine ? String(routine.weeks.length) : "0"} />
-          <Metric label={t("routine.lastSync")} value={formatTimestamp(lastSync, locale, t("routine.never"))} />
+      <section className="apex-card relative overflow-hidden rounded-[2rem] p-6">
+        <div className="pointer-events-none absolute -right-8 -top-10 size-48 rounded-full bg-[#a6ff00]/20 blur-3xl" />
+        <div className="relative flex items-center gap-4">
+          <div className="grid size-20 shrink-0 place-items-center rounded-full border border-[#a6ff00]/50 bg-[#a6ff00]/15 text-2xl font-black text-[#a6ff00]">
+            {initials}
+          </div>
+          <div>
+            <p className="text-sm font-black uppercase tracking-[0.26em] text-[#a6ff00]">Apex Profile</p>
+            <h2 className="mt-1 text-3xl font-black">{profile.full_name || "Apex Athlete"}</h2>
+            <p className="mt-1 text-sm text-white/55">{profile.preferred_language === "en" ? "English" : "Español"} · {profile.preferred_units === "metric" ? "kg / cm" : "lb / ft"}</p>
+          </div>
         </div>
       </section>
 
-      <section className="rounded-[2rem] border border-[#ded2bf] bg-white p-5 shadow-sm md:p-6">
-        <div className="flex flex-col gap-1">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#8b5e34]">{t("personal.eyebrow")}</p>
-          <h2 className="text-2xl font-black text-[#17130f]">{t("personal.title")}</h2>
-          <p className="text-sm text-[#5c5349]">{t("personal.description")}</p>
-        </div>
-
-        <div className="mt-5 flex flex-col gap-5">
-          <label className="flex flex-col gap-2 text-sm font-semibold">
-            {onboarding("personal.fullName")}
-            <input
-              value={profile.full_name}
-              onChange={(event) => updateProfile({ full_name: event.target.value })}
-              className="rounded-2xl border border-[#ded2bf] px-4 py-3 text-base outline-none focus:border-[#8b5e34]"
-              placeholder={onboarding("personal.fullNamePlaceholder")}
-            />
-          </label>
-
-          <div className="flex flex-col gap-2">
-            <p className="text-sm font-semibold">{onboarding("personal.gender")}</p>
-            <div className="grid gap-2 md:grid-cols-3">
-              {genders.map((option) => (
-                <ChoiceButton
-                  key={option}
-                  selected={profile.gender === option}
-                  onClick={() => updateProfile({ gender: option })}
-                >
-                  {onboarding(`personal.genderOptions.${option}`)}
-                </ChoiceButton>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <NumberField label={onboarding("personal.age")} value={profile.age} onChange={(age) => updateProfile({ age })} />
-            <NumberField
-              label={units === "metric" ? onboarding("personal.weightKg") : onboarding("personal.weightLb")}
-              value={units === "metric" ? weightKg : kgToLb(weightKg)}
-              onChange={(value) => updateProfile({ weight_kg: units === "metric" ? value : lbToKg(value ?? 0) })}
-            />
-            {units === "metric" ? (
-              <NumberField
-                label={onboarding("personal.heightCm")}
-                value={heightCm}
-                onChange={(value) => updateProfile({ height_cm: value })}
-              />
-            ) : (
-              <div className="flex flex-col gap-2 text-sm font-semibold">
-                <span>{onboarding("personal.heightFt")}</span>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="number"
-                    value={height.feet}
-                    onChange={(event) =>
-                      updateProfile({ height_cm: feetInchesToCm(Number(event.target.value), height.inches) })
-                    }
-                    className="rounded-2xl border border-[#ded2bf] px-4 py-3 text-base outline-none focus:border-[#8b5e34]"
-                  />
-                  <input
-                    type="number"
-                    value={height.inches}
-                    onChange={(event) =>
-                      updateProfile({ height_cm: feetInchesToCm(height.feet, Number(event.target.value)) })
-                    }
-                    className="rounded-2xl border border-[#ded2bf] px-4 py-3 text-base outline-none focus:border-[#8b5e34]"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex rounded-full border border-[#ded2bf] bg-white p-1">
-            {(["metric", "imperial"] as UnitSystem[]).map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => updateProfile({ preferred_units: option })}
-                className={`w-1/2 rounded-full px-4 py-2 text-sm font-bold ${
-                  units === option ? "bg-[#17130f] text-white" : "text-[#5c5349]"
-                }`}
-              >
-                {option === "metric" ? "kg / cm" : "lb / ft"}
-              </button>
-            ))}
-          </div>
-
-          <SaveButton disabled={savingSection !== null} loading={savingSection === "profile"} onClick={saveProfile}>
-            {t("actions.savePersonal")}
-          </SaveButton>
-        </div>
+      <section className="grid gap-3 md:grid-cols-3">
+        <InfoTile label={t("routine.eyebrow")} value={routine ? `${routine.month}/${routine.year}` : t("routine.missing")} />
+        <InfoTile label={t("settings.syncStatus")} value={isOfflineFallback ? t("settings.offlineFallback") : t("settings.onlineCache")} />
+        <InfoTile label={t("settings.pendingSync")} value={String(pendingSyncCount)} />
       </section>
 
-      <section className="rounded-[2rem] border border-[#ded2bf] bg-white p-5 shadow-sm md:p-6">
-        <div className="flex flex-col gap-1">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#8b5e34]">{t("fitness.eyebrow")}</p>
-          <h2 className="text-2xl font-black text-[#17130f]">{t("fitness.title")}</h2>
-          <p className="text-sm text-[#5c5349]">{t("fitness.description")}</p>
-        </div>
-
-        <div className="mt-5 flex flex-col gap-6">
-          <OptionGroup title={t("fitness.activity")}>
-            {activityLevels.map((option) => (
-              <ChoiceButton key={option} selected={health.activity_level === option} onClick={() => updateHealth({ activity_level: option })}>
-                <span className="block font-black">{onboarding(`activity.options.${option}.label`)}</span>
-                <span className="block text-sm opacity-70">{onboarding(`activity.options.${option}.description`)}</span>
-              </ChoiceButton>
-            ))}
-          </OptionGroup>
-
-          <OptionGroup title={t("fitness.goals")} columns>
-            {goals.map((goal) => (
-              <ChoiceButton key={goal} selected={health.physical_goals.includes(goal)} onClick={() => toggleGoal(goal)}>
-                {onboarding(`goals.options.${goal}`)}
-              </ChoiceButton>
-            ))}
-          </OptionGroup>
-
-          <label className="flex flex-col gap-2 text-sm font-semibold">
-            {onboarding("goals.specificGoal")}
-            <textarea
-              value={health.specific_goal}
-              onChange={(event) => updateHealth({ specific_goal: event.target.value })}
-              className="min-h-28 rounded-2xl border border-[#ded2bf] px-4 py-3 text-base outline-none focus:border-[#8b5e34]"
-              placeholder={onboarding("goals.specificGoalPlaceholder")}
-            />
-          </label>
-
-          <OptionGroup title={t("fitness.equipment")}>
-            {equipmentTypes.map((option) => (
-              <ChoiceButton
-                key={option}
-                selected={health.equipment_type === option}
-                onClick={() =>
-                  updateHealth({
-                    equipment_type: option,
-                    available_equipment: option === "home" ? health.available_equipment : [],
-                  })
-                }
-              >
-                <span className="block font-black">{onboarding(`equipment.types.${option}.label`)}</span>
-                <span className="block text-sm opacity-70">{onboarding(`equipment.types.${option}.description`)}</span>
-              </ChoiceButton>
-            ))}
-          </OptionGroup>
-
-          {health.equipment_type === "home" ? (
-            <OptionGroup title={t("fitness.homeEquipment")} columns>
-              {homeEquipment.map((item) => (
-                <ChoiceButton key={item} selected={health.available_equipment.includes(item)} onClick={() => toggleEquipment(item)}>
-                  {onboarding(`equipment.home.${item}`)}
-                </ChoiceButton>
-              ))}
-            </OptionGroup>
-          ) : null}
-
-          <OptionGroup title={t("fitness.routine")}>
-            {routineTypes.map((routine) => (
-              <ChoiceButton key={routine} selected={health.routine_type === routine} onClick={() => updateHealth({ routine_type: routine })}>
-                <span className="block font-black">{onboarding(`routine.options.${routine}.label`)}</span>
-                <span className="block text-sm opacity-70">{onboarding(`routine.options.${routine}.description`)}</span>
-              </ChoiceButton>
-            ))}
-          </OptionGroup>
-
-          <div className="flex flex-col gap-3">
-            <p className="text-sm font-semibold">{t("fitness.injuries")}</p>
-            {health.injuries.map((injury, index) => (
-              <div key={index} className="rounded-3xl border border-[#ded2bf] bg-[#fbf8f2] p-4">
-                <div className="grid gap-3 md:grid-cols-2">
-                  <input
-                    value={injury.area}
-                    onChange={(event) => updateInjury(index, "area", event.target.value)}
-                    className="rounded-2xl border border-[#ded2bf] px-4 py-3 outline-none focus:border-[#8b5e34]"
-                    placeholder={onboarding("health.areaPlaceholder")}
-                  />
-                  <input
-                    value={injury.description}
-                    onChange={(event) => updateInjury(index, "description", event.target.value)}
-                    className="rounded-2xl border border-[#ded2bf] px-4 py-3 outline-none focus:border-[#8b5e34]"
-                    placeholder={onboarding("health.descriptionPlaceholder")}
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => updateHealth({ injuries: health.injuries.filter((_, itemIndex) => itemIndex !== index) })}
-                  className="mt-3 text-sm font-bold text-[#8b5e34]"
-                >
-                  {onboarding("health.remove")}
-                </button>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={() => updateHealth({ injuries: [...health.injuries, { area: "", description: "" }] })}
-              className="rounded-full border border-[#17130f] px-5 py-3 text-sm font-bold"
-            >
-              {onboarding("health.add")}
-            </button>
-          </div>
-
-          <SaveButton disabled={savingSection !== null} loading={savingSection === "health"} onClick={saveHealth}>
-            {t("actions.saveFitness")}
-          </SaveButton>
-        </div>
-      </section>
-
-      <section className="rounded-[2rem] border border-[#ded2bf] bg-white p-5 shadow-sm md:p-6">
-        <div className="flex flex-col gap-1">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#8b5e34]">{t("settings.eyebrow")}</p>
-          <h2 className="text-2xl font-black text-[#17130f]">{t("settings.title")}</h2>
-          <p className="text-sm text-[#5c5349]">{t("settings.description")}</p>
-        </div>
-
+      <section className="apex-card rounded-[2rem] p-6">
+        <p className="text-sm font-black uppercase tracking-[0.28em] text-[#a6ff00]">Settings</p>
         <div className="mt-5 grid gap-3 md:grid-cols-2">
-          <InfoTile label={t("settings.language")} value={profile.preferred_language === "en" ? "English" : "Español"} />
-          <InfoTile label={t("settings.units")} value={profile.preferred_units === "metric" ? "kg / cm" : "lb / ft"} />
-          <InfoTile label={t("settings.syncStatus")} value={isOfflineFallback ? t("settings.offlineFallback") : t("settings.onlineCache")} />
-          <InfoTile label={t("settings.pendingSync")} value={String(pendingSyncCount)} />
+          <SelectField label={t("settings.language")} value={profile.preferred_language} onChange={(value) => updateProfile({ preferred_language: value as "es" | "en" })} options={["es", "en"]} />
+          <SelectField label={t("settings.units")} value={profile.preferred_units} onChange={(value) => updateProfile({ preferred_units: value as UnitSystem })} options={["metric", "imperial"]} />
         </div>
-
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <p className="text-sm font-semibold">{t("settings.language")}</p>
-            <div className="grid grid-cols-2 gap-2">
-              {(["es", "en"] as const).map((language) => (
-                <ChoiceButton
-                  key={language}
-                  selected={profile.preferred_language === language}
-                  onClick={() => updateProfile({ preferred_language: language })}
-                >
-                  {language === "es" ? "Español" : "English"}
-                </ChoiceButton>
-              ))}
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            <p className="text-sm font-semibold">{t("settings.units")}</p>
-            <div className="grid grid-cols-2 gap-2">
-              {(["metric", "imperial"] as UnitSystem[]).map((option) => (
-                <ChoiceButton
-                  key={option}
-                  selected={profile.preferred_units === option}
-                  onClick={() => updateProfile({ preferred_units: option })}
-                >
-                  {option === "metric" ? "kg / cm" : "lb / ft"}
-                </ChoiceButton>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <p className="mt-4 text-xs font-semibold text-[#5c5349]">{t("settings.saveHint")}</p>
+        <button type="button" disabled={savingSection !== null} onClick={saveProfile} className="apex-button mt-5 rounded-2xl px-5 py-3 text-sm font-black disabled:opacity-60">
+          {savingSection === "profile" ? t("actions.saving") : t("actions.savePersonal")}
+        </button>
       </section>
+
+      <details className="apex-card rounded-[2rem] p-6">
+        <summary className="cursor-pointer text-sm font-black uppercase tracking-[0.28em] text-[#a6ff00]">{t("personal.title")}</summary>
+        <div className="mt-5 grid gap-3 md:grid-cols-2">
+          <TextField label={onboarding("personal.fullName")} value={profile.full_name} onChange={(value) => updateProfile({ full_name: value })} />
+          <SelectField label={onboarding("personal.gender")} value={profile.gender} onChange={(value) => updateProfile({ gender: value as Gender })} options={genders} />
+          <NumberField label={onboarding("personal.age")} value={profile.age} onChange={(value) => updateProfile({ age: value })} />
+          <NumberField label={onboarding("personal.weightKg")} value={profile.weight_kg} onChange={(value) => updateProfile({ weight_kg: value })} />
+          <NumberField label={onboarding("personal.heightCm")} value={profile.height_cm} onChange={(value) => updateProfile({ height_cm: value })} />
+        </div>
+        <button type="button" disabled={savingSection !== null} onClick={saveProfile} className="apex-button mt-5 rounded-2xl px-5 py-3 text-sm font-black disabled:opacity-60">
+          {savingSection === "profile" ? t("actions.saving") : t("actions.savePersonal")}
+        </button>
+      </details>
+
+      <details className="apex-card rounded-[2rem] p-6">
+        <summary className="cursor-pointer text-sm font-black uppercase tracking-[0.28em] text-[#a6ff00]">{t("fitness.title")}</summary>
+        <div className="mt-5 grid gap-4">
+          <SelectField label={t("fitness.activity")} value={health.activity_level} onChange={(value) => updateHealth({ activity_level: value as ActivityLevel })} options={activityLevels} />
+          <ChipGroup title={t("fitness.goals")} items={goals} selected={health.physical_goals} onToggle={toggleGoal} label={(goal) => onboarding(`goals.options.${goal}`)} />
+          <TextField label={onboarding("goals.specificGoal")} value={health.specific_goal} onChange={(value) => updateHealth({ specific_goal: value })} />
+          <SelectField label={t("fitness.equipment")} value={health.equipment_type} onChange={(value) => updateHealth({ equipment_type: value as EquipmentType })} options={equipmentTypes} />
+          {health.equipment_type === "home" ? <ChipGroup title={t("fitness.homeEquipment")} items={homeEquipment} selected={health.available_equipment} onToggle={toggleEquipment} label={(item) => onboarding(`equipment.home.${item}`)} /> : null}
+          <SelectField label={t("fitness.routine")} value={health.routine_type} onChange={(value) => updateHealth({ routine_type: value as RoutineType })} options={routineTypes} />
+        </div>
+        <button type="button" disabled={savingSection !== null} onClick={saveHealth} className="apex-button mt-5 rounded-2xl px-5 py-3 text-sm font-black disabled:opacity-60">
+          {savingSection === "health" ? t("actions.saving") : t("actions.saveFitness")}
+        </button>
+      </details>
     </div>
   );
 }
 
-function Metric({ label, value }: Readonly<{ label: string; value: string }>) {
+function InfoTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border-t border-white/10 p-4 md:border-t-0 md:border-r md:border-white/10">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40">{label}</p>
-      <p className="mt-1 text-base font-black text-white">{value}</p>
+    <div className="apex-card rounded-3xl p-5">
+      <p className="text-xs font-black uppercase tracking-[0.18em] text-white/45">{label}</p>
+      <p className="mt-2 text-2xl font-black text-white">{value}</p>
     </div>
   );
 }
 
-function InfoTile({ label, value }: Readonly<{ label: string; value: string }>) {
+function TextField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   return (
-    <div className="rounded-3xl border border-[#ded2bf] bg-[#fbf8f2] p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8b5e34]">{label}</p>
-      <p className="mt-1 text-lg font-black text-[#17130f]">{value}</p>
-    </div>
-  );
-}
-
-function formatRoutineMonth(month: number, year: number, locale: string) {
-  return new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(new Date(year, month - 1, 1));
-}
-
-function formatTimestamp(value: number | null, locale: string, fallback: string) {
-  if (!value) return fallback;
-  return new Intl.DateTimeFormat(locale, {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function ChoiceButton({
-  selected,
-  onClick,
-  children,
-}: Readonly<{
-  selected: boolean;
-  onClick: () => void;
-  children: ReactNode;
-}>) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-2xl border px-4 py-3 text-left text-sm font-bold transition ${
-        selected ? "border-[#17130f] bg-[#17130f] text-white" : "border-[#ded2bf] bg-white text-[#17130f]"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function OptionGroup({
-  title,
-  columns = false,
-  children,
-}: Readonly<{
-  title: string;
-  columns?: boolean;
-  children: ReactNode;
-}>) {
-  return (
-    <div className="flex flex-col gap-2">
-      <p className="text-sm font-semibold">{title}</p>
-      <div className={`grid gap-2 ${columns ? "md:grid-cols-2" : ""}`}>{children}</div>
-    </div>
-  );
-}
-
-function NumberField({
-  label,
-  value,
-  onChange,
-}: Readonly<{
-  label: string;
-  value: number | null;
-  onChange: (value: number | null) => void;
-}>) {
-  return (
-    <label className="flex flex-col gap-2 text-sm font-semibold">
+    <label className="flex flex-col gap-2 text-sm font-bold text-white/65">
       {label}
-      <input
-        type="number"
-        value={value ?? ""}
-        onChange={(event) => onChange(event.target.value ? Number(event.target.value) : null)}
-        className="rounded-2xl border border-[#ded2bf] px-4 py-3 text-base outline-none focus:border-[#8b5e34]"
-      />
+      <input value={value} onChange={(event) => onChange(event.target.value)} className="apex-input rounded-2xl px-4 py-3 text-white" />
     </label>
   );
 }
 
-function SaveButton({
-  disabled,
-  loading,
-  onClick,
-  children,
-}: Readonly<{
-  disabled: boolean;
-  loading: boolean;
-  onClick: () => void;
-  children: ReactNode;
-}>) {
-  const t = useTranslations("Profile.actions");
+function NumberField({ label, value, onChange }: { label: string; value: number | null; onChange: (value: number | null) => void }) {
   return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      className="rounded-full bg-[#17130f] px-5 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      {loading ? t("saving") : children}
-    </button>
+    <label className="flex flex-col gap-2 text-sm font-bold text-white/65">
+      {label}
+      <input type="number" value={value ?? ""} onChange={(event) => onChange(event.target.value ? Number(event.target.value) : null)} className="apex-input rounded-2xl px-4 py-3 text-white" />
+    </label>
+  );
+}
+
+function SelectField({ label, value, onChange, options }: { label: string; value: string; onChange: (value: string) => void; options: string[] }) {
+  return (
+    <label className="flex flex-col gap-2 text-sm font-bold text-white/65">
+      {label}
+      <select value={value} onChange={(event) => onChange(event.target.value)} className="apex-input rounded-2xl px-4 py-3 text-white">
+        <option value="">-</option>
+        {options.map((option) => <option key={option} value={option}>{option.replaceAll("_", " ")}</option>)}
+      </select>
+    </label>
+  );
+}
+
+function ChipGroup<T extends string>({ title, items, selected, onToggle, label }: { title: string; items: T[]; selected: T[]; onToggle: (item: T) => void; label: (item: T) => string }) {
+  return (
+    <div>
+      <p className="text-sm font-bold text-white/65">{title}</p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {items.map((item) => (
+          <button key={item} type="button" onClick={() => onToggle(item)} className={`rounded-full border px-4 py-2 text-sm font-bold ${selected.includes(item) ? "border-[#a6ff00] bg-[#a6ff00] text-black" : "border-white/15 bg-white/[0.04] text-white/65"}`}>
+            {label(item)}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
 function StateCard({ title }: { title: string }) {
-  return <div className="rounded-[2rem] border border-[#ded2bf] bg-white p-6 text-sm font-bold text-[#5c5349]">{title}</div>;
+  return <div className="apex-card rounded-[2rem] p-6 text-sm font-bold text-white/65">{title}</div>;
 }
