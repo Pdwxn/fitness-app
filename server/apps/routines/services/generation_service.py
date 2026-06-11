@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from datetime import timedelta
 
 from django.db import IntegrityError, transaction
@@ -7,8 +8,10 @@ from rest_framework.exceptions import APIException, ValidationError
 
 from apps.profiles.views import is_onboarding_complete
 from apps.routines.models import Routine, RoutineDay, RoutineExercise, RoutineWeek
-
+from .exercisedb_service import enrich_routine
 from .gemini_service import build_routine_prompt, generate_routine_with_gemini, parse_gemini_routine_response
+
+logger = logging.getLogger(__name__)
 
 
 class OnboardingIncompleteError(APIException):
@@ -177,5 +180,10 @@ def persist_generated_routine(user, routine_data, raw_response, prompt, today=No
                         )
     except IntegrityError as exc:
         raise MonthlyRoutineExistsError() from exc
+
+    try:
+        enrich_routine(routine)
+    except Exception as exc:
+        logger.exception("ExerciseDB enrichment failed for routine %s: %s", routine.id, exc)
 
     return Routine.objects.prefetch_related("weeks__days__exercises").get(id=routine.id)

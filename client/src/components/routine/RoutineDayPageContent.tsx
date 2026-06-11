@@ -84,6 +84,26 @@ export function RoutineDayPageContent({ dayId, locale, labels }: RoutineDayPageC
                 </p>
               </div>
 
+              {exercise.image_url ? (
+                <img
+                  src={exercise.image_url}
+                  alt={exercise.name}
+                  loading="lazy"
+                  className="mt-4 w-full rounded-2xl object-cover"
+                  style={{ aspectRatio: "16 / 9", maxHeight: 280 }}
+                />
+              ) : null}
+              {exercise.video_url ? (
+                <a
+                  href={exercise.video_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/20"
+                >
+                  ▶ ver demo
+                </a>
+              ) : null}
+
               <div className="mt-4 flex flex-wrap gap-2 text-sm font-bold text-white/60">
                 {exercise.rest_seconds ? (
                   <span className="rounded-full bg-black/35 px-3 py-1">

@@ -137,22 +137,34 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
       </label>
 
       <div className="mt-5 grid gap-4">
-        {exerciseLogs.map((exerciseLog) => (
+        {exerciseLogs.map((exerciseLog) => {
+          const exercise = day.exercises.find((e) => e.id === exerciseLog.exercise_id);
+          return (
           <article key={exerciseLog.exercise_id} className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h3 className="font-black tracking-tight">{exerciseLog.exercise_name}</h3>
-                <label className="mt-2 flex items-center gap-2 text-sm font-bold text-white/60">
-                  <input
-                    type="checkbox"
-                    checked={exerciseLog.completed}
-                    onChange={(event) =>
-                      updateExerciseLog(exerciseLog.exercise_id, { completed: event.target.checked })
-                    }
-                    className="size-4 accent-[#a6ff00]"
+            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div className="flex items-start gap-3">
+                {exercise?.image_url ? (
+                  <img
+                    src={exercise.image_url}
+                    alt={exerciseLog.exercise_name}
+                    loading="lazy"
+                    className="size-14 shrink-0 rounded-xl object-cover"
                   />
-                  {labels.exerciseCompleted}
-                </label>
+                ) : null}
+                <div>
+                  <h3 className="font-black tracking-tight">{exerciseLog.exercise_name}</h3>
+                  <label className="mt-2 flex items-center gap-2 text-sm font-bold text-white/60">
+                    <input
+                      type="checkbox"
+                      checked={exerciseLog.completed}
+                      onChange={(event) =>
+                        updateExerciseLog(exerciseLog.exercise_id, { completed: event.target.checked })
+                      }
+                      className="size-4 accent-[#a6ff00]"
+                    />
+                    {labels.exerciseCompleted}
+                  </label>
+                </div>
               </div>
               <div className="grid grid-cols-3 gap-2 md:w-[22rem]">
                 <NumberField
@@ -184,7 +196,8 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
               />
             </label>
           </article>
-        ))}
+        );
+      })}
       </div>
 
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
