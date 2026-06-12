@@ -1,0 +1,127 @@
+{
+  "meta": {
+    "description": "Banco de ejercicios para el prompt de Gemini y búsqueda de imágenes en ExerciseDB"
+  },
+  "muscle_groups": [
+    {
+      "name": "CUADRICEPS",
+      "body_parts": ["UPPER LEGS"],
+      "exercises": [
+        { "es": "Sentadilla trasera", "en": "Back Squat", "search_term": "barbell back squat" },
+        { "es": "Sentadilla frontal", "en": "Front Squat", "search_term": "barbell front squat" },
+        { "es": "Sentadilla pistol", "en": "Pistol Squat", "search_term": "pistol squat" },
+        { "es": "Sentadilla bulgara", "en": "Bulgarian Split Squat", "search_term": "bulgarian split squat" },
+        { "es": "Zancadas", "en": "Lunges", "search_term": "dumbbell lunge" },
+        { "es": "Hack squat", "en": "Hack Squat", "search_term": "hack squat" },
+        { "es": "Prensa", "en": "Leg Press", "search_term": "leg press" },
+        { "es": "Extension de rodilla", "en": "Leg Extension", "search_term": "leg extension" }
+      ]
+    },
+    {
+      "name": "GLUTEOS",
+      "body_parts": ["GLUTES"],
+      "exercises": [
+        { "es": "Hip thrust", "en": "Hip Thrust", "search_term": "barbell hip thrust" },
+        { "es": "Glute bridge", "en": "Glute Bridge", "search_term": "glute bridge" },
+        { "es": "Patada de gluteo", "en": "Glute Kickback", "search_term": "cable glute kickback" },
+        { "es": "Peso muerto", "en": "Deadlift", "search_term": "barbell deadlift" },
+        { "es": "Kettlebell swing", "en": "Kettlebell Swing", "search_term": "kettlebell swing" },
+        { "es": "Buenos dias", "en": "Good Morning", "search_term": "barbell good morning" },
+        { "es": "Hiperextension de cadera", "en": "Hyperextension", "search_term": "hyperextension" },
+        { "es": "Abducciones en maquina", "en": "Hip Abduction Machine", "search_term": "hip abduction machine" },
+        { "es": "Abducciones en polea", "en": "Cable Hip Abduction", "search_term": "cable hip abduction" }
+      ]
+    },
+    {
+      "name": "FEMORALES",
+      "body_parts": ["UPPER LEGS"],
+      "exercises": [
+        { "es": "Peso muerto convencional", "en": "Conventional Deadlift", "search_term": "barbell deadlift" },
+        { "es": "Peso muerto rumano", "en": "Romanian Deadlift", "search_term": "romanian deadlift" },
+        { "es": "Peso muerto sumo", "en": "Sumo Deadlift", "search_term": "sumo deadlift" },
+        { "es": "Curl de femoral", "en": "Leg Curl", "search_term": "lying leg curl" },
+        { "es": "Glute ham raise", "en": "Glute Ham Raise", "search_term": "glute ham raise" }
+      ]
+    },
+    {
+      "name": "DORSAL",
+      "body_parts": ["BACK"],
+      "exercises": [
+        { "es": "Remo con barra", "en": "Barbell Row", "search_term": "barbell row" },
+        { "es": "Remo con mancuernas", "en": "Dumbbell Row", "search_term": "dumbbell row" },
+        { "es": "Dominadas", "en": "Pull Up", "search_term": "pull up" },
+        { "es": "Jalon al pecho", "en": "Lat Pulldown", "search_term": "lat pulldown" },
+        { "es": "Pullover en polea", "en": "Cable Pullover", "search_term": "cable pullover" }
+      ]
+    },
+    {
+      "name": "PECTORAL",
+      "body_parts": ["CHEST"],
+      "exercises": [
+        { "es": "Press de banca", "en": "Bench Press", "search_term": "barbell bench press" },
+        { "es": "Flexiones", "en": "Push Up", "search_term": "push up" },
+        { "es": "Aperturas con mancuernas", "en": "Dumbbell Fly", "search_term": "dumbbell fly" }
+      ]
+    },
+    {
+      "name": "DELTOIDES",
+      "body_parts": ["SHOULDERS"],
+      "exercises": [
+        { "es": "Press militar", "en": "Shoulder Press", "search_term": "dumbbell shoulder press" },
+        { "es": "Elevaciones laterales", "en": "Lateral Raise", "search_term": "dumbbell lateral raise" },
+        { "es": "Elevaciones frontales", "en": "Front Raise", "search_term": "dumbbell front raise" },
+        { "es": "Remo al menton", "en": "Upright Row", "search_term": "upright row" }
+      ]
+    },
+    {
+      "name": "BICEPS",
+      "body_parts": ["ARMS"],
+      "exercises": [
+        { "es": "Curl con mancuernas", "en": "Dumbbell Curl", "search_term": "dumbbell curl" },
+        { "es": "Curl con barra", "en": "Barbell Curl", "search_term": "barbell curl" },
+        { "es": "Curl martillo", "en": "Hammer Curl", "search_term": "hammer curl" },
+        { "es": "Curl en banco predicador", "en": "Preacher Curl", "search_term": "preacher curl" },
+        { "es": "Dominadas supinas", "en": "Chin Up", "search_term": "chin up" }
+      ]
+    },
+    {
+      "name": "TRICEPS",
+      "body_parts": ["ARMS"],
+      "exercises": [
+        { "es": "Extension en polea", "en": "Tricep Pushdown", "search_term": "tricep pushdown rope" },
+        { "es": "Press frances", "en": "Lying Tricep Extension", "search_term": "lying tricep extension" },
+        { "es": "Skull crusher", "en": "Skull Crusher", "search_term": "skull crusher" },
+        { "es": "Fondos en paralelas", "en": "Triceps Dip", "search_term": "triceps dip" }
+      ]
+    },
+    {
+      "name": "GEMELOS",
+      "body_parts": ["LOWER LEGS"],
+      "exercises": [
+        { "es": "Flexo-extension de tobillo de pie", "en": "Standing Calf Raise", "search_term": "standing calf raise" },
+        { "es": "Flexo-extension de tobillo sentado", "en": "Seated Calf Raise", "search_term": "seated calf raise" },
+        { "es": "Estiramientos para dorsiflexion", "en": "Dorsiflexion Stretch", "search_term": "dorsiflexion stretch" }
+      ]
+    },
+    {
+      "name": "ABDOMINALES",
+      "body_parts": ["CORE"],
+      "subgroups": [
+        {
+          "name": "Recto",
+          "exercises": [
+            { "es": "Crunch", "en": "Crunch", "search_term": "cable crunch" },
+            { "es": "Flexo-extension de tronco", "en": "Crunch", "search_term": "crunch" }
+          ]
+        },
+        {
+          "name": "Transverso",
+          "exercises": [
+            { "es": "Planchas", "en": "Plank", "search_term": "plank" },
+            { "es": "Variantes isometricas", "en": "Plank", "search_term": "plank" }
+          ]
+        }
+      ]
+    }
+  ]
+}

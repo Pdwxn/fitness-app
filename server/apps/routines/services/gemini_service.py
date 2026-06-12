@@ -1,10 +1,11 @@
 import json
+import os
 
 from django.conf import settings
 from rest_framework.exceptions import APIException, ValidationError
 
 
-FITNESS_KNOWLEDGE_BASE = """
+_KNOWLEDGE_PREFIX = """
 === BASE DE CONOCIMIENTO: DISEÑO DE ENTRENAMIENTO (Evidencia Científica) ===
 
 ## CONCEPTOS DE VOLUMEN
@@ -37,34 +38,9 @@ Triceps           |  0 |  12 |  20 |  26 | 2-4            | 6-20
 
 REGLA: El volumen semanal total de cada grupo debe estar entre su MEV y su MRV.
 Para usuarios principiantes, empezar cerca del MEV. Para avanzados, acercarse al MAV.
+"""
 
-## BANCO DE EJERCICIOS POR GRUPO MUSCULAR
-
-CUADRICEPS: Sentadilla trasera, Sentadilla frontal, Sentadilla pistol,
-  Sentadilla bulgara, Zancadas, Hack squat, Prensa, Extension de rodilla
-
-GLUTEOS: Hip thrust, Glute bridge, Patada de gluteo, Peso muerto,
-  Sentadilla bulgara, Kettlebell swing, Buenos dias, Hiperextension de cadera,
-  Abducciones en maquina/polea
-
-FEMORALES: Peso muerto convencional, Peso muerto rumano, Peso muerto sumo,
-  Curl de femoral, Glute ham raise, Buenos dias
-
-DORSAL: Remo con barra/mancuernas, Dominadas, Jalon al pecho, Pullover en polea
-
-PECTORAL: Press de banca, Flexiones, Aperturas con mancuernas
-
-DELTOIDES: Press militar, Elevaciones laterales, Elevaciones frontales, Remo al menton
-
-BICEPS: Curl con mancuernas/barra, Curl martillo, Curl en banco predicador,
-  Dominadas supinas
-
-TRICEPS: Extension en polea, Press frances, Skull crusher, Fondos en paralelas
-
-GEMELOS: Flexo-extension de tobillo (de pie y sentado), Estiramientos para dorsiflexion
-
-ABDOMINALES - Recto: Crunch y variantes de flexo-extension de tronco
-ABDOMINALES - Transverso: Planchas y variantes isometricas
+_KNOWLEDGE_SUFFIX = """
 
 ## PRINCIPIOS DE DISENO QUE DEBES APLICAR
 
@@ -78,6 +54,27 @@ ABDOMINALES - Transverso: Planchas y variantes isometricas
 
 === FIN BASE DE CONOCIMIENTO ===
 """
+
+
+def _format_exercise_bank():
+    path = os.path.join(os.path.dirname(__file__), "..", "data", "exercise_bank.json")
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    parts = ["\n## BANCO DE EJERCICIOS POR GRUPO MUSCULAR\n"]
+    for group in data["muscle_groups"]:
+        subgroups = group.get("subgroups")
+        if subgroups:
+            for sg in subgroups:
+                exercises = ", ".join(ex["es"] for ex in sg["exercises"])
+                parts.append(f"{group['name']} - {sg['name']}: {exercises}")
+        else:
+            exercises = ", ".join(ex["es"] for ex in group["exercises"])
+            parts.append(f"{group['name']}: {exercises}")
+    return "\n".join(parts)
+
+
+FITNESS_KNOWLEDGE_BASE = _KNOWLEDGE_PREFIX + _format_exercise_bank() + _KNOWLEDGE_SUFFIX
 
 
 VOLUME_START = {
