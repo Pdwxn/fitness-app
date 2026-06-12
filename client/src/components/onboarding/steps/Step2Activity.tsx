@@ -18,7 +18,9 @@ export function Step2Activity() {
           type="button"
           onClick={() => updateHealth({ activity_level: option })}
           className={`rounded-3xl border p-4 text-left transition ${
-            activity === option ? "border-[#17130f] bg-[#17130f] text-white" : "border-[#ded2bf] bg-white"
+            activity === option
+              ? "border-[#a6ff00] bg-[#a6ff00]/10 text-white"
+              : "border-white/15 bg-white/5 text-white/70"
           }`}
         >
           <span className="block text-lg font-black">{t(`options.${option}.label`)}</span>

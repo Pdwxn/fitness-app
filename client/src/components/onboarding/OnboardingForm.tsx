@@ -14,6 +14,7 @@ import { authenticatedClientFetch } from "@/lib/api/authenticated-client";
 import { getFromStorage, setInStorage, STORAGE_KEYS } from "@/lib/storage";
 import { TOTAL_STEPS, useOnboardingStore } from "@/store/onboardingStore";
 import type { Routine } from "@/types/routine";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 
 type OnboardingFormProps = {
   locale: string;
@@ -216,8 +217,8 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
     }
   }
 
+  const isGenerating = submitState === "generating";
   const isSubmitting = submitState !== "idle";
-  const submitLabel = submitState === "generating" ? labels.generating : labels.submitting;
 
   if (isLoadingStatus) {
     return (
@@ -255,7 +256,9 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
   }
 
   return (
-    <main className="apex-bg mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 py-8 text-white md:max-w-3xl md:px-10 lg:max-w-5xl">
+    <>
+      {isGenerating ? <LoadingOverlay label={labels.generating} /> : null}
+      <main className="apex-bg mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 py-8 text-white md:max-w-3xl md:px-10 lg:max-w-5xl">
       <header className="apex-card relative overflow-hidden rounded-[2rem] p-6 text-white">
         <div className="pointer-events-none absolute -right-8 -top-10 size-48 rounded-full bg-[#a6ff00]/20 blur-3xl" />
         <p className="apex-logo relative text-2xl">
@@ -270,12 +273,6 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
       </header>
 
       <StepIndicator currentStep={currentStep} labels={labels.steps} />
-
-      {hasHydrated ? (
-        <p className="rounded-2xl border border-[#a6ff00]/20 bg-[#a6ff00]/10 px-4 py-3 text-sm font-medium text-[#d7ff8a]">
-          {labels.draftLoaded}
-        </p>
-      ) : null}
 
       <section className="apex-card flex min-h-[18rem] flex-col justify-between rounded-[2rem] p-6">
         <div>
@@ -307,10 +304,11 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
             disabled={isSubmitting}
             className="apex-button w-1/2 rounded-2xl px-5 py-3 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {isSubmitting ? submitLabel : isLastStep ? labels.finish : labels.next}
+            {isSubmitting ? labels.submitting : isLastStep ? labels.finish : labels.next}
           </button>
         </div>
       </section>
     </main>
+    </>
   );
 }

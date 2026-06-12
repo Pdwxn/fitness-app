@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { STORAGE_KEYS } from "@/lib/storage";
 
 type LogoutButtonProps = {
   label: string;
@@ -18,6 +19,7 @@ export function LogoutButton({ label, loadingLabel }: LogoutButtonProps) {
     setIsLoading(true);
     const supabase = createSupabaseBrowserClient();
     await supabase.auth.signOut();
+    Object.values(STORAGE_KEYS).forEach((key) => localStorage.removeItem(key));
     router.refresh();
     setIsLoading(false);
   }

@@ -24,8 +24,8 @@ export function Step6RoutineType() {
             onClick={() => updateHealth({ routine_type: routine })}
             className={`rounded-3xl border p-4 text-left transition ${
               health.routine_type === routine
-                ? "border-[#17130f] bg-[#17130f] text-white"
-                : "border-[#ded2bf] bg-white"
+                ? "border-[#a6ff00] bg-[#a6ff00]/10 text-white"
+                : "border-white/15 bg-white/5 text-white/70"
             }`}
           >
             <span className="block text-lg font-black">{t(`options.${routine}.label`)}</span>

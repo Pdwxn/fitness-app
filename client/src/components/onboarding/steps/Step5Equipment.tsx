@@ -43,8 +43,8 @@ export function Step5Equipment() {
             }
             className={`rounded-3xl border p-4 text-left transition ${
               health.equipment_type === option
-                ? "border-[#17130f] bg-[#17130f] text-white"
-                : "border-[#ded2bf] bg-white"
+                ? "border-[#a6ff00] bg-[#a6ff00]/10 text-white"
+                : "border-white/15 bg-white/5 text-white/70"
             }`}
           >
             <span className="block text-lg font-black">{t(`types.${option}.label`)}</span>
@@ -62,10 +62,19 @@ export function Step5Equipment() {
                 key={item}
                 type="button"
                 onClick={() => toggleEquipment(item)}
-                className={`rounded-2xl border px-4 py-3 text-left text-sm font-bold ${
-                  selected ? "border-[#8b5e34] bg-[#f7f3ec] text-[#8b5e34]" : "border-[#ded2bf] bg-white"
+                className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-bold ${
+                  selected
+                    ? "border-[#a6ff00] bg-[#a6ff00]/10 text-white"
+                    : "border-white/15 bg-white/5 text-white/70"
                 }`}
               >
+                <span
+                  className={`flex size-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-black ${
+                    selected ? "border-[#a6ff00] bg-[#a6ff00] text-black" : "border-white/30 text-transparent"
+                  }`}
+                >
+                  {selected ? "✓" : ""}
+                </span>
                 {t(`home.${item}`)}
               </button>
             );
