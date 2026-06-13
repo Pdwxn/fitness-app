@@ -41,7 +41,7 @@ export function LoginForm({ locale, labels }: LoginFormProps) {
       return;
     }
 
-    router.push(`/${locale}`);
+    router.push(`/${locale}/dashboard`);
     router.refresh();
   }
 

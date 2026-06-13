@@ -38,6 +38,7 @@ export default async function RegisterPage({
 
         <GoogleOAuthButton
           locale={locale}
+          intent="register"
           label={t("google")}
           loadingLabel={t("googleLoading")}
           errorLabel={t("googleError")}

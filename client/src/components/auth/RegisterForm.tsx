@@ -44,7 +44,7 @@ export function RegisterForm({ locale, labels }: RegisterFormProps) {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/${locale}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/${locale}/auth/callback?intent=register`,
       },
     });
 
@@ -56,7 +56,7 @@ export function RegisterForm({ locale, labels }: RegisterFormProps) {
     }
 
     if (data.session) {
-      router.push(`/${locale}`);
+      router.push(`/${locale}/onboarding`);
       router.refresh();
       return;
     }

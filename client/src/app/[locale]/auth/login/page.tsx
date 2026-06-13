@@ -35,6 +35,7 @@ export default async function LoginPage({
 
         <GoogleOAuthButton
           locale={locale}
+          intent="login"
           label={t("google")}
           loadingLabel={t("googleLoading")}
           errorLabel={t("googleError")}

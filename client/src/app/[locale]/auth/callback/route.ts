@@ -9,7 +9,8 @@ export async function GET(
   const { locale } = await context.params;
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? `/${locale}`;
+  const intent = searchParams.get("intent");
+  const next = searchParams.get("next") ?? (intent === "register" ? `/${locale}/onboarding` : `/${locale}/dashboard`);
 
   if (code) {
     const supabase = await createSupabaseServerClient();

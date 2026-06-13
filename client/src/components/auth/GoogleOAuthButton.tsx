@@ -6,6 +6,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type GoogleOAuthButtonProps = {
   locale: string;
+  intent?: "login" | "register";
   label: string;
   loadingLabel: string;
   errorLabel: string;
@@ -13,6 +14,7 @@ type GoogleOAuthButtonProps = {
 
 export function GoogleOAuthButton({
   locale,
+  intent = "login",
   label,
   loadingLabel,
   errorLabel,
@@ -28,7 +30,7 @@ export function GoogleOAuthButton({
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/${locale}/auth/callback`,
+        redirectTo: `${window.location.origin}/${locale}/auth/callback?intent=${intent}`,
       },
     });
 

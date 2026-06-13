@@ -51,7 +51,7 @@ export async function middleware(request: NextRequest) {
 
   if (firstSegment === "auth" && AUTH_SEGMENTS.has(secondSegment) && user) {
     const homeUrl = request.nextUrl.clone();
-    homeUrl.pathname = `/${locale}`;
+    homeUrl.pathname = `/${locale}/dashboard`;
     homeUrl.search = "";
     return NextResponse.redirect(homeUrl);
   }
