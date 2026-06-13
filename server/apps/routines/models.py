@@ -5,6 +5,28 @@ from django.db import models
 from apps.users.models import UserProfile
 
 
+class StoredExercise(models.Model):
+    name = models.CharField(max_length=200, db_index=True)
+    force = models.CharField(max_length=50, blank=True, default="")
+    level = models.CharField(max_length=50, blank=True, default="")
+    mechanic = models.CharField(max_length=50, blank=True, default="")
+    equipment = models.CharField(max_length=100, blank=True, default="")
+    primary_muscles = models.JSONField(default=list, blank=True)
+    secondary_muscles = models.JSONField(default=list, blank=True)
+    instructions = models.TextField(blank=True, default="")
+    category = models.CharField(max_length=50, blank=True, default="")
+    image_paths = models.JSONField(default=list, blank=True)
+    external_id = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        ordering = ("name",)
+        verbose_name = "Stored Exercise"
+        verbose_name_plural = "Stored Exercises"
+
+    def __str__(self):
+        return self.name
+
+
 class Routine(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
