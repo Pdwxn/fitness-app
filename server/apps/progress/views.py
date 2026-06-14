@@ -4,7 +4,12 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.routines.models import RoutineDay
+from apps.routines.models import Routine, RoutineDay
+from apps.routines.services.generation_service import (
+    generate_monthly_routine_if_needed,
+    get_routine_daily_notes,
+    is_routine_completed,
+)
 
 from .models import DailyLog
 from .serializers import DailyLogBatchSerializer, DailyLogSerializer, ProgressStatsSerializer
@@ -32,6 +37,38 @@ def calculate_stats(logs):
     }
 
 
+def try_generate_next_routine(user):
+    from datetime import date
+
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    try:
+        active_routine = Routine.objects.get(user=user, is_active=True)
+        if not is_routine_completed(user, active_routine):
+            return None
+
+        next_month = active_routine.month % 12 + 1
+        next_year = active_routine.year + (1 if active_routine.month == 12 else 0)
+        notes = get_routine_daily_notes(user, active_routine)
+
+        new_routine, created = generate_monthly_routine_if_needed(
+            user,
+            today=date(next_year, next_month, 1),
+            previous_month_notes=notes,
+            return_existing=True,
+        )
+        if created:
+            return {"id": str(new_routine.id), "month": new_routine.month, "year": new_routine.year}
+        return None
+    except Routine.DoesNotExist:
+        return None
+    except Exception:
+        logger.exception("Failed to generate next month routine for user %s", user)
+        return None
+
+
 class DailyLogListCreateView(APIView):
     def get(self, request):
         logs = get_user_logs(request.user)
@@ -46,7 +83,13 @@ class DailyLogListCreateView(APIView):
         serializer = DailyLogSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         log = serializer.save()
-        return Response(DailyLogSerializer(log).data, status=status.HTTP_201_CREATED)
+
+        response_data = DailyLogSerializer(log).data
+        next_routine_data = try_generate_next_routine(request.user)
+        if next_routine_data:
+            response_data["next_routine"] = next_routine_data
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
 
 class DailyLogDetailView(APIView):
@@ -101,13 +144,16 @@ class DailyLogBatchView(APIView):
                     created += 1
                     logs.append(log)
 
-        return Response(
-            {
-                "created": created,
-                "updated": updated,
-                "logs": DailyLogSerializer(logs, many=True).data,
-            }
-        )
+        response_data = {
+            "created": created,
+            "updated": updated,
+            "logs": DailyLogSerializer(logs, many=True).data,
+        }
+        next_routine_data = try_generate_next_routine(request.user)
+        if next_routine_data:
+            response_data["next_routine"] = next_routine_data
+
+        return Response(response_data)
 
 
 class ProgressStatsView(APIView):

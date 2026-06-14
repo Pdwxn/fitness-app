@@ -1,5 +1,6 @@
 import { authenticatedClientFetch } from "./api/authenticated-client";
 import { getFromStorage, setInStorage, STORAGE_KEYS } from "./storage";
+import { useNextRoutineStore } from "@/stores/nextRoutineStore";
 import type { DailyLog, DailyLogBatchResponse, ProgressStats } from "@/types/progress";
 
 function getLogKey(log: Pick<DailyLog, "id" | "routine_day_id" | "date">) {
@@ -85,6 +86,11 @@ export async function syncPendingLogs() {
     setInStorage(STORAGE_KEYS.DAILY_LOGS, mergedLogs);
     updateStatsLocally(mergedLogs);
     setInStorage(STORAGE_KEYS.LAST_SYNC, Date.now());
+
+    if (response.next_routine) {
+      useNextRoutineStore.getState().setNextRoutine(response.next_routine);
+    }
+
     return true;
   } catch {
     // Backend may be asleep on the free tier. Keep data local and retry later.

@@ -30,6 +30,7 @@ export type DailyLogBatchResponse = {
   created: number;
   updated: number;
   logs: DailyLog[];
+  next_routine?: { id: string; month: number; year: number } | null;
 };
 
 export type ProgressStats = {

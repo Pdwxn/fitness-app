@@ -251,6 +251,8 @@
     "restDay": "Descanso",
     "exercises": "ejercicios",
     "viewDay": "Ver detalle del día",
+    "nextRoutineReady": "🎯 ¡Tu nueva rutina para {month} está lista!",
+    "viewRoutine": "Ver rutina",
     "states": {
       "loading": "Cargando tu rutina...",
       "error": "No pudimos cargar tu rutina. Intenta recargar la página.",

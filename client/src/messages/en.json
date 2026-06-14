@@ -251,6 +251,8 @@
     "restDay": "Rest",
     "exercises": "exercises",
     "viewDay": "View day details",
+    "nextRoutineReady": "🎯 Your new routine for {month} is ready!",
+    "viewRoutine": "View routine",
     "states": {
       "loading": "Loading your routine...",
       "error": "We could not load your routine. Try refreshing the page.",

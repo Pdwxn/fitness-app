@@ -90,6 +90,52 @@ def generate_monthly_routine_if_needed(
     return routine, True
 
 
+def is_routine_completed(user, routine):
+    from apps.progress.models import DailyLog
+
+    total_training_days = RoutineDay.objects.filter(
+        week__routine=routine, is_rest_day=False
+    ).count()
+
+    completed_day_ids = DailyLog.objects.filter(
+        user=user, routine_day__week__routine=routine, completed=True
+    ).values_list("routine_day_id", flat=True).distinct()
+
+    return total_training_days > 0 and completed_day_ids.count() >= total_training_days
+
+
+def get_routine_daily_notes(user, routine):
+    from apps.progress.models import DailyLog
+
+    logs = DailyLog.objects.filter(
+        user=user, routine_day__week__routine=routine
+    ).select_related("routine_day").order_by("routine_day__day_number")
+
+    notes = []
+    for log in logs:
+        exercise_notes = [
+            {
+                "exercise_name": exercise.get("exercise_name", ""),
+                "completed": exercise.get("completed", False),
+                "note": exercise.get("note", ""),
+            }
+            for exercise in log.exercises_done
+            if exercise.get("note") or not exercise.get("completed", False)
+        ]
+        if log.day_note or exercise_notes:
+            notes.append(
+                {
+                    "date": log.date.isoformat(),
+                    "day_name": log.routine_day.day_name,
+                    "completed": log.completed,
+                    "day_note": log.day_note,
+                    "exercise_notes": exercise_notes,
+                }
+            )
+
+    return notes
+
+
 def get_previous_month_notes(user, today=None):
     from apps.progress.models import DailyLog
 

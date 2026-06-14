@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { BottomNav } from "./BottomNav";
 import { PrivateHeader } from "./PrivateHeader";
+import { NextRoutineWatcher } from "../routine/NextRoutineWatcher";
 import { SilentSync } from "./SilentSync";
 
 type AppShellProps = {
@@ -23,6 +24,7 @@ export async function AppShell({ locale, title, description, children }: AppShel
   return (
     <div className="apex-bg min-h-screen pb-28 text-white md:pb-0 md:pl-64">
       <SilentSync />
+      <NextRoutineWatcher locale={locale} />
       <BottomNav items={navItems} sidebarTitle={t("sidebarTitle")} />
       <main className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-3xl md:px-10 lg:max-w-5xl">
         <PrivateHeader title={title} description={description} />
