@@ -13,7 +13,7 @@ def env_bool(name, default=False):
 
 
 def env_list(name, default=""):
-    return [item.strip() for item in os.getenv(name, default).split(",") if item.strip()]
+    return [item.strip().rstrip("/") for item in os.getenv(name, default).split(",") if item.strip()]
 
 
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-local-development-key")
