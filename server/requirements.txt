@@ -6,3 +6,11 @@ PyJWT==2.8
 supabase==2.4
 google-generativeai==0.8.3
 requests==2.32.3
+
+# Production
+gunicorn==23.0.0
+psycopg2-binary==2.9.10
+dj-database-url==2.3.0
+django-storages==1.14.4
+boto3==1.35.78
+whitenoise==6.8.2
