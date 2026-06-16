@@ -1,8 +1,12 @@
+import logging
+
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
 from .models import UserHealthData
 from .serializers import OnboardingCompleteSerializer, ProfileSerializer, UserHealthDataSerializer
+
+logger = logging.getLogger(__name__)
 
 
 PROFILE_REQUIRED_FIELDS = ("full_name", "gender", "age", "weight_kg", "height_cm")
@@ -97,6 +101,14 @@ class OnboardingCompleteView(APIView):
                     "detail": exc.detail,
                     "code": exc.get_codes(),
                 }
+            except Exception as exc:
+                generation_error = {
+                    "detail": str(exc),
+                    "code": "unexpected_error",
+                }
+                logger.exception(
+                    "Routine generation failed unexpectedly for user %s", request.user.id
+                )
 
         return Response(
             {

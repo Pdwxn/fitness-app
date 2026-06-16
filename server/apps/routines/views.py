@@ -1,9 +1,13 @@
+import logging
+
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+logger = logging.getLogger(__name__)
 
 from .models import Routine, RoutineDay, RoutineWeek
 from .serializers import RoutineDaySerializer, RoutineSerializer, RoutineWeekSerializer
@@ -95,6 +99,12 @@ class GenerateRoutineView(APIView):
             return Response(
                 {"detail": exc.detail, "code": exc.get_codes()},
                 status=exc.status_code,
+            )
+        except Exception as exc:
+            logger.exception("Routine generation failed unexpectedly for user %s", request.user.id)
+            return Response(
+                {"detail": str(exc), "code": "unexpected_error"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
         serializer = RoutineSerializer(routine)
