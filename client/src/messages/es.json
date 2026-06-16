@@ -201,7 +201,11 @@
         "duration": "Perfil guardado",
         "ai": "IA pendiente",
         "offline": "Sin rutina activa"
-      }
+      },
+      "cta": "Generar mi rutina",
+      "generating": "Creando tu rutina personalizada...",
+      "error": "Error al generar. Intenta de nuevo.",
+      "retry": "Intentar de nuevo"
     },
     "stats": {
       "title": "Vista rápida",

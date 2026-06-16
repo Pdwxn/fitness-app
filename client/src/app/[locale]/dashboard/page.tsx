@@ -34,6 +34,10 @@ export default async function DashboardPage({
               t("routinePending.badges.ai"),
               t("routinePending.badges.offline"),
             ],
+            cta: t("routinePending.cta"),
+            generating: t("routinePending.generating"),
+            error: t("routinePending.error"),
+            retry: t("routinePending.retry"),
           },
           stats: {
             title: t("stats.title"),

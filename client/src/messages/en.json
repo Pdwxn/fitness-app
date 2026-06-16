@@ -201,7 +201,11 @@
         "duration": "Profile saved",
         "ai": "AI pending",
         "offline": "No active routine"
-      }
+      },
+      "cta": "Generate my routine",
+      "generating": "Creating your personalized routine...",
+      "error": "Generation failed. Try again.",
+      "retry": "Try again"
     },
     "stats": {
       "title": "Quick view",

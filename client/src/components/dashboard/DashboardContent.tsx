@@ -26,6 +26,10 @@ type DashboardContentProps = {
       title: string;
       description: string;
       badges: [string, string, string];
+      cta: string;
+      generating: string;
+      error: string;
+      retry: string;
     };
     stats: {
       title: string;
@@ -88,6 +92,7 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
     isLoading: isRoutineLoading,
     hasError: hasRoutineError,
     isOfflineFallback,
+    refreshRoutine,
   } = useRoutineCache();
   const { stats } = useProgressStats();
   const activeRoutine = routine ? `${routine.month}/${routine.year}` : labels.stats.pending;
@@ -148,7 +153,7 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
         </section>
       ) : null}
 
-      {!isRoutineLoading && !routine ? <RoutinePendingCard {...labels.routinePending} /> : null}
+      {!isRoutineLoading && !routine ? <RoutinePendingCard {...labels.routinePending} onRoutineGenerated={refreshRoutine} /> : null}
 
       {routine ? (
         <>
