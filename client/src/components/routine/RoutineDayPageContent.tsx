@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 
 import { useRoutineCache } from "@/hooks/useRoutineCache";
@@ -43,6 +44,11 @@ type RoutineDayPageContentProps = {
 
 export function RoutineDayPageContent({ dayId, locale, labels }: RoutineDayPageContentProps) {
   const { routine, isLoading, hasError } = useRoutineCache();
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+
+  const handleImageError = (exerciseId: string) => {
+    setFailedImages((prev) => new Set(prev).add(exerciseId));
+  };
   const day = routine?.weeks.flatMap((week) => week.days).find((item) => item.id === dayId) ?? null;
   const estimateMinutes = day ? Math.max(30, day.exercises.length * 12) : 0;
 
@@ -84,11 +90,12 @@ export function RoutineDayPageContent({ dayId, locale, labels }: RoutineDayPageC
                 </p>
               </div>
 
-              {exercise.image_url ? (
+              {exercise.image_url && !failedImages.has(exercise.id) ? (
                 <img
                   src={exercise.image_url}
                   alt={exercise.name}
                   loading="lazy"
+                  onError={() => handleImageError(exercise.id)}
                   className="mt-4 w-full rounded-2xl object-cover"
                   style={{ aspectRatio: "16 / 9", maxHeight: 280 }}
                 />

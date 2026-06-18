@@ -57,6 +57,11 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
   const { logs, refreshLogs } = useDailyLogs({ routineDayId: day.id });
   const existingLog = logs.find((log) => log.date === date) ?? null;
   const [logId, setLogId] = useState(existingLog?.id ?? createId());
+  const [failedThumbnails, setFailedThumbnails] = useState<Set<string>>(new Set());
+
+  const handleThumbError = (exerciseId: string) => {
+    setFailedThumbnails((prev) => new Set(prev).add(exerciseId));
+  };
   const [completed, setCompleted] = useState(existingLog?.completed ?? false);
   const [dayNote, setDayNote] = useState(existingLog?.day_note ?? "");
   const [exerciseLogs, setExerciseLogs] = useState<ExerciseLog[]>(
@@ -143,11 +148,12 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
           <article key={exerciseLog.exercise_id} className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">
             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
               <div className="flex items-start gap-3">
-                {exercise?.image_url ? (
+                {exercise?.image_url && !failedThumbnails.has(exercise.id) ? (
                   <img
                     src={exercise.image_url}
                     alt={exerciseLog.exercise_name}
                     loading="lazy"
+                    onError={() => handleThumbError(exercise.id)}
                     className="size-14 shrink-0 rounded-xl object-cover"
                   />
                 ) : null}
