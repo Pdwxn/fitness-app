@@ -1,11 +1,19 @@
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 load_dotenv(BASE_DIR / ".env")
+
+
+def get_env_or_raise(key: str) -> str:
+    value = os.getenv(key)
+    if not value:
+        raise ImproperlyConfigured(f"Missing required env var: {key}")
+    return value
 
 
 def env_bool(name, default=False):
@@ -16,7 +24,7 @@ def env_list(name, default=""):
     return [item.strip().rstrip("/") for item in os.getenv(name, default).split(",") if item.strip()]
 
 
-SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-local-development-key")
+SECRET_KEY = get_env_or_raise("SECRET_KEY")
 DEBUG = env_bool("DEBUG")
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver")
 
@@ -121,10 +129,10 @@ SECURE_HSTS_PRELOAD = env_bool("SECURE_HSTS_PRELOAD", False)
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 
-SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET", "")
-SUPABASE_URL = os.getenv("SUPABASE_URL", "")
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+SUPABASE_JWT_SECRET = get_env_or_raise("SUPABASE_JWT_SECRET")
+SUPABASE_URL = get_env_or_raise("SUPABASE_URL")
+SUPABASE_SERVICE_ROLE_KEY = get_env_or_raise("SUPABASE_SERVICE_ROLE_KEY")
+GEMINI_API_KEY = get_env_or_raise("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
 
 REST_FRAMEWORK = {
@@ -137,4 +145,13 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.UserRateThrottle",
+        "rest_framework.throttling.AnonRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "user": "100/hour",
+        "anon": "10/hour",
+        "generate_routine": "3/day",
+    },
 }

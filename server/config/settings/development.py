@@ -1,3 +1,7 @@
+import os
+
+os.environ.setdefault("SECRET_KEY", "django-insecure-local-development-key")
+
 from .base import *  # noqa: F403
 
 

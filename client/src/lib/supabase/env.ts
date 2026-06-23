@@ -1,12 +1,13 @@
+function requireEnv(key: string): string {
+  const value = process.env[key];
+  if (!value) throw new Error(`Missing required env var: ${key}`);
+  return value;
+}
+
 export function getSupabaseEnv() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const publishableKey =
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!url || !publishableKey) {
-    throw new Error("Missing Supabase environment variables");
-  }
-
-  return { url, anonKey: publishableKey };
+  return {
+    supabaseUrl: requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    supabaseAnonKey: requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    djangoApiUrl: requireEnv("NEXT_PUBLIC_DJANGO_API_URL"),
+  };
 }

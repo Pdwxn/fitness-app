@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 logger = logging.getLogger(__name__)
@@ -92,6 +93,9 @@ class DevSeedRoutineView(APIView):
 
 
 class GenerateRoutineView(APIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "generate_routine"
+
     def post(self, request):
         try:
             routine, _ = generate_monthly_routine_if_needed(request.user, return_existing=False)

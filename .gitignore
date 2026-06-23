@@ -14,8 +14,9 @@ node_modules/
 .next/
 out/
 
-# Frontend env
-client/.env.local
+# Environment files
+.env
+.env.*
 
 # OS/editor
 .DS_Store
