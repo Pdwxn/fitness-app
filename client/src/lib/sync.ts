@@ -7,14 +7,33 @@ function getLogKey(log: Pick<DailyLog, "id" | "routine_day_id" | "date">) {
   return log.id || `${log.routine_day_id}:${log.date}`;
 }
 
+type Syncable = {
+  id: string;
+  updated_at: string;
+  [key: string]: unknown;
+};
+
+function resolveLWW<T extends Syncable>(local: T, remote: T): T {
+  return new Date(local.updated_at) >= new Date(remote.updated_at) ? local : remote;
+}
+
 export function mergeLogs(localLogs: DailyLog[], remoteLogs: DailyLog[]) {
   const merged = new Map<string, DailyLog>();
+
   for (const log of remoteLogs) {
     merged.set(getLogKey(log), log);
   }
+
   for (const log of localLogs) {
-    merged.set(getLogKey(log), log);
+    const key = getLogKey(log);
+    const existing = merged.get(key);
+    if (existing) {
+      merged.set(key, resolveLWW(log, existing));
+    } else {
+      merged.set(key, log);
+    }
   }
+
   return Array.from(merged.values()).sort((left, right) => right.date.localeCompare(left.date));
 }
 
