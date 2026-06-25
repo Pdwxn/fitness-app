@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { ApiError, authenticatedClientFetch } from "@/lib/api/authenticated-client";
+import { db } from "@/lib/db";
 import { queryKeys } from "@/lib/query-keys";
-import { removeFromStorage, STORAGE_KEYS } from "@/lib/storage";
 import type { RoutineCache } from "@/types/routine";
 
 export function useRoutineCache() {
@@ -10,10 +10,12 @@ export function useRoutineCache() {
     queryKey: queryKeys.routine.active(),
     queryFn: async () => {
       try {
-        return await authenticatedClientFetch<RoutineCache>("/api/v1/routines/active/");
+        const routine = await authenticatedClientFetch<RoutineCache>("/api/v1/routines/active/");
+        await db.routineCache.put(routine);
+        return routine;
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) {
-          removeFromStorage(STORAGE_KEYS.ROUTINE);
+          await db.routineCache.clear();
           return null;
         }
         throw error;

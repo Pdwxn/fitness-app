@@ -193,7 +193,6 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
         setInStorage(STORAGE_KEYS.ONBOARDING_STATUS, { completed: response.completed });
         if (response.routine) {
           setInStorage(STORAGE_KEYS.ROUTINE, response.routine);
-          setInStorage(STORAGE_KEYS.LAST_SYNC, Date.now());
         }
         clearStorage();
         reset();

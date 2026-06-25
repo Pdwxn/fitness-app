@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { db } from "@/lib/db";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { STORAGE_KEYS } from "@/lib/storage";
 
@@ -20,6 +21,12 @@ export function LogoutButton({ label, loadingLabel }: LogoutButtonProps) {
     const supabase = createSupabaseBrowserClient();
     await supabase.auth.signOut();
     Object.values(STORAGE_KEYS).forEach((key) => localStorage.removeItem(key));
+    await Promise.all([
+      db.routineCache.clear(),
+      db.dailyLogs.clear(),
+      db.pendingSync.clear(),
+      db.stats.clear(),
+    ]);
     router.refresh();
     setIsLoading(false);
   }

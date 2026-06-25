@@ -1,5 +1,5 @@
 import { authenticatedClientFetch } from "./api/authenticated-client";
-import { getFromStorage, setInStorage, STORAGE_KEYS } from "./storage";
+import { db, type StatsEntry } from "./db";
 import { useNextRoutineStore } from "@/stores/nextRoutineStore";
 import type { DailyLog, DailyLogBatchResponse, ProgressStats } from "@/types/progress";
 
@@ -57,38 +57,44 @@ export function calculateStats(logs: DailyLog[], pendingCount = 0): ProgressStat
   return stats;
 }
 
-export function updateStatsLocally(logs: DailyLog[]) {
-  const pending = getFromStorage<DailyLog[]>(STORAGE_KEYS.PENDING_SYNC) ?? [];
-  const stats = calculateStats(logs, pending.length);
+export async function saveLogLocally(log: DailyLog): Promise<void> {
+  const existing = await db.dailyLogs.get(log.id);
+  if (existing) {
+    await db.dailyLogs.put({ ...existing, ...log });
+  } else {
+    await db.dailyLogs.add(log);
+  }
 
-  setInStorage(STORAGE_KEYS.STATS, stats);
-  return stats;
+  const existingPending = await db.pendingSync
+    .filter((item) => item.log.routine_day_id === log.routine_day_id && item.log.date === log.date)
+    .first();
+  if (existingPending) {
+    await db.pendingSync.update(existingPending.id, { log });
+  } else {
+    await db.pendingSync.add({
+      id: crypto.randomUUID(),
+      log,
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  await updateStatsIncrementally(log);
 }
 
-export function saveLogLocally(log: DailyLog) {
-  const logs = getFromStorage<DailyLog[]>(STORAGE_KEYS.DAILY_LOGS) ?? [];
-  const logKey = getLogKey(log);
-  const updated = [...logs.filter((item) => getLogKey(item) !== logKey), log];
-
-  setInStorage(STORAGE_KEYS.DAILY_LOGS, updated);
-  updateStatsLocally(updated);
-
-  const pending = getFromStorage<DailyLog[]>(STORAGE_KEYS.PENDING_SYNC) ?? [];
-  const pendingUpdated = [...pending.filter((item) => getLogKey(item) !== logKey), log];
-  setInStorage(STORAGE_KEYS.PENDING_SYNC, pendingUpdated);
+export async function getLocalLogs(): Promise<DailyLog[]> {
+  return db.dailyLogs.toArray();
 }
 
-export function getLocalLogs() {
-  return getFromStorage<DailyLog[]>(STORAGE_KEYS.DAILY_LOGS) ?? [];
+export async function getPendingLogs(): Promise<DailyLog[]> {
+  const items = await db.pendingSync.toArray();
+  return items.map((item) => item.log);
 }
 
-export function getPendingLogs() {
-  return getFromStorage<DailyLog[]>(STORAGE_KEYS.PENDING_SYNC) ?? [];
-}
+export async function syncPendingLogs(): Promise<boolean> {
+  const pending = await db.pendingSync.toArray();
+  if (!pending.length) return true;
 
-export async function syncPendingLogs() {
-  const pending = getFromStorage<DailyLog[]>(STORAGE_KEYS.PENDING_SYNC);
-  if (!pending?.length) return true;
+  const pendingLogs = pending.map((item) => item.log);
 
   try {
     const response = await authenticatedClientFetch<DailyLogBatchResponse>("/api/v1/progress/logs/batch/", {
@@ -96,15 +102,17 @@ export async function syncPendingLogs() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ logs: pending }),
+      body: JSON.stringify({ logs: pendingLogs }),
     });
 
-    const localLogs = getFromStorage<DailyLog[]>(STORAGE_KEYS.DAILY_LOGS) ?? [];
+    const localLogs = await db.dailyLogs.toArray();
     const mergedLogs = mergeLogs(localLogs, response.logs);
-    setInStorage(STORAGE_KEYS.PENDING_SYNC, []);
-    setInStorage(STORAGE_KEYS.DAILY_LOGS, mergedLogs);
-    updateStatsLocally(mergedLogs);
-    setInStorage(STORAGE_KEYS.LAST_SYNC, Date.now());
+    await db.dailyLogs.clear();
+    await db.dailyLogs.bulkAdd(mergedLogs);
+    await db.pendingSync.clear();
+
+    const mergedStats = calculateStats(mergedLogs, 0);
+    await db.stats.put({ id: "progress", ...mergedStats });
 
     if (response.next_routine) {
       useNextRoutineStore.getState().setNextRoutine(response.next_routine);
@@ -112,12 +120,32 @@ export async function syncPendingLogs() {
 
     return true;
   } catch {
-    // Backend may be asleep on the free tier. Keep data local and retry later.
     return false;
   }
 }
 
-export function startSilentSync(intervalMs = 10_000) {
+export async function updateStatsIncrementally(newLog: DailyLog): Promise<StatsEntry> {
+  const current = await db.stats.get("progress");
+  const stats: StatsEntry = current ?? { id: "progress", completed_days: 0, total_exercises_completed: 0, pending_sync: 0 };
+
+  if (newLog.completed) {
+    stats.completed_days += 1;
+  }
+  stats.total_exercises_completed += newLog.exercises_done.filter((e) => e.completed).length;
+
+  await db.stats.put(stats);
+  return stats;
+}
+
+export async function updateStatsLocally(logs: DailyLog[]): Promise<StatsEntry> {
+  const pending = await db.pendingSync.count();
+  const stats = calculateStats(logs, pending);
+  const entry: StatsEntry = { id: "progress", ...stats };
+  await db.stats.put(entry);
+  return entry;
+}
+
+export function startSilentSync(intervalMs = 30_000) {
   void syncPendingLogs();
   return window.setInterval(syncPendingLogs, intervalMs);
 }

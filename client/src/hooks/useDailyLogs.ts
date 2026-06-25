@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { authenticatedClientFetch } from "@/lib/api/authenticated-client";
+import { db } from "@/lib/db";
 import { queryKeys } from "@/lib/query-keys";
-import { getFromStorage, setInStorage, STORAGE_KEYS } from "@/lib/storage";
 import { getPendingLogs, mergeLogs, updateStatsLocally } from "@/lib/sync";
 import type { DailyLog } from "@/types/progress";
 
@@ -19,29 +19,23 @@ export function useDailyLogs(options: UseDailyLogsOptions = {}) {
       const query = options.routineDayId ? `?routine_day_id=${options.routineDayId}` : "";
       const remoteLogs = await authenticatedClientFetch<DailyLog[]>(`/api/v1/progress/logs/${query}`);
 
-      const pendingLogs = getPendingLogs();
+      const pendingLogs = await getPendingLogs();
       const mergedLogs = mergeLogs(remoteLogs, pendingLogs);
 
-      const allCachedLogs = mergeLogs(
-        mergedLogs,
-        getFromStorage<DailyLog[]>(STORAGE_KEYS.DAILY_LOGS) ?? [],
-      );
-      setInStorage(STORAGE_KEYS.DAILY_LOGS, allCachedLogs);
-      updateStatsLocally(allCachedLogs);
+      const localLogs = await db.dailyLogs.toArray();
+      const allCachedLogs = mergeLogs(localLogs, mergedLogs);
+      await db.dailyLogs.clear();
+      await db.dailyLogs.bulkAdd(allCachedLogs);
+      await updateStatsLocally(allCachedLogs);
 
-      return mergedLogs;
+      return filterLogs(mergedLogs, options.routineDayId);
     },
     staleTime: 30_000,
   });
 
-  const cachedLogs = getFromStorage<DailyLog[]>(STORAGE_KEYS.DAILY_LOGS) ?? [];
-  const pendingLogs = getPendingLogs();
-  const localLogs = mergeLogs(cachedLogs, pendingLogs);
-  const filteredLocalLogs = filterLogs(localLogs, options.routineDayId);
-
-  const logs = data ?? filteredLocalLogs;
-  const hasError = isError && !filteredLocalLogs.length;
-  const isOfflineFallback = isError && Boolean(filteredLocalLogs.length);
+  const logs = data ?? [];
+  const hasError = isError && !logs.length;
+  const isOfflineFallback = isError && Boolean(logs.length);
 
   return {
     logs,

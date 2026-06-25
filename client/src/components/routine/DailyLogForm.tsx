@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { useDailyLogs } from "@/hooks/useDailyLogs";
-import { getPendingLogs, saveLogLocally, syncPendingLogs } from "@/lib/sync";
+import { saveLogLocally } from "@/lib/sync";
 import type { DailyLog, ExerciseLog } from "@/types/progress";
 import type { RoutineDay } from "@/types/routine";
 
@@ -99,12 +99,9 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
         exercises_done: exerciseLogs,
       };
 
-      saveLogLocally(log);
+      await saveLogLocally(log);
       setSaveStatus(labels.savedLocal);
-
-      await syncPendingLogs();
       refreshLogs();
-      setSaveStatus(getPendingLogs().length ? labels.savedLocal : labels.synced);
     } finally {
       setIsSaving(false);
     }

@@ -1,10 +1,5 @@
 export const STORAGE_KEYS = {
   ROUTINE: "fit_routine_active",
-  WEEKLY_VIEW: "fit_routine_weeks",
-  DAILY_LOGS: "fit_daily_logs",
-  PENDING_SYNC: "fit_pending_sync",
-  STATS: "fit_stats_cache",
-  LAST_SYNC: "fit_last_sync_ts",
   ONBOARDING_STATUS: "fit_onboarding_status",
   ONBOARDING_DRAFT: "fit_onboarding_draft",
   PROFILE: "fit_profile_cache",

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { useRoutineCache } from "@/hooks/useRoutineCache";
 import { ApiError, authenticatedClientFetch } from "@/lib/api/authenticated-client";
+import { db } from "@/lib/db";
 import { getFromStorage, setInStorage, STORAGE_KEYS } from "@/lib/storage";
 import type {
   ActivityLevel,
@@ -66,12 +67,13 @@ export function ProfileContent({ locale }: { locale: string }) {
     const cachedProfile = getFromStorage<OnboardingProfile>(STORAGE_KEYS.PROFILE);
     const cachedHealth = getFromStorage<OnboardingHealth>(STORAGE_KEYS.HEALTH_PROFILE);
     const cachedSettings = getFromStorage<SettingsCache>(STORAGE_KEYS.SETTINGS);
-    const pendingSync = getFromStorage<unknown[]>(STORAGE_KEYS.PENDING_SYNC);
-
     if (cachedProfile) setProfile(cachedProfile);
     if (!cachedProfile && cachedSettings) setProfile((current) => ({ ...current, ...cachedSettings }));
     if (cachedHealth) setHealth(cachedHealth);
-    setPendingSyncCount(pendingSync?.length ?? 0);
+
+    db.pendingSync.count().then((count) => {
+      if (!cancelled) setPendingSyncCount(count);
+    });
     if (cachedProfile || cachedHealth) setIsLoading(false);
 
     Promise.all([
