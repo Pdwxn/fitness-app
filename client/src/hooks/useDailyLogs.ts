@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { authenticatedClientFetch } from "@/lib/api/authenticated-client";
+import { queryKeys } from "@/lib/query-keys";
 import { getFromStorage, setInStorage, STORAGE_KEYS } from "@/lib/storage";
 import { getPendingLogs, mergeLogs, updateStatsLocally } from "@/lib/sync";
 import type { DailyLog } from "@/types/progress";
@@ -10,56 +11,45 @@ type UseDailyLogsOptions = {
 };
 
 export function useDailyLogs(options: UseDailyLogsOptions = {}) {
-  const [logs, setLogs] = useState<DailyLog[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const [isOfflineFallback, setIsOfflineFallback] = useState(false);
-  const [refreshIndex, setRefreshIndex] = useState(0);
+  const queryKey = queryKeys.progress.logs(options.routineDayId);
 
-  useEffect(() => {
-    let cancelled = false;
-    const cachedLogs = getFromStorage<DailyLog[]>(STORAGE_KEYS.DAILY_LOGS) ?? [];
-    const pendingLogs = getPendingLogs();
-    const localLogs = mergeLogs(cachedLogs, pendingLogs);
-    const filteredLocalLogs = filterLogs(localLogs, options.routineDayId);
+  const { data, isLoading, isError, refetch } = useQuery<DailyLog[]>({
+    queryKey,
+    queryFn: async () => {
+      const query = options.routineDayId ? `?routine_day_id=${options.routineDayId}` : "";
+      const remoteLogs = await authenticatedClientFetch<DailyLog[]>(`/api/v1/progress/logs/${query}`);
 
-    setLogs(filteredLocalLogs);
-    setIsLoading(!filteredLocalLogs.length);
-    setHasError(false);
-    setIsOfflineFallback(false);
+      const pendingLogs = getPendingLogs();
+      const mergedLogs = mergeLogs(remoteLogs, pendingLogs);
 
-    async function loadLogs() {
-      try {
-        const query = options.routineDayId ? `?routine_day_id=${options.routineDayId}` : "";
-        const remoteLogs = await authenticatedClientFetch<DailyLog[]>(`/api/v1/progress/logs/${query}`);
-        if (cancelled) return;
+      const allCachedLogs = mergeLogs(
+        mergedLogs,
+        getFromStorage<DailyLog[]>(STORAGE_KEYS.DAILY_LOGS) ?? [],
+      );
+      setInStorage(STORAGE_KEYS.DAILY_LOGS, allCachedLogs);
+      updateStatsLocally(allCachedLogs);
 
-        const mergedLogs = mergeLogs(remoteLogs, pendingLogs);
-        const allCachedLogs = mergeLogs(mergedLogs, cachedLogs);
-        setLogs(filterLogs(mergedLogs, options.routineDayId));
-        setInStorage(STORAGE_KEYS.DAILY_LOGS, allCachedLogs);
-        updateStatsLocally(allCachedLogs);
-      } catch {
-        if (cancelled) return;
-        setHasError(!filteredLocalLogs.length);
-        setIsOfflineFallback(Boolean(filteredLocalLogs.length));
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    }
+      return mergedLogs;
+    },
+    staleTime: 30_000,
+  });
 
-    loadLogs();
+  const cachedLogs = getFromStorage<DailyLog[]>(STORAGE_KEYS.DAILY_LOGS) ?? [];
+  const pendingLogs = getPendingLogs();
+  const localLogs = mergeLogs(cachedLogs, pendingLogs);
+  const filteredLocalLogs = filterLogs(localLogs, options.routineDayId);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [options.routineDayId, refreshIndex]);
+  const logs = data ?? filteredLocalLogs;
+  const hasError = isError && !filteredLocalLogs.length;
+  const isOfflineFallback = isError && Boolean(filteredLocalLogs.length);
 
-  function refreshLogs() {
-    setRefreshIndex((current) => current + 1);
-  }
-
-  return { logs, isLoading, hasError, isOfflineFallback, refreshLogs };
+  return {
+    logs,
+    isLoading,
+    hasError,
+    isOfflineFallback,
+    refreshLogs: refetch,
+  };
 }
 
 function filterLogs(logs: DailyLog[], routineDayId?: string) {

@@ -29,14 +29,18 @@ def get_active_routine_summary_queryset(user):
 
 class ActiveRoutineView(APIView):
     def get(self, request):
-        routine = get_active_routine_summary_queryset(request.user).first()
+        routine = get_active_routine_queryset(request.user).first()
         if routine is None:
             return Response(
                 {"detail": "No active routine found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        serializer = RoutineSummarySerializer(routine)
+        summary = request.query_params.get("summary") == "true"
+        if summary:
+            serializer = RoutineSummarySerializer(routine)
+        else:
+            serializer = RoutineSerializer(routine)
         return Response(serializer.data)
 
 
