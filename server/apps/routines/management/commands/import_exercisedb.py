@@ -1,6 +1,7 @@
 import json
 import os
 
+from django.utils import timezone
 from django.core.management.base import BaseCommand
 
 from apps.routines.models import StoredExercise
@@ -16,8 +17,8 @@ class Command(BaseCommand):
         with open(path, encoding="utf-8") as f:
             exercises = json.load(f)
 
-        self.stdout.write(f"Deleting existing {StoredExercise.objects.count()} records...")
-        StoredExercise.objects.all().delete()
+        self.stdout.write(f"Soft-deleting existing {StoredExercise.objects.count()} records...")
+        StoredExercise.all_objects.update(deleted_at=timezone.now())
 
         objects = []
         for ex in exercises:

@@ -34,24 +34,24 @@ def import_exercises(apps, schema_editor):
     StoredExercise.objects.bulk_create(objects, ignore_conflicts=True)
 
 
-def _clear_old_cdn_urls():
-    from apps.routines.models import RoutineExercise as RealExercise
+def _clear_old_cdn_urls(apps):
+    RoutineExercise = apps.get_model("routines", "RoutineExercise")
 
-    old_count = RealExercise.objects.filter(image_url__contains="cdn.exercisedb.dev").count()
+    old_count = RoutineExercise.objects.filter(image_url__contains="cdn.exercisedb.dev").count()
     if old_count:
-        RealExercise.objects.filter(image_url__contains="cdn.exercisedb.dev").update(image_url="")
+        RoutineExercise.objects.filter(image_url__contains="cdn.exercisedb.dev").update(image_url="")
         print(f"Cleared {old_count} stale CDN image_urls")
 
 
 def enrich_existing_routines(apps, schema_editor):
-    from apps.routines.models import Routine as RealRoutine
+    Routine = apps.get_model("routines", "Routine")
     from apps.routines.services.exercisedb_service import enrich_routine
 
-    _clear_old_cdn_urls()
+    _clear_old_cdn_urls(apps)
 
     total_exercises = 0
-    for pk in RealRoutine.objects.values_list("pk", flat=True):
-        routine = RealRoutine.objects.get(pk=pk)
+    for pk in Routine.objects.values_list("pk", flat=True):
+        routine = Routine.objects.get(pk=pk)
         enriched = enrich_routine(routine)
         total_exercises += enriched
 

@@ -2,6 +2,7 @@ import uuid
 
 from django.db import models
 
+from apps.shared.managers import ActiveManager
 from apps.users.models import UserProfile
 
 
@@ -51,6 +52,10 @@ class UserHealthData(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    objects = ActiveManager()
+    all_objects = models.Manager()
 
     def __str__(self):
         return f"Health data for {self.user}"

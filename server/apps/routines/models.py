@@ -1,7 +1,9 @@
 import uuid
 
 from django.db import models
+from django.utils import timezone
 
+from apps.shared.managers import ActiveManager
 from apps.users.models import UserProfile
 
 
@@ -17,6 +19,12 @@ class StoredExercise(models.Model):
     category = models.CharField(max_length=50, blank=True, default="")
     image_paths = models.JSONField(default=list, blank=True)
     external_id = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    objects = ActiveManager()
+    all_objects = models.Manager()
 
     class Meta:
         ordering = ("name",)
@@ -42,6 +50,10 @@ class Routine(models.Model):
     raw_gemini_response = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    objects = ActiveManager()
+    all_objects = models.Manager()
 
     class Meta:
         ordering = ("-year", "-month", "-created_at")
@@ -77,6 +89,10 @@ class RoutineWeek(models.Model):
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    objects = ActiveManager()
+    all_objects = models.Manager()
 
     class Meta:
         ordering = ("week_number",)
@@ -107,6 +123,10 @@ class RoutineDay(models.Model):
     is_rest_day = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    objects = ActiveManager()
+    all_objects = models.Manager()
 
     class Meta:
         ordering = ("day_number",)
@@ -146,6 +166,10 @@ class RoutineExercise(models.Model):
     order = models.PositiveSmallIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    objects = ActiveManager()
+    all_objects = models.Manager()
 
     class Meta:
         ordering = ("order", "created_at")

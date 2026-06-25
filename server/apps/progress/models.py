@@ -2,6 +2,7 @@ import uuid
 
 from django.db import models
 
+from apps.shared.managers import ActiveManager
 from apps.routines.models import RoutineDay
 from apps.users.models import UserProfile
 
@@ -24,6 +25,10 @@ class DailyLog(models.Model):
     exercises_done = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    objects = ActiveManager()
+    all_objects = models.Manager()
 
     class Meta:
         ordering = ("-date", "-created_at")

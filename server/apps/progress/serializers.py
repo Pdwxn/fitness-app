@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.db import transaction
 from rest_framework import serializers
 
 from apps.routines.models import RoutineDay
@@ -57,24 +58,25 @@ class DailyLogSerializer(serializers.ModelSerializer):
         log_id = validated_data.pop("id", None)
         routine_day_id = validated_data.pop("routine_day_id")
         routine_day = RoutineDay.objects.get(id=routine_day_id, week__routine__user=user)
-        log = DailyLog.objects.filter(
-            user=user,
-            routine_day=routine_day,
-            date=validated_data["date"],
-        ).first()
 
-        if log is not None:
-            for field, value in validated_data.items():
-                setattr(log, field, value)
-            log.save()
-            return log
+        with transaction.atomic():
+            existing = DailyLog.objects.select_for_update().filter(
+                user=user,
+                routine_day=routine_day,
+                date=validated_data["date"],
+            ).first()
 
-        create_data = {"user": user, "routine_day": routine_day, **validated_data}
-        if log_id:
-            create_data["id"] = log_id
+            if existing is not None:
+                for field, value in validated_data.items():
+                    setattr(existing, field, value)
+                existing.save()
+                return existing
 
-        log = DailyLog.objects.create(**create_data)
-        return log
+            create_data = {"user": user, "routine_day": routine_day, **validated_data}
+            if log_id:
+                create_data["id"] = log_id
+
+            return DailyLog.objects.create(**create_data)
 
     def update(self, instance, validated_data):
         validated_data.pop("routine_day_id", None)

@@ -127,7 +127,7 @@ class DailyLogBatchView(APIView):
                 if log_id:
                     lookup |= Q(id=log_id, user=request.user)
 
-                existing = DailyLog.objects.filter(lookup).first()
+                existing = DailyLog.objects.select_for_update().filter(lookup).first()
                 if existing:
                     for field, value in log_data.items():
                         setattr(existing, field, value)
