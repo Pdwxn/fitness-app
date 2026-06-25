@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Count, Q
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -19,19 +19,20 @@ def get_user_logs(user):
     return DailyLog.objects.filter(user=user).select_related("routine_day", "routine_day__week", "routine_day__week__routine")
 
 
-def calculate_stats(logs):
-    completed_days = 0
-    total_exercises_completed = 0
+def calculate_stats(user):
+    agg = DailyLog.objects.filter(user=user).aggregate(
+        completed_days=Count("id", filter=Q(completed=True)),
+    )
 
-    for log in logs:
-        if log.completed:
-            completed_days += 1
-        total_exercises_completed += sum(
-            1 for exercise in log.exercises_done if exercise.get("completed")
-        )
+    exercises_data = list(
+        DailyLog.objects.filter(user=user).values_list("exercises_done", flat=True)
+    )
+    total_exercises_completed = sum(
+        1 for exercises in exercises_data for e in exercises if e.get("completed")
+    )
 
     return {
-        "completed_days": completed_days,
+        "completed_days": agg["completed_days"],
         "total_exercises_completed": total_exercises_completed,
         "pending_sync": 0,
     }
@@ -117,18 +118,38 @@ class DailyLogBatchView(APIView):
         created = 0
         updated = 0
         logs = []
+        log_data_list = serializer.validated_data["logs"]
+
+        routine_day_ids = [ld["routine_day_id"] for ld in log_data_list]
+        routine_days = RoutineDay.objects.filter(
+            id__in=routine_day_ids, week__routine__user=request.user
+        ).in_bulk()
+
+        existing_logs_qs = DailyLog.objects.filter(
+            user=request.user,
+            routine_day_id__in=routine_day_ids,
+        )
+        existing_by_id = {}
+        existing_by_key = {}
+        for log in existing_logs_qs:
+            existing_by_id[str(log.id)] = log
+            existing_by_key[(str(log.routine_day_id), str(log.date))] = log
 
         with transaction.atomic():
-            for log_data in serializer.validated_data["logs"]:
+            for log_data in log_data_list:
                 routine_day_id = log_data.pop("routine_day_id")
-                routine_day = RoutineDay.objects.get(id=routine_day_id, week__routine__user=request.user)
+                routine_day = routine_days.get(routine_day_id)
                 log_id = log_data.pop("id", None)
-                lookup = Q(user=request.user, routine_day=routine_day, date=log_data["date"])
-                if log_id:
-                    lookup |= Q(id=log_id, user=request.user)
 
-                existing = DailyLog.objects.select_for_update().filter(lookup).first()
+                existing = None
+                if log_id and log_id in existing_by_id:
+                    existing = existing_by_id[log_id]
+                elif routine_day:
+                    key = (routine_day_id, log_data["date"])
+                    existing = existing_by_key.get(key)
+
                 if existing:
+                    existing = DailyLog.objects.select_for_update().get(pk=existing.pk)
                     for field, value in log_data.items():
                         setattr(existing, field, value)
                     existing.routine_day = routine_day
@@ -158,6 +179,6 @@ class DailyLogBatchView(APIView):
 
 class ProgressStatsView(APIView):
     def get(self, request):
-        stats = calculate_stats(get_user_logs(request.user))
+        stats = calculate_stats(request.user)
         serializer = ProgressStatsSerializer(stats)
         return Response(serializer.data)
