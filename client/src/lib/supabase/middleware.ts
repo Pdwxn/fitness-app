@@ -4,10 +4,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv } from "./env";
 
 export async function updateSupabaseSession(request: NextRequest) {
-  const { url, anonKey } = getSupabaseEnv();
+  const { supabaseUrl, supabaseAnonKey } = getSupabaseEnv();
   let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(url, anonKey, {
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();

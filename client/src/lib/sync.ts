@@ -9,12 +9,14 @@ function getLogKey(log: Pick<DailyLog, "id" | "routine_day_id" | "date">) {
 
 type Syncable = {
   id: string;
-  updated_at: string;
+  updated_at?: string;
   [key: string]: unknown;
 };
 
 function resolveLWW<T extends Syncable>(local: T, remote: T): T {
-  return new Date(local.updated_at) >= new Date(remote.updated_at) ? local : remote;
+  const localTime = local.updated_at ?? "1970-01-01T00:00:00Z";
+  const remoteTime = remote.updated_at ?? "1970-01-01T00:00:00Z";
+  return new Date(localTime) >= new Date(remoteTime) ? local : remote;
 }
 
 export function mergeLogs(localLogs: DailyLog[], remoteLogs: DailyLog[]) {

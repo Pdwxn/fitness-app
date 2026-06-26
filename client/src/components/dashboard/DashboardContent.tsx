@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
 import { useProgressStats } from "@/hooks/useProgressStats";
 import { useRoutineCache } from "@/hooks/useRoutineCache";
@@ -95,8 +97,19 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
     refreshRoutine,
   } = useRoutineCache();
   const { stats } = useProgressStats();
-  const activeRoutine = routine ? `${routine.month}/${routine.year}` : labels.stats.pending;
+  const activeRoutine = useMemo(
+    () => routine ? `${routine.month}/${routine.year}` : labels.stats.pending,
+    [routine, labels.stats.pending],
+  );
   const completedDays = stats?.completed_days ?? 0;
+  const totalDays = useMemo(
+    () => routine?.weeks?.reduce((acc, w) => acc + w.days.filter((d) => !d.is_rest_day).length, 0) ?? 0,
+    [routine],
+  );
+  const completionRate = useMemo(
+    () => (completedDays / (totalDays || 1)),
+    [completedDays, totalDays],
+  );
 
   if (isLoading) {
     return (
