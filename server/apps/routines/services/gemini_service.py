@@ -208,7 +208,7 @@ def generate_routine_with_gemini(user, previous_month_notes=None):
                 "max_output_tokens": 32768,
                 "response_mime_type": "application/json",
             },
-            request_options={"timeout": 90000},
+            request_options={"timeout": 60000},
         )
         return response.text
     except Exception as exc:
