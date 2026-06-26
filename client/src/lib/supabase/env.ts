@@ -6,8 +6,8 @@ function requireEnv(key: string): string {
 
 export function getSupabaseEnv() {
   return {
-    supabaseUrl: requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    supabaseAnonKey: requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-    djangoApiUrl: requireEnv("NEXT_PUBLIC_DJANGO_API_URL"),
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    djangoApiUrl: process.env.NEXT_PUBLIC_DJANGO_API_URL!,
   };
 }
