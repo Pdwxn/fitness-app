@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
+import { StatusCard } from "@/components/ui/StatusCard";
 import { useRoutineCache } from "@/hooks/useRoutineCache";
 
 import { DailyLogForm } from "./DailyLogForm";
@@ -151,15 +152,4 @@ export function RoutineDayPageContent({ dayId, locale, labels }: RoutineDayPageC
   );
 }
 
-function StatusCard({ message, tone = "neutral" }: { message: string; tone?: "neutral" | "error" }) {
-  const styles = {
-    neutral: "border-white/10 bg-white/[0.06] text-white/65",
-    error: "border-red-400/30 bg-red-500/10 text-red-200",
-  };
 
-  return (
-    <section className={`rounded-[2rem] border p-6 shadow-sm ${styles[tone]}`}>
-      <p className="text-sm font-bold">{message}</p>
-    </section>
-  );
-}

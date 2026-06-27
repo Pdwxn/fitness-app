@@ -3,6 +3,15 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { NumberField, SelectField, TextField } from "@/components/ui/FormFields";
+import {
+  ACTIVITY_LEVELS,
+  EQUIPMENT_TYPES,
+  GENDER_OPTIONS,
+  HOME_EQUIPMENT,
+  PHYSICAL_GOALS,
+  ROUTINE_TYPES,
+} from "@/lib/constants";
 import { useRoutineCache } from "@/hooks/useRoutineCache";
 import { ApiError, authenticatedClientFetch } from "@/lib/api/authenticated-client";
 import { db } from "@/lib/db";
@@ -23,12 +32,12 @@ type ProfileResponse = OnboardingProfile & { id: string; created_at: string; upd
 type HealthResponse = OnboardingHealth & { id: string; created_at: string; updated_at: string };
 type SettingsCache = { preferred_language: "es" | "en"; preferred_units: UnitSystem };
 
-const genders: Gender[] = ["male", "female", "prefer_not_to_say"];
-const activityLevels: ActivityLevel[] = ["sedentary", "light", "moderate", "active", "very_active"];
-const goals: PhysicalGoal[] = ["lose_weight", "gain_muscle", "endurance", "flexibility", "general_fitness"];
-const equipmentTypes: EquipmentType[] = ["gym", "home", "calisthenics"];
-const homeEquipment: HomeEquipment[] = ["dumbbells", "pull_up_bar", "bands", "kettlebell", "bench", "trx", "bodyweight_only"];
-const routineTypes: RoutineType[] = ["push_pull_legs", "upper_lower", "hybrid", "5_days"];
+const genders: Gender[] = [...GENDER_OPTIONS];
+const activityLevels: ActivityLevel[] = [...ACTIVITY_LEVELS];
+const goals: PhysicalGoal[] = [...PHYSICAL_GOALS];
+const equipmentTypes: EquipmentType[] = [...EQUIPMENT_TYPES];
+const homeEquipment: HomeEquipment[] = [...HOME_EQUIPMENT];
+const routineTypes: RoutineType[] = [...ROUTINE_TYPES];
 
 const emptyProfile = (locale: string): OnboardingProfile => ({
   full_name: "",
@@ -261,36 +270,6 @@ function InfoTile({ label, value }: { label: string; value: string }) {
       <p className="text-xs font-black uppercase tracking-[0.18em] text-white/45">{label}</p>
       <p className="mt-2 text-2xl font-black text-white">{value}</p>
     </div>
-  );
-}
-
-function TextField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
-  return (
-    <label className="flex flex-col gap-2 text-sm font-bold text-white/65">
-      {label}
-      <input value={value} onChange={(event) => onChange(event.target.value)} className="apex-input rounded-2xl px-4 py-3 text-white" />
-    </label>
-  );
-}
-
-function NumberField({ label, value, onChange }: { label: string; value: number | null; onChange: (value: number | null) => void }) {
-  return (
-    <label className="flex flex-col gap-2 text-sm font-bold text-white/65">
-      {label}
-      <input type="number" value={value ?? ""} onChange={(event) => onChange(event.target.value ? Number(event.target.value) : null)} className="apex-input rounded-2xl px-4 py-3 text-white" />
-    </label>
-  );
-}
-
-function SelectField({ label, value, onChange, options }: { label: string; value: string; onChange: (value: string) => void; options: string[] }) {
-  return (
-    <label className="flex flex-col gap-2 text-sm font-bold text-white/65">
-      {label}
-      <select value={value} onChange={(event) => onChange(event.target.value)} className="apex-input rounded-2xl px-4 py-3 text-white">
-        <option value="">-</option>
-        {options.map((option) => <option key={option} value={option}>{option.replaceAll("_", " ")}</option>)}
-      </select>
-    </label>
   );
 }
 

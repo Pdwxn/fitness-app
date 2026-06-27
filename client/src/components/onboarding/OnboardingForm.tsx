@@ -37,7 +37,6 @@ type OnboardingFormProps = {
     generationFailedDescription: string;
     goToDashboard: string;
     steps: string[];
-    placeholders: string[];
   };
 };
 

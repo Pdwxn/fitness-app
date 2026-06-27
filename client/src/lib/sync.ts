@@ -1,6 +1,6 @@
 import { authenticatedClientFetch } from "./api/authenticated-client";
 import { db, type StatsEntry } from "./db";
-import { useNextRoutineStore } from "@/stores/nextRoutineStore";
+import { useNextRoutineStore } from "@/store/nextRoutineStore";
 import type { DailyLog, DailyLogBatchResponse, ProgressStats } from "@/types/progress";
 
 function getLogKey(log: Pick<DailyLog, "id" | "routine_day_id" | "date">) {

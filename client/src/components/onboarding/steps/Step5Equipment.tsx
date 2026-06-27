@@ -1,18 +1,11 @@
 import { useTranslations } from "next-intl";
 
+import { EQUIPMENT_TYPES, HOME_EQUIPMENT } from "@/lib/constants";
 import { useOnboardingStore } from "@/store/onboardingStore";
 import type { EquipmentType, HomeEquipment } from "@/types/onboarding";
 
-const equipmentTypes: EquipmentType[] = ["gym", "home", "calisthenics"];
-const homeEquipment: HomeEquipment[] = [
-  "dumbbells",
-  "pull_up_bar",
-  "bands",
-  "kettlebell",
-  "bench",
-  "trx",
-  "bodyweight_only",
-];
+const equipmentTypes: EquipmentType[] = [...EQUIPMENT_TYPES];
+const homeEquipment: HomeEquipment[] = [...HOME_EQUIPMENT];
 
 export function Step5Equipment() {
   const t = useTranslations("Onboarding.form.equipment");

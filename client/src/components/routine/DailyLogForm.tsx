@@ -110,7 +110,7 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
   if (day.is_rest_day) return null;
 
   return (
-    <section className="apex-card rounded-[2rem] p-6 text-white">
+    <section aria-label={labels.title} className="apex-card rounded-[2rem] p-6 text-white">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#a6ff00]">
@@ -123,6 +123,7 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
             type="checkbox"
             checked={completed}
             onChange={(event) => setCompleted(event.target.checked)}
+            aria-label={labels.completedDay}
             className="size-4 accent-[#a6ff00]"
           />
           {labels.completedDay}
@@ -135,6 +136,7 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
           value={dayNote}
           onChange={(event) => setDayNote(event.target.value)}
           placeholder={labels.dayNotePlaceholder}
+          aria-label={labels.dayNote}
           className="apex-input mt-2 min-h-24 w-full rounded-3xl px-4 py-3 text-sm"
         />
       </label>
@@ -213,7 +215,7 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
         >
           {isSaving ? labels.saving : labels.save}
         </button>
-        {saveStatus ? <p className="text-sm font-bold text-white/60">{saveStatus}</p> : null}
+        {saveStatus ? <p aria-live="polite" className="text-sm font-bold text-white/60">{saveStatus}</p> : null}
       </div>
     </section>
   );
@@ -228,6 +230,7 @@ function NumberField({ label, value, onChange }: { label: string; value: number 
         min="0"
         value={value ?? ""}
         onChange={(event) => onChange(event.target.value ? Number(event.target.value) : null)}
+        aria-label={label}
         className="apex-input mt-1 w-full rounded-2xl px-3 py-2 text-sm"
       />
     </label>
@@ -241,6 +244,7 @@ function TextField({ label, value, onChange }: { label: string; value: string; o
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        aria-label={label}
         className="apex-input mt-1 w-full rounded-2xl px-3 py-2 text-sm"
       />
     </label>

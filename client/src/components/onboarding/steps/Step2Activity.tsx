@@ -1,9 +1,9 @@
 import { useTranslations } from "next-intl";
 
+import { ACTIVITY_LEVELS } from "@/lib/constants";
 import { useOnboardingStore } from "@/store/onboardingStore";
-import type { ActivityLevel } from "@/types/onboarding";
 
-const options: ActivityLevel[] = ["sedentary", "light", "moderate", "active", "very_active"];
+const options = [...ACTIVITY_LEVELS];
 
 export function Step2Activity() {
   const t = useTranslations("Onboarding.form.activity");

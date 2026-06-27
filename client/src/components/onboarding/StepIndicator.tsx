@@ -24,7 +24,13 @@ export function StepIndicator({ currentStep, labels }: StepIndicatorProps) {
         </span>
       </div>
 
-      <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
+      <div
+        role="progressbar"
+        aria-valuenow={currentStep}
+        aria-valuemin={0}
+        aria-valuemax={TOTAL_STEPS}
+        className="mt-4 h-2 overflow-hidden rounded-full bg-white/10"
+      >
         <div
           className="h-full rounded-full bg-[#a6ff00] transition-all duration-300"
           style={{ width: `${progress}%` }}
@@ -40,6 +46,8 @@ export function StepIndicator({ currentStep, labels }: StepIndicatorProps) {
           return (
             <div
               key={label}
+              role="listitem"
+              aria-current={isActive ? "step" : undefined}
               className={`rounded-2xl border px-3 py-2 text-xs font-semibold transition ${
                 isActive
                   ? "border-[#a6ff00] bg-[#a6ff00] text-black"

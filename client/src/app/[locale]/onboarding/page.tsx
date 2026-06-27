@@ -40,14 +40,6 @@ export default async function OnboardingPage({
           t("steps.equipment"),
           t("steps.routine"),
         ],
-        placeholders: [
-          t("placeholders.personal"),
-          t("placeholders.activity"),
-          t("placeholders.goals"),
-          t("placeholders.health"),
-          t("placeholders.equipment"),
-          t("placeholders.routine"),
-        ],
       }}
     />
   );

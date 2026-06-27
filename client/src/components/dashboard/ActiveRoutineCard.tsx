@@ -7,6 +7,9 @@ type ActiveRoutineCardProps = {
   href: string;
   labels: {
     eyebrow: string;
+    upNext: string;
+    startWorkout: string;
+    exercises: string;
     title: string;
     description: string;
     cta: string;
@@ -42,7 +45,7 @@ export function ActiveRoutineCard({ routine, href, labels }: ActiveRoutineCardPr
     <section className="apex-card relative overflow-hidden rounded-[2rem] text-white">
       <div className="pointer-events-none absolute -right-10 -top-12 size-52 rounded-full bg-[#a6ff00]/20 blur-3xl" />
       <div className="relative p-6 md:p-7">
-        <p className="text-sm font-black uppercase tracking-[0.28em] text-[#a6ff00]">Up next</p>
+        <p className="text-sm font-black uppercase tracking-[0.28em] text-[#a6ff00]">{labels.upNext}</p>
         <div className="mt-3 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="max-w-xl">
             <p className="text-sm text-white/55">{labels.eyebrow}</p>
@@ -50,11 +53,11 @@ export function ActiveRoutineCard({ routine, href, labels }: ActiveRoutineCardPr
               {firstTrainingDay?.day_name ?? `${labels.title} ${routine.month}/${routine.year}`}
             </h2>
             <p className="mt-3 text-base leading-7 text-white/65">
-              ~ {estimateMinutes} min · {firstTrainingDay?.exercises.length ?? 0} exercises
+              ~ {estimateMinutes} min · {firstTrainingDay?.exercises.length ?? 0} {labels.exercises}
             </p>
           </div>
           <Link href={href} className="apex-button w-fit rounded-2xl px-5 py-3 text-sm font-black">
-            Start workout →
+            {labels.startWorkout}
           </Link>
         </div>
       </div>

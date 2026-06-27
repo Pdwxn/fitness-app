@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { QueryProvider } from "@/components/QueryProvider";
 import { routing } from "@/i18n/routing";
 
@@ -27,7 +28,9 @@ export default async function LocaleLayout({
 
   return (
     <QueryProvider>
-      <NextIntlClientProvider>{children}</NextIntlClientProvider>
+      <NextIntlClientProvider>
+        <ErrorBoundary>{children}</ErrorBoundary>
+      </NextIntlClientProvider>
     </QueryProvider>
   );
 }

@@ -1,10 +1,11 @@
 import { useTranslations } from "next-intl";
 
+import { GENDER_OPTIONS } from "@/lib/constants";
 import { cmToFeetInches, feetInchesToCm, kgToLb, lbToKg } from "@/lib/units";
 import { useOnboardingStore } from "@/store/onboardingStore";
-import type { Gender, UnitSystem } from "@/types/onboarding";
+import type { UnitSystem } from "@/types/onboarding";
 
-const genderOptions: Gender[] = ["male", "female", "prefer_not_to_say"];
+const genderOptions = [...GENDER_OPTIONS];
 
 export function Step1Personal() {
   const t = useTranslations("Onboarding.form.personal");

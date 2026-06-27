@@ -88,14 +88,6 @@
       "equipment": "Equipo",
       "routine": "Rutina"
     },
-    "placeholders": {
-      "personal": "Aquí irá el formulario de nombre, género, edad, peso, altura y unidades.",
-      "activity": "Aquí irá la selección del nivel de actividad.",
-      "goals": "Aquí irá la selección múltiple de metas y la meta específica.",
-      "health": "Aquí irá la lista de lesiones o molestias.",
-      "equipment": "Aquí irá la selección de gimnasio, casa o calistenia.",
-      "routine": "Aquí irá la selección del tipo de rutina."
-    },
     "form": {
       "personal": {
         "fullName": "Nombre completo",
@@ -207,8 +199,14 @@
       "error": "Error al generar. Intenta de nuevo.",
       "retry": "Intentar de nuevo"
     },
+    "greeting": {
+      "morning": "Buenos días",
+      "afternoon": "Buenas tardes",
+      "evening": "Buenas noches"
+    },
+    "athlete": "Atleta Apex",
+    "dayStreak": "días consecutivos",
     "stats": {
-      "title": "Vista rápida",
       "completedDays": "Días completados",
       "totalExercises": "Ejercicios",
       "activeRoutine": "Rutina activa",
@@ -218,6 +216,9 @@
     },
     "activeRoutine": {
       "eyebrow": "Rutina activa",
+      "upNext": "Siguiente",
+      "startWorkout": "Comenzar entrenamiento →",
+      "exercises": "ejercicios",
       "title": "Plan mensual",
       "description": "Tu rutina personalizada ya está guardada. Revisa la semana, elige un día y prepara tu siguiente entrenamiento.",
       "cta": "Ver rutina completa",
@@ -300,7 +301,11 @@
   },
   "Progress": {
     "title": "Progreso",
+    "subtitle": "Sigue tu rendimiento y crecimiento.",
     "description": "Seguimiento de rachas, días completados y estadísticas de entrenamiento.",
+    "thisWeek": "Esta semana",
+    "aiInsight": "Insight IA",
+    "aiInsightText": "¡Vas por buen camino! Tu consistencia en los entrenamientos está dando resultados. Sigue así.",
     "recentLogs": "Logs recientes",
     "emptyLogs": "Todavía no has registrado entrenamientos. Completa un día de rutina para empezar a medir progreso.",
     "completed": "Completado",

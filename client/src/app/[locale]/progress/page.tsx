@@ -17,9 +17,14 @@ export default async function ProgressPage({
       <ProgressContent
         locale={locale}
         labels={{
+          title: t("title"),
           loading: t("states.loading"),
           error: t("states.error"),
           offlineFallback: t("states.offlineFallback"),
+          subtitle: t("subtitle"),
+          thisWeek: t("thisWeek"),
+          aiInsight: t("aiInsight"),
+          aiInsightText: t("aiInsightText"),
           completedDays: t("stats.completedDays"),
           totalExercises: t("stats.totalExercises"),
           pendingSync: t("stats.pendingSync"),

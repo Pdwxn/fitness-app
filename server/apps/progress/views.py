@@ -150,7 +150,7 @@ class DailyLogBatchView(APIView):
                 if log_id and log_id in existing_by_id:
                     existing = existing_by_id[log_id]
                 elif routine_day:
-                    key = (routine_day_id, log_data["date"])
+                    key = (str(routine_day_id), str(log_data["date"]))
                     existing = existing_by_key.get(key)
 
                 if existing:

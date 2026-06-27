@@ -88,14 +88,6 @@
       "equipment": "Equipment",
       "routine": "Routine"
     },
-    "placeholders": {
-      "personal": "The name, gender, age, weight, height, and units form will go here.",
-      "activity": "The activity level selection will go here.",
-      "goals": "The multi-select goals and specific goal field will go here.",
-      "health": "The injuries or discomfort list will go here.",
-      "equipment": "The gym, home, or calisthenics selection will go here.",
-      "routine": "The routine type selection will go here."
-    },
     "form": {
       "personal": {
         "fullName": "Full name",
@@ -207,8 +199,14 @@
       "error": "Generation failed. Try again.",
       "retry": "Try again"
     },
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "athlete": "Apex athlete",
+    "dayStreak": "day streak",
     "stats": {
-      "title": "Quick view",
       "completedDays": "Completed days",
       "totalExercises": "Exercises",
       "activeRoutine": "Active routine",
@@ -218,6 +216,9 @@
     },
     "activeRoutine": {
       "eyebrow": "Active routine",
+      "upNext": "Up next",
+      "startWorkout": "Start workout →",
+      "exercises": "exercises",
       "title": "Monthly plan",
       "description": "Your personalized routine is saved. Review the week, pick a day, and prepare your next workout.",
       "cta": "View full routine",
@@ -300,7 +301,11 @@
   },
   "Progress": {
     "title": "Progress",
+    "subtitle": "Track your performance and growth.",
     "description": "Track streaks, completed days, and training statistics.",
+    "thisWeek": "This week",
+    "aiInsight": "AI Insight",
+    "aiInsightText": "Great job. Your training consistency is improving. Keep logging workouts to unlock better recommendations.",
     "recentLogs": "Recent logs",
     "emptyLogs": "No workouts logged yet. Complete a routine day to start tracking progress.",
     "completed": "Completed",

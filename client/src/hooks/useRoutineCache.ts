@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { ApiError, authenticatedClientFetch } from "@/lib/api/authenticated-client";
 import { db } from "@/lib/db";
@@ -15,6 +16,8 @@ export async function fetchActiveRoutine(): Promise<RoutineCache | null> {
       await db.routineCache.clear();
       return null;
     }
+    console.error("[useRoutineCache]", error);
+    toast.error("Error al cargar la rutina");
     throw error;
   }
 }

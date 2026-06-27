@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { authenticatedClientFetch } from "@/lib/api/authenticated-client";
 import { db } from "@/lib/db";
@@ -16,19 +17,25 @@ export function useDailyLogs(options: UseDailyLogsOptions = {}) {
   const { data, isLoading, isError, refetch } = useQuery<DailyLog[]>({
     queryKey,
     queryFn: async () => {
-      const query = options.routineDayId ? `?routine_day_id=${options.routineDayId}` : "";
-      const remoteLogs = await authenticatedClientFetch<DailyLog[]>(`/api/v1/progress/logs/${query}`);
+      try {
+        const query = options.routineDayId ? `?routine_day_id=${options.routineDayId}` : "";
+        const remoteLogs = await authenticatedClientFetch<DailyLog[]>(`/api/v1/progress/logs/${query}`);
 
-      const pendingLogs = await getPendingLogs();
-      const mergedLogs = mergeLogs(remoteLogs, pendingLogs);
+        const pendingLogs = await getPendingLogs();
+        const mergedLogs = mergeLogs(remoteLogs, pendingLogs);
 
-      const localLogs = await db.dailyLogs.toArray();
-      const allCachedLogs = mergeLogs(localLogs, mergedLogs);
-      await db.dailyLogs.clear();
-      await db.dailyLogs.bulkAdd(allCachedLogs);
-      await updateStatsLocally(allCachedLogs);
+        const localLogs = await db.dailyLogs.toArray();
+        const allCachedLogs = mergeLogs(localLogs, mergedLogs);
+        await db.dailyLogs.clear();
+        await db.dailyLogs.bulkAdd(allCachedLogs);
+        await updateStatsLocally(allCachedLogs);
 
-      return filterLogs(mergedLogs, options.routineDayId);
+        return filterLogs(mergedLogs, options.routineDayId);
+      } catch (err) {
+        console.error("[useDailyLogs]", err);
+        toast.error("Error al cargar los registros");
+        throw err;
+      }
     },
     staleTime: 30_000,
   });

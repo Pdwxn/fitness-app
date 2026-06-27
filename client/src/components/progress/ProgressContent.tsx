@@ -2,15 +2,21 @@
 
 import Link from "next/link";
 
+import { StatusCard } from "@/components/ui/StatusCard";
 import { useDailyLogs } from "@/hooks/useDailyLogs";
 import { useProgressStats } from "@/hooks/useProgressStats";
 
 type ProgressContentProps = {
   locale: string;
   labels: {
+    title: string;
     loading: string;
     error: string;
     offlineFallback: string;
+    subtitle: string;
+    thisWeek: string;
+    aiInsight: string;
+    aiInsightText: string;
     completedDays: string;
     totalExercises: string;
     pendingSync: string;
@@ -48,8 +54,8 @@ export function ProgressContent({ locale, labels }: ProgressContentProps) {
       {isOfflineFallback ? <StatusCard message={labels.offlineFallback} tone="warning" /> : null}
 
       <section>
-        <h2 className="text-5xl font-black tracking-tight text-white">Progress</h2>
-        <p className="mt-2 text-lg text-white/60">Track your performance and growth.</p>
+        <h2 className="text-5xl font-black tracking-tight text-white">{labels.title}</h2>
+        <p className="mt-2 text-lg text-white/60">{labels.subtitle}</p>
       </section>
 
       <section className="grid gap-3 md:grid-cols-3">
@@ -60,7 +66,7 @@ export function ProgressContent({ locale, labels }: ProgressContentProps) {
 
       <section className="apex-card rounded-[2rem] p-6 text-white">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-2xl font-black tracking-tight">This week</h2>
+          <h2 className="text-2xl font-black tracking-tight">{labels.thisWeek}</h2>
           <span className="text-sm font-black text-[#a6ff00]">78%</span>
         </div>
         <div className="mt-6 grid grid-cols-7 gap-3">
@@ -78,9 +84,9 @@ export function ProgressContent({ locale, labels }: ProgressContentProps) {
       </section>
 
       <section className="apex-card rounded-[2rem] p-6 text-white">
-        <p className="text-sm font-black uppercase tracking-[0.28em] text-[#a6ff00]">AI Insight</p>
+        <p className="text-sm font-black uppercase tracking-[0.28em] text-[#a6ff00]">{labels.aiInsight}</p>
         <p className="mt-4 text-xl leading-8 text-white/75">
-          Great job. Your training consistency is improving. Keep logging workouts to unlock better recommendations.
+          {labels.aiInsightText}
         </p>
       </section>
 
@@ -130,16 +136,4 @@ function StatTile({ label, value, accent }: { label: string; value: number; acce
   );
 }
 
-function StatusCard({ message, tone = "neutral" }: { message: string; tone?: "neutral" | "warning" | "error" }) {
-  const styles = {
-    neutral: "border-white/10 bg-white/[0.06] text-white/65",
-    warning: "border-amber-300/30 bg-amber-400/10 text-amber-100",
-    error: "border-red-400/30 bg-red-500/10 text-red-200",
-  };
 
-  return (
-    <section className={`rounded-[2rem] border p-6 shadow-sm ${styles[tone]}`}>
-      <p className="text-sm font-bold">{message}</p>
-    </section>
-  );
-}

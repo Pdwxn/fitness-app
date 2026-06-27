@@ -16,6 +16,13 @@ import { RoutinePendingCard } from "./RoutinePendingCard";
 import { StatsPreview } from "./StatsPreview";
 import { WeeklyRoutinePreview } from "./WeeklyRoutinePreview";
 
+function getGreeting(greeting: { morning: string; afternoon: string; evening: string }): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return greeting.morning;
+  if (hour < 18) return greeting.afternoon;
+  return greeting.evening;
+}
+
 type DashboardContentProps = {
   locale: string;
   labels: {
@@ -46,8 +53,18 @@ type DashboardContentProps = {
       pending: string;
       never: string;
     };
+    greeting: {
+      morning: string;
+      afternoon: string;
+      evening: string;
+    };
+    athlete: string;
+    dayStreak: string;
     activeRoutine: {
       eyebrow: string;
+      upNext: string;
+      startWorkout: string;
+      exercises: string;
       title: string;
       description: string;
       cta: string;
@@ -172,9 +189,9 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
     <div className="flex flex-col gap-5">
       <section className="relative overflow-hidden rounded-[2rem] p-1">
         <div className="pointer-events-none absolute right-0 top-0 size-44 rounded-full bg-[#a6ff00]/20 blur-3xl" />
-        <p className="text-xl text-white/70">Good evening,</p>
-        <h2 className="mt-1 text-6xl font-black tracking-tight text-[#a6ff00]">Apex athlete 👋</h2>
-        <p className="mt-3 text-lg font-bold text-white/65">🔥 {Math.max(1, completedDays)} day streak</p>
+        <p className="text-xl text-white/70">{getGreeting(labels.greeting)},</p>
+        <h2 className="mt-1 text-6xl font-black tracking-tight text-[#a6ff00]">{labels.athlete} 👋</h2>
+        <p className="mt-3 text-lg font-bold text-white/65">🔥 {Math.max(1, completedDays)} {labels.dayStreak}</p>
       </section>
 
       {isOfflineFallback ? (

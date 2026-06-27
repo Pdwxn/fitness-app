@@ -48,8 +48,18 @@ export default async function DashboardPage({
             pending: t("stats.pending"),
             never: t("stats.never"),
           },
+          greeting: {
+            morning: t("greeting.morning"),
+            afternoon: t("greeting.afternoon"),
+            evening: t("greeting.evening"),
+          },
+          athlete: t("athlete"),
+          dayStreak: t("dayStreak"),
           activeRoutine: {
             eyebrow: t("activeRoutine.eyebrow"),
+            upNext: t("activeRoutine.upNext"),
+            startWorkout: t("activeRoutine.startWorkout"),
+            exercises: t("activeRoutine.exercises"),
             title: t("activeRoutine.title"),
             description: t("activeRoutine.description"),
             cta: t("activeRoutine.cta"),

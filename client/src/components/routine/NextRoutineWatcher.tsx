@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { useNextRoutineStore } from "@/stores/nextRoutineStore";
+import { useNextRoutineStore } from "@/store/nextRoutineStore";
 
 export function NextRoutineWatcher({ locale }: { locale: string }) {
   const t = useTranslations("Routine");

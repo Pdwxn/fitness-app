@@ -1,9 +1,10 @@
 import { useTranslations } from "next-intl";
 
+import { PHYSICAL_GOALS } from "@/lib/constants";
 import { useOnboardingStore } from "@/store/onboardingStore";
 import type { PhysicalGoal } from "@/types/onboarding";
 
-const goals: PhysicalGoal[] = ["lose_weight", "gain_muscle", "endurance", "flexibility", "general_fitness"];
+const goals = [...PHYSICAL_GOALS];
 
 export function Step3Goals() {
   const t = useTranslations("Onboarding.form.goals");

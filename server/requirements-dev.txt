@@ -1,5 +1,5 @@
 -r requirements.txt
-pytest==8.*
+pytest==9.*
 pytest-django==4.*
 coverage==7.*
 factory-boy==3.*

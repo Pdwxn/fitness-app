@@ -1,9 +1,10 @@
 import { useTranslations } from "next-intl";
 
+import { ROUTINE_TYPES } from "@/lib/constants";
 import { useOnboardingStore } from "@/store/onboardingStore";
 import type { RoutineType } from "@/types/onboarding";
 
-const routines: RoutineType[] = ["push_pull_legs", "upper_lower", "hybrid", "5_days"];
+const routines = [...ROUTINE_TYPES];
 
 export function Step6RoutineType() {
   const t = useTranslations("Onboarding.form.routine");
