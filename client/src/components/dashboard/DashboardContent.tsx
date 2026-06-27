@@ -1,10 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
+import { useQueries } from "@tanstack/react-query";
 
-import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
-import { useProgressStats } from "@/hooks/useProgressStats";
-import { useRoutineCache } from "@/hooks/useRoutineCache";
+import { fetchOnboardingStatus } from "@/hooks/useOnboardingStatus";
+import { fetchActiveRoutine } from "@/hooks/useRoutineCache";
+import { fetchProgressStats } from "@/hooks/useProgressStats";
+import { getFromStorage, STORAGE_KEYS } from "@/lib/storage";
+import { queryKeys } from "@/lib/query-keys";
+import type { ProgressStats } from "@/types/progress";
 
 import { ActiveRoutineCard } from "./ActiveRoutineCard";
 import { OnboardingRequiredCard } from "./OnboardingRequiredCard";
@@ -87,16 +91,41 @@ function formatLastSync(timestamp: number | null) {
 }
 
 export function DashboardContent({ locale, labels }: DashboardContentProps) {
-  const { isLoading, hasError, isComplete } = useOnboardingStatus();
-  const {
-    routine,
-    lastSync,
-    isLoading: isRoutineLoading,
-    hasError: hasRoutineError,
-    isOfflineFallback,
-    refreshRoutine,
-  } = useRoutineCache();
-  const { stats } = useProgressStats();
+  const [
+    { data: onboardingData, isLoading: obLoading, isError: obError },
+    { data: routine, isLoading: rtLoading, isError: rtError, dataUpdatedAt: lastSync, refetch: refreshRoutine },
+    { data: statsData, isLoading: stLoading, isError: stError },
+  ] = useQueries({
+    queries: [
+      {
+        queryKey: queryKeys.onboarding.status(),
+        queryFn: fetchOnboardingStatus,
+        staleTime: 5 * 60_000,
+        retry: false,
+      },
+      {
+        queryKey: queryKeys.routine.active(),
+        queryFn: fetchActiveRoutine,
+        staleTime: 60_000,
+        retry: false,
+      },
+      {
+        queryKey: queryKeys.progress.stats(),
+        queryFn: fetchProgressStats,
+        staleTime: 30_000,
+      },
+    ],
+  });
+
+  const cachedStatus = getFromStorage<{ completed: boolean }>(STORAGE_KEYS.ONBOARDING_STATUS);
+  const isComplete = onboardingData?.completed ?? cachedStatus?.completed ?? false;
+  const isLoading = obLoading;
+  const hasError = obError && !cachedStatus;
+  const isRoutineLoading = rtLoading;
+  const hasRoutineError = rtError && !routine;
+  const isOfflineFallback = rtError && Boolean(routine);
+  const stats = statsData ?? null;
+
   const activeRoutine = useMemo(
     () => routine ? `${routine.month}/${routine.year}` : labels.stats.pending,
     [routine, labels.stats.pending],

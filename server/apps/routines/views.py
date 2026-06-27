@@ -1,6 +1,9 @@
 import logging
 
 from django.conf import settings
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 from rest_framework import status
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
@@ -28,6 +31,8 @@ def get_active_routine_summary_queryset(user):
 
 
 class ActiveRoutineView(APIView):
+    @method_decorator(cache_page(60 * 2))
+    @method_decorator(vary_on_headers("Authorization"))
     def get(self, request):
         routine = get_active_routine_queryset(request.user).first()
         if routine is None:
@@ -45,6 +50,8 @@ class ActiveRoutineView(APIView):
 
 
 class ActiveRoutineWeekView(APIView):
+    @method_decorator(cache_page(60 * 2))
+    @method_decorator(vary_on_headers("Authorization"))
     def get(self, request, week_number):
         routine = get_active_routine_queryset(request.user).first()
         if routine is None:
@@ -67,6 +74,8 @@ class ActiveRoutineWeekView(APIView):
 
 
 class ActiveRoutineDayView(APIView):
+    @method_decorator(cache_page(60 * 2))
+    @method_decorator(vary_on_headers("Authorization"))
     def get(self, request, day_id):
         routine = get_active_routine_queryset(request.user).first()
         if routine is None:

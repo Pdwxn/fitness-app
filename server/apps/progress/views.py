@@ -1,5 +1,7 @@
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, IntegerField, Q, Sum, Value
+from django.db.models.expressions import RawSQL
+from django.db.models.functions import Coalesce
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -22,18 +24,21 @@ def get_user_logs(user):
 def calculate_stats(user):
     agg = DailyLog.objects.filter(user=user).aggregate(
         completed_days=Count("id", filter=Q(completed=True)),
-    )
-
-    exercises_data = list(
-        DailyLog.objects.filter(user=user).values_list("exercises_done", flat=True)
-    )
-    total_exercises_completed = sum(
-        1 for exercises in exercises_data for e in exercises if e.get("completed")
+        total_exercises_completed=Coalesce(
+            Sum(
+                RawSQL(
+                    "(SELECT COUNT(*) FROM jsonb_array_elements(exercises_done) AS elem WHERE (elem->>'completed')::boolean = true)",
+                    [],
+                ),
+            ),
+            Value(0),
+            output_field=IntegerField(),
+        ),
     )
 
     return {
         "completed_days": agg["completed_days"],
-        "total_exercises_completed": total_exercises_completed,
+        "total_exercises_completed": agg["total_exercises_completed"],
         "pending_sync": 0,
     }
 

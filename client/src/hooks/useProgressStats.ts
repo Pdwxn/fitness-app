@@ -6,17 +6,19 @@ import { queryKeys } from "@/lib/query-keys";
 import { getPendingLogs } from "@/lib/sync";
 import type { ProgressStats } from "@/types/progress";
 
+export async function fetchProgressStats(): Promise<ProgressStats> {
+  const remoteStats = await authenticatedClientFetch<ProgressStats>("/api/v1/progress/stats/");
+  const pendingLogs = await getPendingLogs();
+  const withPending = { ...remoteStats, pending_sync: pendingLogs.length };
+  const entry: StatsEntry = { id: "progress", ...withPending };
+  await db.stats.put(entry);
+  return withPending;
+}
+
 export function useProgressStats() {
   const { data, isLoading, isError } = useQuery<ProgressStats>({
     queryKey: queryKeys.progress.stats(),
-    queryFn: async () => {
-      const remoteStats = await authenticatedClientFetch<ProgressStats>("/api/v1/progress/stats/");
-      const pendingLogs = await getPendingLogs();
-      const withPending = { ...remoteStats, pending_sync: pendingLogs.length };
-      const entry: StatsEntry = { id: "progress", ...withPending };
-      await db.stats.put(entry);
-      return withPending;
-    },
+    queryFn: fetchProgressStats,
     staleTime: 30_000,
   });
 

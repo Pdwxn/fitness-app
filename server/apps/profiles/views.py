@@ -1,5 +1,8 @@
 import logging
 
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
@@ -30,6 +33,8 @@ def is_onboarding_complete(user):
 
 
 class ProfileView(APIView):
+    @method_decorator(cache_page(60 * 5))
+    @method_decorator(vary_on_headers("Authorization"))
     def get(self, request):
         serializer = ProfileSerializer(request.user)
         return Response(serializer.data)
@@ -46,6 +51,8 @@ class ProfileHealthView(APIView):
         health_data, _ = UserHealthData.objects.get_or_create(user=user)
         return health_data
 
+    @method_decorator(cache_page(60 * 5))
+    @method_decorator(vary_on_headers("Authorization"))
     def get(self, request):
         serializer = UserHealthDataSerializer(self.get_health_data(request.user))
         return Response(serializer.data)
@@ -59,6 +66,8 @@ class ProfileHealthView(APIView):
 
 
 class OnboardingStatusView(APIView):
+    @method_decorator(cache_page(60 * 5))
+    @method_decorator(vary_on_headers("Authorization"))
     def get(self, request):
         return Response({"completed": is_onboarding_complete(request.user)})
 

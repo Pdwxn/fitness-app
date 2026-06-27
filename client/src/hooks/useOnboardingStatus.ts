@@ -8,14 +8,16 @@ type OnboardingStatusResponse = {
   completed: boolean;
 };
 
+export async function fetchOnboardingStatus(): Promise<OnboardingStatusResponse> {
+  const response = await authenticatedClientFetch<OnboardingStatusResponse>("/api/v1/onboarding/status/");
+  setInStorage(STORAGE_KEYS.ONBOARDING_STATUS, response);
+  return response;
+}
+
 export function useOnboardingStatus() {
   const { data, isLoading, isError } = useQuery<OnboardingStatusResponse>({
     queryKey: queryKeys.onboarding.status(),
-    queryFn: async () => {
-      const response = await authenticatedClientFetch<OnboardingStatusResponse>("/api/v1/onboarding/status/");
-      setInStorage(STORAGE_KEYS.ONBOARDING_STATUS, response);
-      return response;
-    },
+    queryFn: fetchOnboardingStatus,
     staleTime: 5 * 60_000,
     retry: false,
   });
