@@ -6,7 +6,7 @@ from rest_framework.exceptions import APIException, ValidationError
 
 
 _KNOWLEDGE_PREFIX = """
-=== BASE DE CONOCIMIENTO: DISEÑO DE ENTRENAMIENTO (Evidencia Científica) ===
+=== BASE DE CONOCIMIENTO: DISENO DE ENTRENAMIENTO (Evidencia Cientifica) ===
 
 ## CONCEPTOS DE VOLUMEN
 
@@ -110,10 +110,32 @@ class GeminiQuotaError(APIException):
     default_code = "gemini_quota_exceeded"
 
 
+EXPERIENCE_COMPLEXITY = {
+    "beginner": "ejercicios basicos con tecnica simple, peso ligero a moderado, progresion lenta",
+    "intermediate": "ejercicios de dificultad media, tecnica consolidada, peso moderado a alto",
+    "advanced": "ejercicios complejos, variaciones avanzadas, tecnicas de intensidad (drop sets, superseries)",
+}
+
+INTENSITY_RIR = {
+    "always_failure": "el usuario quiere llegar siempre al fallo. Debes disenar series RIR 0, con repes hasta no poder mas",
+    "near_failure": "el usuario prefiere quedar a 1-2 repes del fallo. RIR 1-2 objetivo",
+    "comfortable": "el usuario prefiere quedarse a 3+ repes del fallo. RIR 3+ objetivo",
+}
+
+
 def build_routine_prompt(user, previous_month_notes=None):
+    profile = user
     health = user.health_data
     previous_month_notes = previous_month_notes or []
     volume_target = VOLUME_START.get(health.activity_level, "MEV")
+
+    experience_desc = EXPERIENCE_COMPLEXITY.get(profile.experience_level, "nivel mixto")
+    intensity_rir = INTENSITY_RIR.get(profile.intensity_preference, "RIR moderado")
+    priority_muscles = profile.priority_muscles or []
+    medical_conditions = profile.medical_conditions or []
+    training_style = profile.training_style or health.routine_type or "general"
+    days_per_week = profile.days_per_week or 3
+    session_minutes = profile.session_duration_minutes or 60
 
     return f"""
 {FITNESS_KNOWLEDGE_BASE}
@@ -123,19 +145,26 @@ para generar una rutina mensual de entrenamiento personalizada.
 Devuelve SOLO un objeto JSON valido, sin texto adicional ni bloques de codigo.
 
 PERFIL DEL USUARIO:
-- Nombre: {user.full_name}
-- Genero: {user.gender}
-- Edad: {user.age} anos
-- Peso: {user.weight_kg} kg
-- Altura: {user.height_cm} cm
+- Nombre: {profile.full_name}
+- Genero: {profile.gender}
+- Edad: {profile.age} anos
+- Peso: {profile.weight_kg} kg
+- Altura: {profile.height_cm} cm
+- Nivel de experiencia: {profile.experience_level} ({experience_desc})
+- Estilo de entrenamiento: {training_style}
 - Nivel de actividad: {health.activity_level}
 - Punto de volumen de partida segun su nivel: {volume_target}
 - Metas generales: {', '.join(health.physical_goals)}
 - Meta especifica del usuario: {health.specific_goal or 'No especificada'}
+- Musculos prioritarios (mas volumen semanal): {', '.join(priority_muscles) if priority_muscles else 'Ninguno en particular'}
+- Condiciones medicas a considerar: {json.dumps(medical_conditions, ensure_ascii=False) if medical_conditions else 'Ninguna'}
 - Lesiones o limitaciones: {json.dumps(health.injuries, ensure_ascii=False)}
+- Intensidad preferida: {profile.intensity_preference} ({intensity_rir})
 - Equipamiento disponible: {health.equipment_type}
 - Equipamiento especifico en casa: {', '.join(health.available_equipment) if health.available_equipment else 'N/A'}
 - Tipo de rutina: {health.routine_type}
+- Dias por semana de entrenamiento: {days_per_week}
+- Duracion por sesion: {session_minutes} minutos
 
 NOTAS DEL MES ANTERIOR:
 {json.dumps(previous_month_notes, ensure_ascii=False) if previous_month_notes else 'No hay notas previas (primera rutina del usuario).'}
@@ -151,6 +180,11 @@ INSTRUCCIONES:
    peso inicial en kg, descanso en segundos, instrucciones, search_term en ingles
    y 2-3 variantes.
 8. Incluye dias de descanso segun el tipo de rutina elegido.
+9. ASIGNA MAS VOLUMEN a los musculos prioritarios: {', '.join(priority_muscles) if priority_muscles else 'ninguno'}.
+10. RESPETA la intensidad preferida: {intensity_rir}.
+11. Considera las condiciones medicas: {', '.join(medical_conditions) if medical_conditions else 'ninguna'}. Si hay condiciones, evita o modifica ejercicios contraindicados.
+12. El entrenamiento debe distribuirse en {days_per_week} dias por semana con sesiones de aproximadamente {session_minutes} minutos cada una.
+13. Ajusta la complejidad de los ejercicios segun el nivel de experiencia ({profile.experience_level}).
 
 FORMATO JSON EXACTO:
 {{
@@ -226,12 +260,12 @@ def parse_gemini_routine_response(raw_response):
         raise GeminiResponseError("Gemini returned an empty response.")
 
     raw = raw_response.strip()
-    if raw.startswith("```"):
-        raw = raw.removeprefix("```").strip()
+    if raw.startswith("`"):
+        raw = raw.removeprefix("`").strip()
         if raw.startswith("json"):
             raw = raw.removeprefix("json").strip()
-        if raw.endswith("```"):
-            raw = raw.removesuffix("```").strip()
+        if raw.endswith("`"):
+            raw = raw.removesuffix("`").strip()
 
     start = raw.find("{")
     end = raw.rfind("}")

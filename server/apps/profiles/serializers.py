@@ -76,7 +76,11 @@ class OnboardingCompleteSerializer(serializers.Serializer):
     health = UserHealthDataSerializer()
 
     def validate_profile(self, value):
-        required_fields = ("full_name", "gender", "age", "weight_kg", "height_cm")
+        required_fields = (
+            "full_name", "gender", "age", "weight_kg", "height_cm",
+            "experience_level", "training_style", "intensity_preference",
+            "days_per_week", "session_duration_minutes",
+        )
         missing = [field for field in required_fields if value.get(field) in (None, "")]
         if missing:
             raise serializers.ValidationError({field: "This field is required." for field in missing})
@@ -92,6 +96,14 @@ class OnboardingCompleteSerializer(serializers.Serializer):
         height = value.get("height_cm")
         if height is not None and not 80 <= height <= 250:
             raise serializers.ValidationError({"height_cm": "Height must be between 80cm and 250cm."})
+
+        days = value.get("days_per_week")
+        if days is not None and not 1 <= days <= 7:
+            raise serializers.ValidationError({"days_per_week": "Days per week must be between 1 and 7."})
+
+        duration = value.get("session_duration_minutes")
+        if duration is not None and not 15 <= duration <= 120:
+            raise serializers.ValidationError({"session_duration_minutes": "Duration must be between 15 and 120 minutes."})
 
         return value
 

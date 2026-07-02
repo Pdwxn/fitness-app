@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 
 import { StepIndicator } from "./StepIndicator";
 import { Step1Personal } from "./steps/Step1Personal";
-import { Step2Activity } from "./steps/Step2Activity";
+import { Step2Fitness } from "./steps/Step2Fitness";
 import { Step3Goals } from "./steps/Step3Goals";
 import { Step4Health } from "./steps/Step4Health";
 import { Step5Equipment } from "./steps/Step5Equipment";
-import { Step6RoutineType } from "./steps/Step6RoutineType";
+import { Step6Schedule } from "./steps/Step6Schedule";
 import { authenticatedClientFetch } from "@/lib/api/authenticated-client";
 import { getFromStorage, setInStorage, STORAGE_KEYS } from "@/lib/storage";
 import { TOTAL_STEPS, useOnboardingStore } from "@/store/onboardingStore";
@@ -45,7 +45,7 @@ function StepContent({ currentStep }: { currentStep: number }) {
     case 1:
       return <Step1Personal />;
     case 2:
-      return <Step2Activity />;
+      return <Step2Fitness />;
     case 3:
       return <Step3Goals />;
     case 4:
@@ -53,7 +53,7 @@ function StepContent({ currentStep }: { currentStep: number }) {
     case 5:
       return <Step5Equipment />;
     case 6:
-      return <Step6RoutineType />;
+      return <Step6Schedule />;
     default:
       return null;
   }
@@ -142,8 +142,8 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
       );
     }
 
-    if (currentStep === 2) return Boolean(health.activity_level);
-    if (currentStep === 3) return health.physical_goals.length > 0;
+    if (currentStep === 2) return Boolean(health.experience_level && health.activity_level);
+    if (currentStep === 3) return health.physical_goals.length > 0 && Boolean(health.intensity_preference) && Boolean(health.training_style);
     if (currentStep === 4) {
       return health.injuries.every((injury) => injury.area.trim() && injury.description.trim());
     }
@@ -153,7 +153,9 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
           (health.equipment_type !== "home" || health.available_equipment.length > 0),
       );
     }
-    if (currentStep === 6) return Boolean(health.routine_type);
+    if (currentStep === 6) {
+      return Boolean(health.days_per_week && health.session_duration_minutes && health.routine_type);
+    }
     return true;
   }
 
@@ -196,7 +198,7 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
         clearStorage();
         reset();
         if (response.routine) {
-          router.push(`/${locale}/dashboard`);
+          router.push('/dashboard');
           router.refresh();
           return;
         }
@@ -243,7 +245,7 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
           </p>
           <button
             type="button"
-            onClick={() => router.push(`/${locale}/dashboard`)}
+            onClick={() => router.push('/dashboard')}
             className="apex-button mt-6 rounded-2xl px-5 py-3 text-sm font-black"
           >
             {generationFailed ? labels.goToDashboard : labels.backHome}

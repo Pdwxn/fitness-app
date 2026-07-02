@@ -9,12 +9,42 @@ export type ActivityLevel =
   | "active"
   | "very_active";
 
+export type ExperienceLevel = "beginner" | "intermediate" | "advanced";
+
 export type PhysicalGoal =
   | "lose_weight"
   | "gain_muscle"
   | "endurance"
   | "flexibility"
   | "general_fitness";
+
+export type TrainingStyle = "strength" | "hypertrophy" | "endurance" | "power" | "general";
+
+export type PriorityMuscle =
+  | "chest"
+  | "back"
+  | "shoulders"
+  | "biceps"
+  | "triceps"
+  | "legs"
+  | "glutes"
+  | "abs"
+  | "calves"
+  | "forearms";
+
+export type IntensityPreference = "always_failure" | "near_failure" | "comfortable";
+
+export type MedicalCondition =
+  | "knee_pain"
+  | "lower_back_pain"
+  | "anemia"
+  | "asthma"
+  | "hypertension"
+  | "herniated_disc"
+  | "diabetes"
+  | "tendinitis"
+  | "pregnancy"
+  | "rheumatoid_arthritis";
 
 export type EquipmentType = "gym" | "home" | "calisthenics";
 
@@ -46,12 +76,19 @@ export type OnboardingProfile = {
 
 export type OnboardingHealth = {
   activity_level: ActivityLevel | "";
+  experience_level: ExperienceLevel | "";
   physical_goals: PhysicalGoal[];
+  training_style: TrainingStyle | "";
+  priority_muscles: PriorityMuscle[];
+  intensity_preference: IntensityPreference | "";
   specific_goal: string;
+  medical_conditions: MedicalCondition[];
   injuries: Injury[];
   equipment_type: EquipmentType | "";
   available_equipment: HomeEquipment[];
   routine_type: RoutineType | "";
+  days_per_week: number | null;
+  session_duration_minutes: number | null;
 };
 
 export type OnboardingPayload = {
@@ -59,6 +96,4 @@ export type OnboardingPayload = {
   health: OnboardingHealth;
 };
 
-export type OnboardingDraft = OnboardingPayload & {
-  currentStep: number;
-};
+export type OnboardingDraft = { currentStep: number } & OnboardingPayload;

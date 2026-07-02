@@ -82,11 +82,11 @@
     },
     "steps": {
       "personal": "Datos personales",
-      "activity": "Actividad",
+      "fitness": "Fitness",
       "goals": "Metas",
       "health": "Salud",
       "equipment": "Equipo",
-      "routine": "Rutina"
+      "schedule": "Horario"
     },
     "form": {
       "personal": {
@@ -104,8 +104,15 @@
           "prefer_not_to_say": "Prefiero no decir"
         }
       },
-      "activity": {
-        "options": {
+      "fitness": {
+        "experienceLabel": "¿Cuál es tu nivel de experiencia?",
+        "activityLabel": "¿Con qué frecuencia entrenas?",
+        "experience": {
+          "beginner": { "label": "Principiante", "description": "Nunca entrené o hace meses que no entreno" },
+          "intermediate": { "label": "Intermedio", "description": "Entreno hace más de 6 meses, conozco ejercicios básicos" },
+          "advanced": { "label": "Avanzado", "description": "Entreno hace más de 2 años, manejo técnica y cargas" }
+        },
+        "activity": {
           "sedentary": { "label": "Sedentario", "description": "Sin ejercicio regular" },
           "light": { "label": "Ligero", "description": "1-2 días por semana" },
           "moderate": { "label": "Moderado", "description": "3-4 días por semana" },
@@ -114,22 +121,67 @@
         }
       },
       "goals": {
-        "specificGoal": "Meta específica opcional",
+        "goalsLabel": "¿Cuáles son tus objetivos?",
+        "styleLabel": "Estilo de entrenamiento",
+        "musclesLabel": "¿Qué músculos priorizar?",
+        "musclesHint": "Opcional, elige los que apliquen",
+        "intensityLabel": "Intensidad preferida",
+        "specificGoal": "Meta específica (opcional)",
         "specificGoalPlaceholder": "Ej: Quiero desarrollar glúteos y hombros",
+        "suggested": "Sugerido",
         "options": {
           "lose_weight": "Perder peso",
           "gain_muscle": "Ganar músculo",
           "endurance": "Mejorar resistencia",
           "flexibility": "Mejorar flexibilidad",
           "general_fitness": "Fitness general"
+        },
+        "styles": {
+          "strength": { "label": "Fuerza", "description": "Pesado, bajas repeticiones (1-6)" },
+          "hypertrophy": { "label": "Hipertrofia", "description": "Crecimiento muscular (8-15 reps)" },
+          "endurance": { "label": "Resistencia", "description": "Altas repeticiones, tono (15-20+)" },
+          "power": { "label": "Potencia", "description": "Movimientos explosivos (1-5 reps)" },
+          "general": { "label": "Mixto / General", "description": "Balanceado" }
+        },
+        "muscles": {
+          "chest": "Pecho",
+          "back": "Espalda",
+          "shoulders": "Hombros",
+          "biceps": "Bíceps",
+          "triceps": "Tríceps",
+          "legs": "Piernas",
+          "glutes": "Glúteos",
+          "abs": "Abdominales",
+          "calves": "Gemelos",
+          "forearms": "Antebrazos"
+        },
+        "intensity": {
+          "always_failure": "Siempre al fallo 💀",
+          "near_failure": "A 1-2 reps del fallo 🎯",
+          "comfortable": "A 3+ reps del fallo 🧘"
         }
       },
       "health": {
-        "hint": "Agrega molestias o lesiones. Puedes dejarlo vacío.",
+        "conditionsLabel": "¿Tienes alguna condición médica?",
+        "conditionsHint": "Opcional, ayuda a ajustar tu rutina para evitar riesgos",
+        "injuriesLabel": "Lesiones o molestias adicionales",
+        "injuriesHint": "Agrega molestias o lesiones. Puedes dejarlo vacío.",
         "areaPlaceholder": "Área: rodilla izquierda",
         "descriptionPlaceholder": "Descripción",
         "remove": "Eliminar",
-        "add": "Agregar lesión o molestia"
+        "add": "Agregar lesión o molestia",
+        "conditions": {
+          "knee_pain": { "label": "Dolor de rodillas / Artrosis", "description": "Dolor en sentadillas, zancadas, impacto" },
+          "lower_back_pain": { "label": "Lumbalgia / Dolor lumbar", "description": "Dolor en peso muerto, remo, sentadilla" },
+          "anemia": { "label": "Anemia", "description": "Fatiga prematura, falta de aire" },
+          "asthma": { "label": "Asma / EPOC", "description": "Falta de aire en alta intensidad" },
+          "hypertension": { "label": "Hipertensión", "description": "Picos de presión en fuerza intensa" },
+          "herniated_disc": { "label": "Hernia de disco / Ciática", "description": "Dolor irradiado a piernas" },
+          "diabetes": { "label": "Diabetes tipo 2", "description": "Fluctuaciones de glucosa" },
+          "tendinitis": { "label": "Tendinitis", "description": "Dolor en presses o jalones" },
+          "pregnancy": { "label": "Embarazo (post 1er trimestre)", "description": "Diástasis, presión pélvica" },
+          "rheumatoid_arthritis": { "label": "Artritis reumatoide", "description": "Inflamación articular, rigidez" }
+        }
       },
       "equipment": {
         "types": {
@@ -147,13 +199,16 @@
           "bodyweight_only": "Solo peso corporal"
         }
       },
-      "routine": {
-        "warning": "Con tu equipamiento actual, una rutina de 5 días puede ser difícil de completar.",
-        "options": {
-          "push_pull_legs": { "label": "Push / Pull / Legs", "description": "Empuje, jalón y piernas" },
-          "upper_lower": { "label": "Torso / Pierna", "description": "Alterna tren superior e inferior" },
-          "hybrid": { "label": "Híbrido", "description": "Flexible para 3-5 días" },
-          "5_days": { "label": "5 días", "description": "Un grupo muscular por día" }
+      "schedule": {
+        "daysLabel": "¿Cuántos días por semana puedes entrenar?",
+        "durationLabel": "¿Cuánto tiempo por sesión?",
+        "routineLabel": "Tipo de rutina",
+        "recommended": "RECOMENDADO",
+        "routines": {
+          "push_pull_legs": { "label": "Push / Pull / Legs", "description": "Tren superior empuje, jalón y piernas en días separados. La división más popular para volumen.", "days": "⭐ 3-4 días/semana" },
+          "upper_lower": { "label": "Torso / Pierna", "description": "Alterna tren superior completo con piernas. Ideal para frecuencia 2x por grupo muscular.", "days": "⭐ 4 días/semana" },
+          "hybrid": { "label": "Híbrido", "description": "Combina ejercicios compuestos y accesorios cada sesión. Flexible y adaptable.", "days": "⭐ 1-3 días/semana" },
+          "5_days": { "label": "5 días / Weider", "description": "Un grupo muscular grande por día (pecho, espalda, hombros, piernas, brazos). Mayor volumen.", "days": "⭐ 5-6 días/semana" }
         }
       }
     }
@@ -207,6 +262,12 @@
     "athlete": "Atleta Apex",
     "dayStreak": "días consecutivos",
     "stats": {
+      "completedDays": "Días completados",
+      "totalExercises": "Ejercicios",
+      "activeRoutine": "Rutina activa",
+      "lastSync": "Último sync",
+      "pending": "Pendiente",
+      "title": "Estadísticas",
       "completedDays": "Días completados",
       "totalExercises": "Ejercicios",
       "activeRoutine": "Rutina activa",

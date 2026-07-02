@@ -34,11 +34,11 @@ export default async function OnboardingPage({
         goToDashboard: t("generationFailed.goToDashboard"),
         steps: [
           t("steps.personal"),
-          t("steps.activity"),
+          t("steps.fitness"),
           t("steps.goals"),
           t("steps.health"),
           t("steps.equipment"),
-          t("steps.routine"),
+          t("steps.schedule"),
         ],
       }}
     />

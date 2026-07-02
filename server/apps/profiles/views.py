@@ -12,7 +12,11 @@ from .serializers import OnboardingCompleteSerializer, ProfileSerializer, UserHe
 logger = logging.getLogger(__name__)
 
 
-PROFILE_REQUIRED_FIELDS = ("full_name", "gender", "age", "weight_kg", "height_cm")
+PROFILE_REQUIRED_FIELDS = (
+    "full_name", "gender", "age", "weight_kg", "height_cm",
+    "experience_level", "training_style", "intensity_preference",
+    "days_per_week", "session_duration_minutes",
+)
 HEALTH_REQUIRED_FIELDS = ("activity_level", "equipment_type", "routine_type")
 
 
@@ -72,12 +76,26 @@ class OnboardingStatusView(APIView):
         return Response({"completed": is_onboarding_complete(request.user)})
 
 
+ONBOARDING_PROFILE_FIELDS = [
+    "experience_level", "training_style", "priority_muscles",
+    "intensity_preference", "medical_conditions",
+    "days_per_week", "session_duration_minutes",
+]
+
+
 class OnboardingCompleteView(APIView):
     def post(self, request):
         from apps.routines.serializers import RoutineSerializer
         from apps.routines.services.generation_service import generate_monthly_routine_if_needed
 
-        serializer = OnboardingCompleteSerializer(data=request.data)
+        profile_input = dict(request.data.get("profile", {}))
+        health_input = request.data.get("health", {})
+        for field in ONBOARDING_PROFILE_FIELDS:
+            if field in health_input:
+                profile_input[field] = health_input[field]
+
+        merged_data = {"profile": profile_input, "health": health_input}
+        serializer = OnboardingCompleteSerializer(data=merged_data)
         serializer.is_valid(raise_exception=True)
 
         profile_serializer = ProfileSerializer(

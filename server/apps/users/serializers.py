@@ -15,6 +15,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "height_cm",
             "preferred_language",
             "preferred_units",
+            "experience_level",
+            "training_style",
+            "priority_muscles",
+            "intensity_preference",
+            "medical_conditions",
+            "days_per_week",
+            "session_duration_minutes",
             "created_at",
             "updated_at",
         )

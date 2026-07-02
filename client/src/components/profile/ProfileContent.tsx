@@ -51,12 +51,19 @@ const emptyProfile = (locale: string): OnboardingProfile => ({
 
 const emptyHealth: OnboardingHealth = {
   activity_level: "",
+  experience_level: "",
   physical_goals: [],
+  training_style: "",
+  priority_muscles: [],
+  intensity_preference: "",
   specific_goal: "",
+  medical_conditions: [],
   injuries: [],
   equipment_type: "",
   available_equipment: [],
   routine_type: "",
+  days_per_week: null,
+  session_duration_minutes: null,
 };
 
 export function ProfileContent({ locale }: { locale: string }) {

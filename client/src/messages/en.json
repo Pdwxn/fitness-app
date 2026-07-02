@@ -82,11 +82,11 @@
     },
     "steps": {
       "personal": "Personal",
-      "activity": "Activity",
+      "fitness": "Fitness",
       "goals": "Goals",
       "health": "Health",
       "equipment": "Equipment",
-      "routine": "Routine"
+      "schedule": "Schedule"
     },
     "form": {
       "personal": {
@@ -104,8 +104,15 @@
           "prefer_not_to_say": "Prefer not to say"
         }
       },
-      "activity": {
-        "options": {
+      "fitness": {
+        "experienceLabel": "What is your experience level?",
+        "activityLabel": "How often do you work out?",
+        "experience": {
+          "beginner": { "label": "Beginner", "description": "Never trained or haven't in months" },
+          "intermediate": { "label": "Intermediate", "description": "Training for over 6 months, know basic exercises" },
+          "advanced": { "label": "Advanced", "description": "Training for over 2 years, handle technique and loads" }
+        },
+        "activity": {
           "sedentary": { "label": "Sedentary", "description": "No regular exercise" },
           "light": { "label": "Light", "description": "1-2 days per week" },
           "moderate": { "label": "Moderate", "description": "3-4 days per week" },
@@ -114,22 +121,67 @@
         }
       },
       "goals": {
-        "specificGoal": "Specific goal optional",
+        "goalsLabel": "What are your goals?",
+        "styleLabel": "Training style",
+        "musclesLabel": "Which muscles to prioritize?",
+        "musclesHint": "Optional, pick the ones that apply",
+        "intensityLabel": "Preferred intensity",
+        "specificGoal": "Specific goal (optional)",
         "specificGoalPlaceholder": "Example: I want to build glutes and shoulders",
+        "suggested": "Suggested",
         "options": {
           "lose_weight": "Lose weight",
           "gain_muscle": "Gain muscle",
           "endurance": "Improve endurance",
           "flexibility": "Improve flexibility",
           "general_fitness": "General fitness"
+        },
+        "styles": {
+          "strength": { "label": "Strength", "description": "Heavy, low reps (1-6)" },
+          "hypertrophy": { "label": "Hypertrophy", "description": "Muscle growth (8-15 reps)" },
+          "endurance": { "label": "Endurance", "description": "High reps, toning (15-20+)" },
+          "power": { "label": "Power", "description": "Explosive movements (1-5 reps)" },
+          "general": { "label": "Mixed / General", "description": "Balanced" }
+        },
+        "muscles": {
+          "chest": "Chest",
+          "back": "Back",
+          "shoulders": "Shoulders",
+          "biceps": "Biceps",
+          "triceps": "Triceps",
+          "legs": "Legs",
+          "glutes": "Glutes",
+          "abs": "Abs",
+          "calves": "Calves",
+          "forearms": "Forearms"
+        },
+        "intensity": {
+          "always_failure": "Always to failure 💀",
+          "near_failure": "1-2 reps from failure 🎯",
+          "comfortable": "3+ reps from failure 🧘"
         }
       },
       "health": {
-        "hint": "Add discomfort or injuries. You can leave this empty.",
+        "conditionsLabel": "Do you have any medical conditions?",
+        "conditionsHint": "Optional, helps adjust your routine to avoid risks",
+        "injuriesLabel": "Additional injuries or discomfort",
+        "injuriesHint": "Add discomfort or injuries. You can leave this empty.",
         "areaPlaceholder": "Area: left knee",
         "descriptionPlaceholder": "Description",
         "remove": "Remove",
-        "add": "Add injury or discomfort"
+        "add": "Add injury or discomfort",
+        "conditions": {
+          "knee_pain": { "label": "Knee pain / Arthritis", "description": "Pain in squats, lunges, impact" },
+          "lower_back_pain": { "label": "Lower back pain", "description": "Pain in deadlift, row, squat" },
+          "anemia": { "label": "Anemia", "description": "Premature fatigue, shortness of breath" },
+          "asthma": { "label": "Asthma / COPD", "description": "Shortness of breath at high intensity" },
+          "hypertension": { "label": "Hypertension", "description": "Blood pressure spikes on intense strength" },
+          "herniated_disc": { "label": "Herniated disc / Sciatica", "description": "Radiating pain to legs" },
+          "diabetes": { "label": "Type 2 diabetes", "description": "Glucose fluctuations" },
+          "tendinitis": { "label": "Tendinitis", "description": "Pain in presses or pulls" },
+          "pregnancy": { "label": "Pregnancy (post 1st trimester)", "description": "Diastasis, pelvic pressure" },
+          "rheumatoid_arthritis": { "label": "Rheumatoid arthritis", "description": "Joint inflammation, stiffness" }
+        }
       },
       "equipment": {
         "types": {
@@ -147,13 +199,16 @@
           "bodyweight_only": "Bodyweight only"
         }
       },
-      "routine": {
-        "warning": "With your current equipment, a 5-day routine may be hard to complete.",
-        "options": {
-          "push_pull_legs": { "label": "Push / Pull / Legs", "description": "Push, pull, and legs" },
-          "upper_lower": { "label": "Upper / Lower", "description": "Alternate upper and lower body" },
-          "hybrid": { "label": "Hybrid", "description": "Flexible for 3-5 days" },
-          "5_days": { "label": "5 days", "description": "One muscle group per day" }
+      "schedule": {
+        "daysLabel": "How many days per week can you train?",
+        "durationLabel": "How long per session?",
+        "routineLabel": "Routine type",
+        "recommended": "RECOMMENDED",
+        "routines": {
+          "push_pull_legs": { "label": "Push / Pull / Legs", "description": "Upper push, upper pull, and legs on separate days. The most popular split for volume.", "days": "⭐ 3-4 days/week" },
+          "upper_lower": { "label": "Upper / Lower", "description": "Alternate full upper body with legs. Ideal for 2x frequency per muscle group.", "days": "⭐ 4 days/week" },
+          "hybrid": { "label": "Hybrid", "description": "Combines compound and accessory exercises each session. Flexible and adaptable.", "days": "⭐ 1-3 days/week" },
+          "5_days": { "label": "5 days / Weider", "description": "One large muscle group per day (chest, back, shoulders, legs, arms). Higher volume.", "days": "⭐ 5-6 days/week" }
         }
       }
     }
@@ -207,6 +262,12 @@
     "athlete": "Apex athlete",
     "dayStreak": "day streak",
     "stats": {
+      "completedDays": "Completed days",
+      "totalExercises": "Exercises",
+      "activeRoutine": "Active routine",
+      "lastSync": "Last sync",
+      "pending": "Pending",
+      "title": "Statistics",
       "completedDays": "Completed days",
       "totalExercises": "Exercises",
       "activeRoutine": "Active routine",

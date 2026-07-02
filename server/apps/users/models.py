@@ -19,6 +19,23 @@ class UserProfile(models.Model):
         METRIC = "metric", "Metric"
         IMPERIAL = "imperial", "Imperial"
 
+    class ExperienceLevel(models.TextChoices):
+        BEGINNER = "beginner", "Beginner"
+        INTERMEDIATE = "intermediate", "Intermediate"
+        ADVANCED = "advanced", "Advanced"
+
+    class TrainingStyle(models.TextChoices):
+        STRENGTH = "strength", "Strength"
+        HYPERTROPHY = "hypertrophy", "Hypertrophy"
+        ENDURANCE = "endurance", "Endurance"
+        POWER = "power", "Power"
+        GENERAL = "general", "General"
+
+    class IntensityPreference(models.TextChoices):
+        ALWAYS_FAILURE = "always_failure", "Always to failure"
+        NEAR_FAILURE = "near_failure", "Near failure"
+        COMFORTABLE = "comfortable", "Comfortable"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     full_name = models.CharField(max_length=100, blank=True)
     gender = models.CharField(
@@ -39,6 +56,27 @@ class UserProfile(models.Model):
         choices=Units.choices,
         default=Units.METRIC,
     )
+
+    experience_level = models.CharField(
+        max_length=20,
+        choices=ExperienceLevel.choices,
+        blank=True,
+    )
+    training_style = models.CharField(
+        max_length=20,
+        choices=TrainingStyle.choices,
+        blank=True,
+    )
+    priority_muscles = models.JSONField(default=list, blank=True)
+    intensity_preference = models.CharField(
+        max_length=20,
+        choices=IntensityPreference.choices,
+        blank=True,
+    )
+    medical_conditions = models.JSONField(default=list, blank=True)
+    days_per_week = models.PositiveSmallIntegerField(null=True, blank=True)
+    session_duration_minutes = models.PositiveSmallIntegerField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
