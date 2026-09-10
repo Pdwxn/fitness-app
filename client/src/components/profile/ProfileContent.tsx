@@ -13,6 +13,7 @@ import {
   ROUTINE_TYPES,
 } from "@/lib/constants";
 import { useRoutineCache } from "@/hooks/useRoutineCache";
+import { routinePeriodLabel } from "@/types/routine";
 import { ApiError, authenticatedClientFetch } from "@/lib/api/authenticated-client";
 import { db } from "@/lib/db";
 import { getFromStorage, setInStorage, STORAGE_KEYS } from "@/lib/storage";
@@ -223,7 +224,14 @@ export function ProfileContent({ locale }: { locale: string }) {
       </section>
 
       <section className="grid gap-3 md:grid-cols-3">
-        <InfoTile label={t("routine.eyebrow")} value={routine ? `${routine.month}/${routine.year}` : t("routine.missing")} />
+        <InfoTile
+          label={t("routine.eyebrow")}
+          value={
+            routine
+              ? (routinePeriodLabel(routine) ?? t("routine.notAvailable"))
+              : t("routine.missing")
+          }
+        />
         <InfoTile label={t("settings.syncStatus")} value={isOfflineFallback ? t("settings.offlineFallback") : t("settings.onlineCache")} />
         <InfoTile label={t("settings.pendingSync")} value={String(pendingSyncCount)} />
       </section>

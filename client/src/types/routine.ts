@@ -59,6 +59,14 @@ export type Routine = {
 
 export type RoutineCache = Routine;
 
+/**
+ * `MM/YYYY` for AI-generated (monthly) routines, or `null` for manual routines
+ * which have no month/year. Call sites decide what to render for `null`.
+ */
+export function routinePeriodLabel(routine: Pick<Routine, "month" | "year">): string | null {
+  return routine.month && routine.year ? `${routine.month}/${routine.year}` : null;
+}
+
 // --- Routine builder (manual) ---------------------------------------------- //
 
 /** One exercise inside a builder draft (subset of RoutineExercise the user edits). */
