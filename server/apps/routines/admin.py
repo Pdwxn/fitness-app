@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Routine, RoutineDay, RoutineExercise, RoutineWeek
+from .models import Routine, RoutineDay, RoutineExercise, RoutineWeek, StoredExercise
 
 
 class RoutineWeekInline(admin.TabularInline):
@@ -20,8 +20,8 @@ class RoutineExerciseInline(admin.TabularInline):
 
 @admin.register(Routine)
 class RoutineAdmin(admin.ModelAdmin):
-    list_display = ("user", "month", "year", "is_active", "generated_at", "created_at")
-    list_filter = ("is_active", "year", "month")
+    list_display = ("user", "source", "month", "year", "is_active", "generated_at", "created_at")
+    list_filter = ("source", "is_active", "year", "month")
     search_fields = ("user__full_name", "user__id")
     inlines = (RoutineWeekInline,)
 
@@ -47,3 +47,10 @@ class RoutineExerciseAdmin(admin.ModelAdmin):
     list_display = ("day", "order", "name", "muscle_group", "sets", "reps", "rest_seconds")
     list_filter = ("muscle_group",)
     search_fields = ("name", "muscle_group", "day__week__routine__user__full_name")
+
+
+@admin.register(StoredExercise)
+class StoredExerciseAdmin(admin.ModelAdmin):
+    list_display = ("name", "category", "equipment", "level", "image_provider", "updated_at")
+    list_filter = ("category", "equipment", "level", "image_provider")
+    search_fields = ("name", "external_id")
