@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 
 import { useExerciseCatalog, useCatalogSyncStatus } from "@/hooks/useExerciseCatalog";
@@ -18,10 +19,23 @@ export function ExercisePicker({ onPick, onAddCustom, onClose }: ExercisePickerP
   const { exercises, facets, isLoading, isEmpty } = useExerciseCatalog(filters);
   const { neverSynced } = useCatalogSyncStatus();
 
+  // Lock body scroll while the picker is open.
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, []);
+
   const update = (patch: Partial<CatalogFilters>) =>
     setFilters((current) => ({ ...current, ...patch }));
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  // Portal to <body>: an ancestor `.apex-card` sets `backdrop-filter`, which
+  // makes it the containing block for `position: fixed`. The portal escapes it.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex flex-col bg-black/80 p-4 backdrop-blur-sm">
       <div className="apex-card mx-auto flex h-full w-full max-w-2xl flex-col overflow-hidden rounded-[1.5rem]">
         <div className="flex items-center justify-between border-b border-white/10 p-4">
@@ -116,6 +130,7 @@ export function ExercisePicker({ onPick, onAddCustom, onClose }: ExercisePickerP
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
