@@ -52,6 +52,11 @@ def try_generate_next_routine(user):
 
     try:
         active_routine = Routine.objects.get(user=user, is_active=True)
+
+        # Manual routines have no monthly cadence: never auto-generate a successor.
+        if active_routine.source == Routine.Source.MANUAL or not active_routine.month:
+            return None
+
         if not is_routine_completed(user, active_routine):
             return None
 

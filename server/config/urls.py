@@ -26,6 +26,7 @@ urlpatterns = [
     path('api/v1/profile/', include('apps.profiles.urls')),
     path('api/v1/onboarding/', include('apps.profiles.onboarding_urls')),
     path('api/v1/routines/', include('apps.routines.urls')),
+    path('api/v1/exercises/', include('apps.routines.exercises_urls')),
     path('api/v1/progress/', include('apps.progress.urls')),
 ]
 

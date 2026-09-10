@@ -26,10 +26,24 @@ class MonthlyRoutineExistsError(APIException):
     default_code = "monthly_routine_exists"
 
 
+class ActiveManualRoutineError(APIException):
+    status_code = 409
+    default_detail = "Deactivate your manual routine before generating one with AI."
+    default_code = "active_manual_routine"
+
+
+def _ensure_no_active_manual_routine(user):
+    active = Routine.objects.filter(user=user, is_active=True).first()
+    if active is not None and active.source == Routine.Source.MANUAL:
+        raise ActiveManualRoutineError()
+
+
 def ensure_user_can_generate_routine(user, today=None):
     today = today or timezone.now().date()
     if not is_onboarding_complete(user):
         raise OnboardingIncompleteError()
+
+    _ensure_no_active_manual_routine(user)
 
     if get_current_month_routine(user, today=today) is not None:
         raise MonthlyRoutineExistsError()
@@ -67,6 +81,8 @@ def generate_monthly_routine_if_needed(
     today = today or timezone.now().date()
     if not is_onboarding_complete(user):
         raise OnboardingIncompleteError()
+
+    _ensure_no_active_manual_routine(user)
 
     existing_routine = get_current_month_routine(user, today=today)
     if existing_routine is not None:
@@ -175,57 +191,90 @@ def get_previous_month_notes(user, today=None):
     return notes
 
 
-def persist_generated_routine(user, routine_data, raw_response, prompt, today=None):
-    today = today or timezone.now().date()
-    if Routine.objects.filter(user=user, month=today.month, year=today.year).exists():
-        raise MonthlyRoutineExistsError()
+def _build_routine_tree(routine, routine_data):
+    for week_data in routine_data["weeks"]:
+        week = RoutineWeek.objects.create(
+            routine=routine,
+            week_number=week_data["week_number"],
+            focus=week_data.get("focus", ""),
+            notes=week_data.get("notes", ""),
+        )
+        for day_data in week_data["days"]:
+            day = RoutineDay.objects.create(
+                week=week,
+                day_number=day_data["day_number"],
+                day_name=day_data["day_name"],
+                is_rest_day=day_data.get("is_rest_day", False),
+            )
+            for fallback_order, exercise_data in enumerate(
+                day_data.get("exercises", []), start=1
+            ):
+                RoutineExercise.objects.create(
+                    day=day,
+                    name=exercise_data["name"],
+                    muscle_group=exercise_data.get("muscle_group", ""),
+                    source_external_id=exercise_data.get("external_id", ""),
+                    sets=exercise_data.get("sets"),
+                    reps=exercise_data.get("reps", ""),
+                    weight_kg=exercise_data.get("weight_kg"),
+                    rest_seconds=exercise_data.get("rest_seconds"),
+                    variants=exercise_data.get("variants", []),
+                    instructions=exercise_data.get("instructions", ""),
+                    search_term=exercise_data.get("search_term", ""),
+                    order=exercise_data.get("order") or fallback_order,
+                )
 
+
+def persist_routine(user, routine_data, *, source, raw_response=None, prompt=None, today=None):
+    """Persist a full routine tree and make it the user's single active routine.
+
+    - ``source == AI_GENERATED``: requires month/year (from ``today``), stores the
+      Gemini prompt hash and raw response, and treats a uniqueness collision as
+      :class:`MonthlyRoutineExistsError`.
+    - ``source == MANUAL``: month/year stay NULL, no Gemini fields.
+
+    Runs ``enrich_routine`` at the end in both cases (best-effort).
+    """
     if not isinstance(routine_data, dict) or not routine_data.get("weeks"):
         raise ValidationError({"routine_data": "Routine data must include weeks."})
+
+    is_ai = source == Routine.Source.AI_GENERATED
+    month = year = None
+    generated_at = None
+    gemini_prompt_hash = ""
+    raw_gemini_response = None
+
+    if is_ai:
+        today = today or timezone.now().date()
+        month, year = today.month, today.year
+        generated_at = timezone.now()
+        gemini_prompt_hash = (
+            hashlib.sha256(prompt.encode("utf-8")).hexdigest() if prompt else ""
+        )
+        raw_gemini_response = {"raw": raw_response, "parsed": routine_data}
+        if Routine.objects.filter(
+            user=user, month=month, year=year, source=Routine.Source.AI_GENERATED
+        ).exists():
+            raise MonthlyRoutineExistsError()
 
     try:
         with transaction.atomic():
             Routine.objects.filter(user=user, is_active=True).update(is_active=False)
             routine = Routine.objects.create(
                 user=user,
-                month=today.month,
-                year=today.year,
+                source=source,
+                month=month,
+                year=year,
                 is_active=True,
-                generated_at=timezone.now(),
-                gemini_prompt_hash=hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
-                raw_gemini_response={"raw": raw_response, "parsed": routine_data},
+                generated_at=generated_at,
+                gemini_prompt_hash=gemini_prompt_hash,
+                raw_gemini_response=raw_gemini_response,
             )
-
-            for week_data in routine_data["weeks"]:
-                week = RoutineWeek.objects.create(
-                    routine=routine,
-                    week_number=week_data["week_number"],
-                    focus=week_data.get("focus", ""),
-                    notes=week_data.get("notes", ""),
-                )
-                for day_data in week_data["days"]:
-                    day = RoutineDay.objects.create(
-                        week=week,
-                        day_number=day_data["day_number"],
-                        day_name=day_data["day_name"],
-                        is_rest_day=day_data.get("is_rest_day", False),
-                    )
-                    for exercise_data in day_data.get("exercises", []):
-                        RoutineExercise.objects.create(
-                            day=day,
-                            name=exercise_data["name"],
-                            muscle_group=exercise_data.get("muscle_group", ""),
-                            sets=exercise_data.get("sets"),
-                            reps=exercise_data.get("reps", ""),
-                            weight_kg=exercise_data.get("weight_kg"),
-                            rest_seconds=exercise_data.get("rest_seconds"),
-                            variants=exercise_data.get("variants", []),
-                            instructions=exercise_data.get("instructions", ""),
-                            search_term=exercise_data.get("search_term", ""),
-                            order=exercise_data["order"],
-                        )
+            _build_routine_tree(routine, routine_data)
     except IntegrityError as exc:
-        raise MonthlyRoutineExistsError() from exc
+        if is_ai:
+            raise MonthlyRoutineExistsError() from exc
+        raise APIException("Could not save the routine, please try again.") from exc
 
     try:
         enrich_routine(routine)
@@ -233,3 +282,22 @@ def persist_generated_routine(user, routine_data, raw_response, prompt, today=No
         logger.exception("ExerciseDB enrichment failed for routine %s: %s", routine.id, exc)
 
     return Routine.objects.prefetch_related("weeks__days__exercises").get(id=routine.id)
+
+
+def persist_generated_routine(user, routine_data, raw_response, prompt, today=None):
+    return persist_routine(
+        user,
+        routine_data,
+        source=Routine.Source.AI_GENERATED,
+        raw_response=raw_response,
+        prompt=prompt,
+        today=today,
+    )
+
+
+def persist_manual_routine(user, routine_data):
+    """Safe entry point for a user-built routine: normalizes then persists."""
+    from .routine_validation import validate_manual_routine_payload
+
+    normalized = validate_manual_routine_payload(routine_data)
+    return persist_routine(user, normalized, source=Routine.Source.MANUAL)
