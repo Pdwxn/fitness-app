@@ -1,5 +1,9 @@
-import { authenticatedClientFetch } from "./api/authenticated-client";
-import { db, type StatsEntry } from "./db";
+import { ApiError, authenticatedClientFetch } from "./api/authenticated-client";
+import { fetchFullExerciseCatalog } from "./api/exercises";
+import { createManualRoutine } from "./api/routines";
+import { db, getMeta, META_KEYS, setMeta, type StatsEntry } from "./db";
+import { queryClient } from "./query-client";
+import { queryKeys } from "./query-keys";
 import { useNextRoutineStore } from "@/store/nextRoutineStore";
 import type { DailyLog, DailyLogBatchResponse, ProgressStats } from "@/types/progress";
 
@@ -147,7 +151,82 @@ export async function updateStatsLocally(logs: DailyLog[]): Promise<StatsEntry> 
   return entry;
 }
 
+// --- exercise catalog ----------------------------------------------------- //
+
+const CATALOG_MAX_AGE_MS = 24 * 60 * 60_000;
+
+/**
+ * Downloads the full exercise catalog into Dexie.
+ * v1: always a full download (no `updated_since` delta). Skips if a sync
+ * happened within the last 24h unless `force` is set.
+ * Returns false on network failure (the existing catalog stays usable).
+ */
+export async function syncExerciseCatalog(force = false): Promise<boolean> {
+  if (!force) {
+    const syncedAt = await getMeta(META_KEYS.exercisesSyncedAt);
+    if (syncedAt) {
+      const age = Date.now() - new Date(syncedAt).getTime();
+      const count = await db.exercises.count().catch(() => 0);
+      if (age < CATALOG_MAX_AGE_MS && count > 0) return true;
+    }
+  }
+
+  try {
+    const catalog = await fetchFullExerciseCatalog();
+    if (catalog.length > 0) {
+      await db.exercises.bulkPut(catalog);
+    }
+    await setMeta(META_KEYS.exercisesSyncedAt, new Date().toISOString());
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// --- offline-built routines --------------------------------------------------- //
+
+/**
+ * Uploads routines that were built offline. In practice the builder only ever
+ * leaves one queued (the backend enforces a single active routine), but we
+ * process the queue in order and keep the last result.
+ */
+export async function syncPendingRoutines(): Promise<boolean> {
+  let items;
+  try {
+    items = await db.pendingRoutines.orderBy("createdAt").toArray();
+  } catch {
+    return false;
+  }
+  if (!items.length) return true;
+
+  let allOk = true;
+  for (const item of items) {
+    try {
+      const routine = await createManualRoutine(item.payload);
+      await db.pendingRoutines.delete(item.id);
+      await db.routineCache.put(routine);
+      queryClient.setQueryData(queryKeys.routine.active(), routine);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.routine.active() });
+    } catch (error) {
+      if (error instanceof ApiError && error.status >= 400 && error.status < 500) {
+        // Payload the server will never accept — drop it so we don't loop.
+        await db.pendingRoutines.delete(item.id);
+        allOk = false;
+      } else {
+        // Network / server error — keep it for the next attempt.
+        allOk = false;
+      }
+    }
+  }
+  return allOk;
+}
+
 export function startSilentSync(intervalMs = 30_000) {
-  void syncPendingLogs();
-  return window.setInterval(syncPendingLogs, intervalMs);
+  const runAll = () => {
+    void syncPendingLogs();
+    void syncPendingRoutines();
+    void syncExerciseCatalog();
+  };
+  runAll();
+  return window.setInterval(runAll, intervalMs);
 }

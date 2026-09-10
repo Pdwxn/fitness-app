@@ -1,6 +1,7 @@
 import Dexie, { type EntityTable } from "dexie";
 import type { DailyLog } from "@/types/progress";
-import type { RoutineCache } from "@/types/routine";
+import type { ManualRoutineDraft, RoutineCache } from "@/types/routine";
+import type { Exercise } from "@/types/exercise";
 
 export interface PendingSyncItem {
   id: string;
@@ -15,11 +16,33 @@ export interface StatsEntry {
   pending_sync: number;
 }
 
+/** Loose key/value store for small bits of client state (sync timestamps, drafts). */
+export interface MetaEntry {
+  key: string;
+  value: string;
+}
+
+/** A routine built offline, queued for `POST /api/v1/routines/manual/`. */
+export interface PendingRoutineItem {
+  id: string;
+  payload: ManualRoutineDraft;
+  createdAt: string;
+}
+
+export const META_KEYS = {
+  exercisesSyncedAt: "exercises_synced_at",
+  routineBuilderDraft: "routine_builder_draft",
+  pushSubscribedAt: "push_subscribed_at",
+} as const;
+
 export class ApexFitDB extends Dexie {
   routineCache!: EntityTable<RoutineCache, "id">;
   dailyLogs!: EntityTable<DailyLog, "id">;
   pendingSync!: EntityTable<PendingSyncItem, "id">;
   stats!: EntityTable<StatsEntry, "id">;
+  exercises!: EntityTable<Exercise, "external_id">;
+  meta!: EntityTable<MetaEntry, "key">;
+  pendingRoutines!: EntityTable<PendingRoutineItem, "id">;
 
   constructor() {
     super("apex-fit");
@@ -29,7 +52,41 @@ export class ApexFitDB extends Dexie {
       pendingSync: "&id, createdAt",
       stats: "&id",
     });
+    this.version(2).stores({
+      routineCache: "&id",
+      dailyLogs: "&id, routine_day_id, date, [routine_day_id+date]",
+      pendingSync: "&id, createdAt",
+      stats: "&id",
+      exercises: "&external_id, name, category, equipment, *primary_muscles, updated_at",
+      meta: "&key",
+      pendingRoutines: "&id, createdAt",
+    });
   }
 }
 
 export const db = new ApexFitDB();
+
+export async function getMeta(key: string): Promise<string | null> {
+  try {
+    const entry = await db.meta.get(key);
+    return entry?.value ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function setMeta(key: string, value: string): Promise<void> {
+  try {
+    await db.meta.put({ key, value });
+  } catch {
+    /* storage unavailable — non-fatal */
+  }
+}
+
+export async function deleteMeta(key: string): Promise<void> {
+  try {
+    await db.meta.delete(key);
+  } catch {
+    /* non-fatal */
+  }
+}

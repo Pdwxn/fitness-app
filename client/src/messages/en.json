@@ -326,6 +326,80 @@
       "offlineFallback": "You are viewing the latest routine saved on this device."
     }
   },
+  "RoutineChoice": {
+    "eyebrow": "Your routine",
+    "title": "How do you want to start?",
+    "description": "Build your own routine choosing exercises, or let AI design a personalized monthly plan.",
+    "manual": {
+      "title": "Build my routine",
+      "description": "Pick exercises, set your weeks and days. Works fully offline.",
+      "cta": "Build my routine"
+    },
+    "ai": {
+      "title": "Generate with AI",
+      "description": "Answer a few questions and get a science-based monthly plan.",
+      "cta": "Generate with AI"
+    },
+    "pendingBanner": "Your routine was saved on this device and will upload when you are online.",
+    "change": {
+      "cta": "Change routine",
+      "title": "Change your routine?",
+      "body": "Your current routine will be archived. You can build a new one or generate one with AI.",
+      "confirm": "Archive and continue",
+      "cancel": "Cancel",
+      "error": "We could not change your routine. Try again."
+    }
+  },
+  "Builder": {
+    "title": "Routine builder",
+    "description": "Build your routine week by week.",
+    "week": "Week",
+    "addWeek": "Add week",
+    "removeWeek": "Remove week",
+    "focus": "Week focus",
+    "notes": "Week notes",
+    "day": "Day",
+    "addDay": "Add day",
+    "removeDay": "Remove day",
+    "dayNamePlaceholder": "Day name (e.g. Push, Legs)",
+    "restDay": "Rest day",
+    "addExercise": "Add exercise",
+    "removeExercise": "Remove",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "sets": "Sets",
+    "reps": "Reps",
+    "rest": "Rest (s)",
+    "weight": "Kg",
+    "save": "Save routine",
+    "saving": "Saving...",
+    "savedOnline": "Routine created.",
+    "savedOffline": "Routine saved. It will upload when you are online.",
+    "saveError": "We could not save your routine. Try again.",
+    "picker": {
+      "title": "Choose an exercise",
+      "search": "Search exercises",
+      "muscle": "Muscle",
+      "equipment": "Equipment",
+      "category": "Category",
+      "all": "All",
+      "empty": "No exercises match your filters.",
+      "syncing": "Updating exercise catalog...",
+      "neverSynced": "The exercise catalog has not been downloaded yet. Connect once to sync it.",
+      "custom": "Add custom exercise",
+      "close": "Close"
+    },
+    "validation": {
+      "noTrainingDay": "Week {week} needs at least one training day.",
+      "emptyTrainingDay": "Day {day} in week {week} needs at least one exercise.",
+      "unnamedDay": "Day {day} in week {week} needs a name.",
+      "unnamedExercise": "An exercise in day {day}, week {week} has no name."
+    },
+    "states": {
+      "loading": "Loading builder...",
+      "error": "Something went wrong loading the builder."
+    }
+  },
   "RoutineDay": {
     "title": "Day details",
     "description": "Review exercises, sets, reps, suggested weights, and instructions.",

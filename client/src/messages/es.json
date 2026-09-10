@@ -326,6 +326,80 @@
       "offlineFallback": "Estás viendo la última rutina guardada en este dispositivo."
     }
   },
+  "RoutineChoice": {
+    "eyebrow": "Tu rutina",
+    "title": "¿Cómo quieres empezar?",
+    "description": "Arma tu propia rutina eligiendo ejercicios, o deja que la IA diseñe un plan mensual personalizado.",
+    "manual": {
+      "title": "Crear mi rutina",
+      "description": "Elige ejercicios, define tus semanas y días. Funciona sin conexión.",
+      "cta": "Crear mi rutina"
+    },
+    "ai": {
+      "title": "Generar con IA",
+      "description": "Responde unas preguntas y obtén un plan mensual basado en ciencia.",
+      "cta": "Generar con IA"
+    },
+    "pendingBanner": "Tu rutina se guardó en este dispositivo y se subirá cuando tengas conexión.",
+    "change": {
+      "cta": "Cambiar de rutina",
+      "title": "¿Cambiar tu rutina?",
+      "body": "Tu rutina actual se archivará. Podrás crear una nueva o generar una con IA.",
+      "confirm": "Archivar y continuar",
+      "cancel": "Cancelar",
+      "error": "No pudimos cambiar tu rutina. Inténtalo de nuevo."
+    }
+  },
+  "Builder": {
+    "title": "Constructor de rutinas",
+    "description": "Arma tu rutina semana por semana.",
+    "week": "Semana",
+    "addWeek": "Agregar semana",
+    "removeWeek": "Quitar semana",
+    "focus": "Enfoque de la semana",
+    "notes": "Notas de la semana",
+    "day": "Día",
+    "addDay": "Agregar día",
+    "removeDay": "Quitar día",
+    "dayNamePlaceholder": "Nombre del día (ej. Empuje, Piernas)",
+    "restDay": "Día de descanso",
+    "addExercise": "Agregar ejercicio",
+    "removeExercise": "Quitar",
+    "moveUp": "Subir",
+    "moveDown": "Bajar",
+    "sets": "Series",
+    "reps": "Reps",
+    "rest": "Descanso (s)",
+    "weight": "Kg",
+    "save": "Guardar rutina",
+    "saving": "Guardando...",
+    "savedOnline": "Rutina creada.",
+    "savedOffline": "Rutina guardada. Se subirá cuando tengas conexión.",
+    "saveError": "No pudimos guardar tu rutina. Inténtalo de nuevo.",
+    "picker": {
+      "title": "Elige un ejercicio",
+      "search": "Buscar ejercicios",
+      "muscle": "Músculo",
+      "equipment": "Equipo",
+      "category": "Categoría",
+      "all": "Todos",
+      "empty": "Ningún ejercicio coincide con tus filtros.",
+      "syncing": "Actualizando catálogo de ejercicios...",
+      "neverSynced": "El catálogo de ejercicios aún no se ha descargado. Conéctate una vez para sincronizarlo.",
+      "custom": "Agregar ejercicio personalizado",
+      "close": "Cerrar"
+    },
+    "validation": {
+      "noTrainingDay": "La semana {week} necesita al menos un día de entrenamiento.",
+      "emptyTrainingDay": "El día {day} de la semana {week} necesita al menos un ejercicio.",
+      "unnamedDay": "El día {day} de la semana {week} necesita un nombre.",
+      "unnamedExercise": "Un ejercicio del día {day}, semana {week} no tiene nombre."
+    },
+    "states": {
+      "loading": "Cargando constructor...",
+      "error": "Algo salió mal al cargar el constructor."
+    }
+  },
   "RoutineDay": {
     "title": "Detalle del día",
     "description": "Revisa ejercicios, series, repeticiones, pesos sugeridos e instrucciones.",

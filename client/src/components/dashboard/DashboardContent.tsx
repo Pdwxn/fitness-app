@@ -3,16 +3,14 @@
 import { useMemo } from "react";
 import { useQueries } from "@tanstack/react-query";
 
-import { fetchOnboardingStatus } from "@/hooks/useOnboardingStatus";
 import { fetchActiveRoutine } from "@/hooks/useRoutineCache";
 import { fetchProgressStats } from "@/hooks/useProgressStats";
-import { getFromStorage, STORAGE_KEYS } from "@/lib/storage";
+import { usePendingRoutine } from "@/hooks/usePendingRoutine";
 import { queryKeys } from "@/lib/query-keys";
-import type { ProgressStats } from "@/types/progress";
 
+import { ChangeRoutineButton } from "@/components/routine/ChangeRoutineButton";
+import { RoutineChoiceScreen } from "@/components/routine/RoutineChoiceScreen";
 import { ActiveRoutineCard } from "./ActiveRoutineCard";
-import { OnboardingRequiredCard } from "./OnboardingRequiredCard";
-import { RoutinePendingCard } from "./RoutinePendingCard";
 import { StatsPreview } from "./StatsPreview";
 import { WeeklyRoutinePreview } from "./WeeklyRoutinePreview";
 
@@ -109,17 +107,10 @@ function formatLastSync(timestamp: number | null) {
 
 export function DashboardContent({ locale, labels }: DashboardContentProps) {
   const [
-    { data: onboardingData, isLoading: obLoading, isError: obError },
-    { data: routine, isLoading: rtLoading, isError: rtError, dataUpdatedAt: lastSync, refetch: refreshRoutine },
-    { data: statsData, isLoading: stLoading, isError: stError },
+    { data: routine, isLoading: rtLoading, isError: rtError, dataUpdatedAt: lastSync },
+    { data: statsData },
   ] = useQueries({
     queries: [
-      {
-        queryKey: queryKeys.onboarding.status(),
-        queryFn: fetchOnboardingStatus,
-        staleTime: 5 * 60_000,
-        retry: false,
-      },
       {
         queryKey: queryKeys.routine.active(),
         queryFn: fetchActiveRoutine,
@@ -133,56 +124,24 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
       },
     ],
   });
+  const { hasPending, isLoading: pendingLoading } = usePendingRoutine();
 
-  const cachedStatus = getFromStorage<{ completed: boolean }>(STORAGE_KEYS.ONBOARDING_STATUS);
-  const isComplete = onboardingData?.completed ?? cachedStatus?.completed ?? false;
-  const isLoading = obLoading;
-  const hasError = obError && !cachedStatus;
-  const isRoutineLoading = rtLoading;
+  const isRoutineLoading = rtLoading || pendingLoading;
   const hasRoutineError = rtError && !routine;
   const isOfflineFallback = rtError && Boolean(routine);
   const stats = statsData ?? null;
 
-  const activeRoutine = useMemo(
-    () => routine ? `${routine.month}/${routine.year}` : labels.stats.pending,
-    [routine, labels.stats.pending],
-  );
+  const activeRoutine = useMemo(() => {
+    if (!routine) return labels.stats.pending;
+    if (routine.source === "manual" || !routine.month || !routine.year) {
+      return labels.activeRoutine.eyebrow;
+    }
+    return `${routine.month}/${routine.year}`;
+  }, [routine, labels.stats.pending, labels.activeRoutine.eyebrow]);
   const completedDays = stats?.completed_days ?? 0;
-  const totalDays = useMemo(
-    () => routine?.weeks?.reduce((acc, w) => acc + w.days.filter((d) => !d.is_rest_day).length, 0) ?? 0,
-    [routine],
-  );
-  const completionRate = useMemo(
-    () => (completedDays / (totalDays || 1)),
-    [completedDays, totalDays],
-  );
 
-  if (isLoading) {
-    return (
-      <section className="apex-card rounded-[2rem] p-6">
-        <p className="text-sm font-bold text-white/65">{labels.loading}</p>
-      </section>
-    );
-  }
-
-  if (hasError) {
-    return (
-      <section className="rounded-[2rem] border border-red-400/30 bg-red-500/10 p-6 shadow-sm">
-        <p className="text-sm font-bold text-red-200">{labels.error}</p>
-      </section>
-    );
-  }
-
-  if (!isComplete) {
-    return (
-      <OnboardingRequiredCard
-        href={`/${locale}/onboarding`}
-        eyebrow={labels.onboardingRequired.eyebrow}
-        title={labels.onboardingRequired.title}
-        description={labels.onboardingRequired.description}
-        cta={labels.onboardingRequired.cta}
-      />
-    );
+  if (!isRoutineLoading && !routine && !hasPending) {
+    return <RoutineChoiceScreen locale={locale} />;
   }
 
   return (
@@ -212,10 +171,15 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
         </section>
       ) : null}
 
-      {!isRoutineLoading && !routine ? <RoutinePendingCard {...labels.routinePending} onRoutineGenerated={refreshRoutine} /> : null}
+      {!isRoutineLoading && !routine && hasPending ? (
+        <RoutineChoiceScreen locale={locale} hasPending />
+      ) : null}
 
       {routine ? (
         <>
+          <div className="flex items-center justify-end">
+            <ChangeRoutineButton routineId={routine.id} />
+          </div>
           <ActiveRoutineCard
             routine={routine}
             href={`/${locale}/routine`}
