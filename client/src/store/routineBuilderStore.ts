@@ -1,0 +1,292 @@
+import { create } from "zustand";
+
+import { db, deleteMeta, getMeta, META_KEYS, setMeta } from "@/lib/db";
+import type { DraftDay, DraftExercise, DraftWeek, ManualRoutineDraft } from "@/types/routine";
+import type { Exercise } from "@/types/exercise";
+
+const MAX_WEEKS = 4;
+const MAX_DAYS = 7;
+
+function emptyExercise(order: number): DraftExercise {
+  return {
+    name: "",
+    external_id: "",
+    muscle_group: "",
+    sets: null,
+    reps: "",
+    weight_kg: null,
+    rest_seconds: null,
+    order,
+  };
+}
+
+function exerciseFromCatalog(exercise: Exercise, order: number): DraftExercise {
+  return {
+    name: exercise.name,
+    external_id: exercise.external_id,
+    muscle_group: exercise.primary_muscles[0] ?? "",
+    sets: 3,
+    reps: "8-12",
+    weight_kg: null,
+    rest_seconds: 90,
+    order,
+  };
+}
+
+function emptyDay(dayNumber: number): DraftDay {
+  return {
+    day_number: dayNumber,
+    day_name: "",
+    is_rest_day: false,
+    exercises: [],
+  };
+}
+
+function emptyWeek(weekNumber: number): DraftWeek {
+  return {
+    week_number: weekNumber,
+    focus: "",
+    notes: "",
+    days: [emptyDay(1)],
+  };
+}
+
+function initialDraft(): ManualRoutineDraft {
+  return { weeks: [emptyWeek(1)] };
+}
+
+/** Renumber weeks / days / exercise order so everything stays contiguous from 1. */
+function renumber(draft: ManualRoutineDraft): ManualRoutineDraft {
+  return {
+    weeks: draft.weeks.map((week, wi) => ({
+      ...week,
+      week_number: wi + 1,
+      days: week.days.map((day, di) => ({
+        ...day,
+        day_number: di + 1,
+        exercises: day.exercises.map((exercise, ei) => ({ ...exercise, order: ei + 1 })),
+      })),
+    })),
+  };
+}
+
+type BuilderState = {
+  draft: ManualRoutineDraft;
+  hydrated: boolean;
+
+  hydrate: () => Promise<void>;
+  reset: () => void;
+
+  setWeekField: (weekIdx: number, patch: Partial<Pick<DraftWeek, "focus" | "notes">>) => void;
+  addWeek: () => void;
+  removeWeek: (weekIdx: number) => void;
+
+  addDay: (weekIdx: number) => void;
+  removeDay: (weekIdx: number, dayIdx: number) => void;
+  setDayName: (weekIdx: number, dayIdx: number, name: string) => void;
+  toggleRestDay: (weekIdx: number, dayIdx: number) => void;
+
+  addExercise: (weekIdx: number, dayIdx: number, exercise?: Exercise) => void;
+  removeExercise: (weekIdx: number, dayIdx: number, exerciseIdx: number) => void;
+  setExerciseField: (
+    weekIdx: number,
+    dayIdx: number,
+    exerciseIdx: number,
+    patch: Partial<DraftExercise>,
+  ) => void;
+  moveExercise: (weekIdx: number, dayIdx: number, exerciseIdx: number, dir: "up" | "down") => void;
+};
+
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+
+function schedulePersist(draft: ManualRoutineDraft) {
+  if (persistTimer) clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => {
+    void setMeta(META_KEYS.routineBuilderDraft, JSON.stringify(draft));
+  }, 400);
+}
+
+export const useRoutineBuilderStore = create<BuilderState>((set, get) => {
+  const commit = (draft: ManualRoutineDraft) => {
+    const next = renumber(draft);
+    set({ draft: next });
+    schedulePersist(next);
+  };
+
+  const mutateDay = (
+    weekIdx: number,
+    dayIdx: number,
+    fn: (day: DraftDay) => DraftDay,
+  ) => {
+    const { draft } = get();
+    commit({
+      weeks: draft.weeks.map((week, wi) =>
+        wi !== weekIdx
+          ? week
+          : {
+              ...week,
+              days: week.days.map((day, di) => (di === dayIdx ? fn(day) : day)),
+            },
+      ),
+    });
+  };
+
+  return {
+    draft: initialDraft(),
+    hydrated: false,
+
+    hydrate: async () => {
+      if (get().hydrated) return;
+      const raw = await getMeta(META_KEYS.routineBuilderDraft);
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw) as ManualRoutineDraft;
+          if (parsed?.weeks?.length) {
+            set({ draft: renumber(parsed), hydrated: true });
+            return;
+          }
+        } catch {
+          /* fall through to a fresh draft */
+        }
+      }
+      set({ hydrated: true });
+    },
+
+    reset: () => {
+      if (persistTimer) clearTimeout(persistTimer);
+      void deleteMeta(META_KEYS.routineBuilderDraft);
+      set({ draft: initialDraft() });
+    },
+
+    setWeekField: (weekIdx, patch) => {
+      const { draft } = get();
+      commit({
+        weeks: draft.weeks.map((week, wi) => (wi === weekIdx ? { ...week, ...patch } : week)),
+      });
+    },
+
+    addWeek: () => {
+      const { draft } = get();
+      if (draft.weeks.length >= MAX_WEEKS) return;
+      commit({ weeks: [...draft.weeks, emptyWeek(draft.weeks.length + 1)] });
+    },
+
+    removeWeek: (weekIdx) => {
+      const { draft } = get();
+      if (draft.weeks.length <= 1) return;
+      commit({ weeks: draft.weeks.filter((_, wi) => wi !== weekIdx) });
+    },
+
+    addDay: (weekIdx) => {
+      const { draft } = get();
+      const week = draft.weeks[weekIdx];
+      if (!week || week.days.length >= MAX_DAYS) return;
+      commit({
+        weeks: draft.weeks.map((w, wi) =>
+          wi === weekIdx ? { ...w, days: [...w.days, emptyDay(w.days.length + 1)] } : w,
+        ),
+      });
+    },
+
+    removeDay: (weekIdx, dayIdx) => {
+      const { draft } = get();
+      const week = draft.weeks[weekIdx];
+      if (!week || week.days.length <= 1) return;
+      commit({
+        weeks: draft.weeks.map((w, wi) =>
+          wi === weekIdx ? { ...w, days: w.days.filter((_, di) => di !== dayIdx) } : w,
+        ),
+      });
+    },
+
+    setDayName: (weekIdx, dayIdx, name) =>
+      mutateDay(weekIdx, dayIdx, (day) => ({ ...day, day_name: name })),
+
+    toggleRestDay: (weekIdx, dayIdx) =>
+      mutateDay(weekIdx, dayIdx, (day) => {
+        const isRest = !day.is_rest_day;
+        return { ...day, is_rest_day: isRest, exercises: isRest ? [] : day.exercises };
+      }),
+
+    addExercise: (weekIdx, dayIdx, exercise) =>
+      mutateDay(weekIdx, dayIdx, (day) => {
+        const nextOrder = day.exercises.length + 1;
+        const entry = exercise
+          ? exerciseFromCatalog(exercise, nextOrder)
+          : emptyExercise(nextOrder);
+        return { ...day, is_rest_day: false, exercises: [...day.exercises, entry] };
+      }),
+
+    removeExercise: (weekIdx, dayIdx, exerciseIdx) =>
+      mutateDay(weekIdx, dayIdx, (day) => ({
+        ...day,
+        exercises: day.exercises.filter((_, ei) => ei !== exerciseIdx),
+      })),
+
+    setExerciseField: (weekIdx, dayIdx, exerciseIdx, patch) =>
+      mutateDay(weekIdx, dayIdx, (day) => ({
+        ...day,
+        exercises: day.exercises.map((ex, ei) => (ei === exerciseIdx ? { ...ex, ...patch } : ex)),
+      })),
+
+    moveExercise: (weekIdx, dayIdx, exerciseIdx, dir) =>
+      mutateDay(weekIdx, dayIdx, (day) => {
+        const target = dir === "up" ? exerciseIdx - 1 : exerciseIdx + 1;
+        if (target < 0 || target >= day.exercises.length) return day;
+        const exercises = [...day.exercises];
+        [exercises[exerciseIdx], exercises[target]] = [exercises[target], exercises[exerciseIdx]];
+        return { ...day, exercises };
+      }),
+  };
+});
+
+// --- validation + queueing ------------------------------------------------- //
+
+export type DraftValidationError =
+  | { code: "no_training_day"; weekNumber: number }
+  | { code: "empty_training_day"; weekNumber: number; dayNumber: number }
+  | { code: "unnamed_day"; weekNumber: number; dayNumber: number }
+  | { code: "unnamed_exercise"; weekNumber: number; dayNumber: number };
+
+export function validateDraft(draft: ManualRoutineDraft): DraftValidationError[] {
+  const errors: DraftValidationError[] = [];
+  for (const week of draft.weeks) {
+    const trainingDays = week.days.filter((d) => !d.is_rest_day);
+    if (trainingDays.length === 0) {
+      errors.push({ code: "no_training_day", weekNumber: week.week_number });
+    }
+    for (const day of week.days) {
+      if (!day.day_name.trim()) {
+        errors.push({
+          code: "unnamed_day",
+          weekNumber: week.week_number,
+          dayNumber: day.day_number,
+        });
+      }
+      if (day.is_rest_day) continue;
+      if (day.exercises.length === 0) {
+        errors.push({
+          code: "empty_training_day",
+          weekNumber: week.week_number,
+          dayNumber: day.day_number,
+        });
+      }
+      if (day.exercises.some((ex) => !ex.name.trim())) {
+        errors.push({
+          code: "unnamed_exercise",
+          weekNumber: week.week_number,
+          dayNumber: day.day_number,
+        });
+      }
+    }
+  }
+  return errors;
+}
+
+export async function queuePendingRoutine(draft: ManualRoutineDraft): Promise<void> {
+  await db.pendingRoutines.add({
+    id: crypto.randomUUID(),
+    payload: draft,
+    createdAt: new Date().toISOString(),
+  });
+}

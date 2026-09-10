@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { StatusCard } from "@/components/ui/StatusCard";
 import { useRoutineCache } from "@/hooks/useRoutineCache";
+import { routinePeriodLabel } from "@/types/routine";
 
 type RoutinePageContentProps = {
   locale: string;
@@ -41,7 +42,10 @@ export function RoutinePageContent({ locale, labels }: RoutinePageContentProps) 
       <section className="relative overflow-hidden rounded-[2rem] pb-2 text-white">
         <p className="text-sm font-black uppercase tracking-[0.3em] text-[#a6ff00]">Apex routine</p>
         <h2 className="mt-2 text-5xl font-black tracking-tight">Monthly plan</h2>
-        <p className="mt-3 text-white/60">{routine.month}/{routine.year} · {routine.weeks.length} weeks</p>
+        <p className="mt-3 text-white/60">
+          {routinePeriodLabel(routine) ? `${routinePeriodLabel(routine)} · ` : ""}
+          {routine.weeks.length} {routine.weeks.length === 1 ? labels.week : `${labels.week}s`}
+        </p>
       </section>
 
       {routine.weeks.map((week) => (

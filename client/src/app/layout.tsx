@@ -17,6 +17,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Apex Fit",
   description: "Personalized routines, real progress, powered by AI.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Apex Fit",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico" },

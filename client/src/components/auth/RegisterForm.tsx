@@ -44,7 +44,7 @@ export function RegisterForm({ locale, labels }: RegisterFormProps) {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/${locale}/auth/callback?intent=register`,
+        emailRedirectTo: `${window.location.origin}/${locale}/auth/callback`,
       },
     });
 
@@ -56,7 +56,9 @@ export function RegisterForm({ locale, labels }: RegisterFormProps) {
     }
 
     if (data.session) {
-      router.push(`/${locale}/onboarding`);
+      // New users land on the dashboard, which shows the routine choice screen
+      // (build manually / generate with AI) when there is no active routine.
+      router.push(`/${locale}/dashboard`);
       router.refresh();
       return;
     }

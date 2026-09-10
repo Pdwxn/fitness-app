@@ -50,7 +50,7 @@ export function ActiveRoutineCard({ routine, href, labels }: ActiveRoutineCardPr
           <div className="max-w-xl">
             <p className="text-sm text-white/55">{labels.eyebrow}</p>
             <h2 className="mt-2 text-4xl font-black tracking-tight md:text-5xl">
-              {firstTrainingDay?.day_name ?? `${labels.title} ${routine.month}/${routine.year}`}
+              {firstTrainingDay?.day_name ?? labels.title}
             </h2>
             <p className="mt-3 text-base leading-7 text-white/65">
               ~ {estimateMinutes} min · {firstTrainingDay?.exercises.length ?? 0} {labels.exercises}

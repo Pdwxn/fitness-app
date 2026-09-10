@@ -54,5 +54,9 @@ export async function authenticatedClientFetch<T>(
     throw new ApiError(response.status, detail, code);
   }
 
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   return response.json();
 }

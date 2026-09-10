@@ -7,6 +7,7 @@ export type RoutineExercise = {
   id: string;
   name: string;
   muscle_group: string;
+  source_external_id: string;
   sets: number | null;
   reps: string;
   weight_kg: string | null;
@@ -41,10 +42,13 @@ export type RoutineWeek = {
   updated_at: string;
 };
 
+export type RoutineSource = "manual" | "ai_generated";
+
 export type Routine = {
   id: string;
-  month: number;
-  year: number;
+  source: RoutineSource;
+  month: number | null;
+  year: number | null;
   is_active: boolean;
   generated_at: string | null;
   gemini_prompt_hash: string;
@@ -54,3 +58,44 @@ export type Routine = {
 };
 
 export type RoutineCache = Routine;
+
+/**
+ * `MM/YYYY` for AI-generated (monthly) routines, or `null` for manual routines
+ * which have no month/year. Call sites decide what to render for `null`.
+ */
+export function routinePeriodLabel(routine: Pick<Routine, "month" | "year">): string | null {
+  return routine.month && routine.year ? `${routine.month}/${routine.year}` : null;
+}
+
+// --- Routine builder (manual) ---------------------------------------------- //
+
+/** One exercise inside a builder draft (subset of RoutineExercise the user edits). */
+export type DraftExercise = {
+  name: string;
+  external_id: string;
+  muscle_group: string;
+  sets: number | null;
+  reps: string;
+  weight_kg: string | null;
+  rest_seconds: number | null;
+  order: number;
+};
+
+export type DraftDay = {
+  day_number: number;
+  day_name: string;
+  is_rest_day: boolean;
+  exercises: DraftExercise[];
+};
+
+export type DraftWeek = {
+  week_number: number;
+  focus: string;
+  notes: string;
+  days: DraftDay[];
+};
+
+/** Payload sent to `POST /api/v1/routines/manual/`. */
+export type ManualRoutineDraft = {
+  weeks: DraftWeek[];
+};
