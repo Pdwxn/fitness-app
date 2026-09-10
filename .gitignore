@@ -22,3 +22,7 @@ out/
 .DS_Store
 .vscode/
 server/.env.example
+
+# Local planning / working docs — never committed
+apex-fit-*plan*.md
+*.plan.md
