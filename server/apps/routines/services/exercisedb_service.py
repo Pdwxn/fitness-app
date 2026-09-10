@@ -12,6 +12,26 @@ GITHUB_IMAGE_BASE = (
     "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/"
 )
 
+
+def resolve_image_url(exercise: "StoredExercise") -> str:
+    """Resolve the public image URL for a StoredExercise based on its provider.
+
+    Today only ``free-exercise-db`` exists (images served from GitHub raw). The
+    branch is kept ready for a second provider (e.g. a self-hosted pack on S3)
+    without touching call sites.
+    """
+    if not exercise.image_paths:
+        return ""
+    first = exercise.image_paths[0]
+    provider = exercise.image_provider or "free-exercise-db"
+    if provider == "free-exercise-db":
+        return f"{GITHUB_IMAGE_BASE}{first}"
+    # Placeholder for a self-hosted provider (django-storages / S3):
+    # if provider == "gymvisual":
+    #     from django.conf import settings
+    #     return f"{settings.MEDIA_URL}{first}"
+    return f"{GITHUB_IMAGE_BASE}{first}"
+
 MUSCLE_MAP = {
     "pectoral": "chest",
     "pecho": "chest",
@@ -199,22 +219,42 @@ def search_exercise(search_term: str, muscle_group: str | None = None) -> dict |
     return None
 
 
+def _result_from_stored(ex: StoredExercise) -> dict:
+    return {
+        "name": ex.name,
+        "image_url": resolve_image_url(ex),
+        "instructions": ex.instructions,
+    }
+
+
 def _build_result(name: str) -> dict | None:
     try:
         ex = StoredExercise.objects.get(name=name)
     except StoredExercise.DoesNotExist:
         return None
-    image_url = ""
-    if ex.image_paths:
-        image_url = GITHUB_IMAGE_BASE + ex.image_paths[0]
-    return {
-        "name": ex.name,
-        "image_url": image_url,
-        "instructions": ex.instructions,
-    }
+    return _result_from_stored(ex)
 
 
 def enrich_exercise(exercise: RoutineExercise) -> bool:
+    # Fast path: the exercise was picked from the catalog (manual builder) and
+    # carries the exact StoredExercise id -> no fuzzy matching needed.
+    if exercise.source_external_id:
+        stored = StoredExercise.objects.filter(
+            external_id=exercise.source_external_id
+        ).first()
+        if stored is not None:
+            image_url = resolve_image_url(stored)
+            updates = {"image_url": image_url}
+            if not exercise.instructions.strip() and stored.instructions:
+                updates["instructions"] = stored.instructions
+            RoutineExercise.objects.filter(id=exercise.id).update(**updates)
+            logger.info(
+                ">>> enrich[%s] name='%s' | direct external_id='%s' -> image_url='%s'",
+                exercise.id, exercise.name, exercise.source_external_id,
+                image_url[:80] if image_url else "",
+            )
+            return bool(image_url)
+
     bank_match = lookup_exercise_in_bank(exercise.name)
 
     if bank_match:

@@ -18,6 +18,8 @@ class StoredExercise(models.Model):
     instructions = models.TextField(blank=True, default="")
     category = models.CharField(max_length=50, blank=True, default="")
     image_paths = models.JSONField(default=list, blank=True)
+    image_provider = models.CharField(max_length=30, blank=True, default="free-exercise-db")
+    image_license_note = models.CharField(max_length=200, blank=True, default="")
     external_id = models.CharField(max_length=100, unique=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
@@ -36,14 +38,24 @@ class StoredExercise(models.Model):
 
 
 class Routine(models.Model):
+    class Source(models.TextChoices):
+        MANUAL = "manual", "Manual"
+        AI_GENERATED = "ai_generated", "AI Generated"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         UserProfile,
         on_delete=models.CASCADE,
         related_name="routines",
     )
-    month = models.PositiveSmallIntegerField()
-    year = models.PositiveSmallIntegerField()
+    source = models.CharField(
+        max_length=20,
+        choices=Source.choices,
+        default=Source.AI_GENERATED,
+        db_index=True,
+    )
+    month = models.PositiveSmallIntegerField(null=True, blank=True)
+    year = models.PositiveSmallIntegerField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     generated_at = models.DateTimeField(null=True, blank=True)
     gemini_prompt_hash = models.CharField(max_length=128, blank=True)
@@ -60,7 +72,8 @@ class Routine(models.Model):
         constraints = (
             models.UniqueConstraint(
                 fields=("user", "month", "year"),
-                name="unique_routine_per_user_month_year",
+                condition=models.Q(source="ai_generated"),
+                name="unique_ai_routine_per_user_month_year",
             ),
             models.UniqueConstraint(
                 fields=("user",),
@@ -68,13 +81,15 @@ class Routine(models.Model):
                 name="unique_active_routine_per_user",
             ),
             models.CheckConstraint(
-                check=models.Q(month__gte=1, month__lte=12),
+                check=models.Q(month__isnull=True) | models.Q(month__gte=1, month__lte=12),
                 name="routine_month_between_1_and_12",
             ),
         )
 
     def __str__(self):
-        return f"{self.user} - {self.month:02d}/{self.year}"
+        if self.month and self.year:
+            return f"{self.user} - {self.month:02d}/{self.year}"
+        return f"{self.user} - {self.get_source_display()}"
 
 
 class RoutineWeek(models.Model):
@@ -154,6 +169,7 @@ class RoutineExercise(models.Model):
     )
     name = models.CharField(max_length=120)
     muscle_group = models.CharField(max_length=80, blank=True)
+    source_external_id = models.CharField(max_length=100, blank=True, default="")
     sets = models.PositiveSmallIntegerField(null=True, blank=True)
     reps = models.CharField(max_length=40, blank=True)
     weight_kg = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)

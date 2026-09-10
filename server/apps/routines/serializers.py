@@ -2,7 +2,8 @@ from rest_framework import serializers
 
 from apps.progress.models import DailyLog
 
-from .models import Routine, RoutineDay, RoutineExercise, RoutineWeek
+from .models import Routine, RoutineDay, RoutineExercise, RoutineWeek, StoredExercise
+from .services.exercisedb_service import resolve_image_url
 
 
 class RoutineExerciseSerializer(serializers.ModelSerializer):
@@ -12,6 +13,7 @@ class RoutineExerciseSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "muscle_group",
+            "source_external_id",
             "sets",
             "reps",
             "weight_kg",
@@ -70,6 +72,7 @@ class RoutineSummarySerializer(serializers.ModelSerializer):
         model = Routine
         fields = [
             "id",
+            "source",
             "month",
             "year",
             "is_active",
@@ -92,6 +95,7 @@ class RoutineSerializer(serializers.ModelSerializer):
         model = Routine
         fields = (
             "id",
+            "source",
             "month",
             "year",
             "is_active",
@@ -102,3 +106,43 @@ class RoutineSerializer(serializers.ModelSerializer):
             "updated_at",
         )
         read_only_fields = fields
+
+
+class StoredExerciseSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StoredExercise
+        fields = (
+            "external_id",
+            "name",
+            "force",
+            "level",
+            "mechanic",
+            "equipment",
+            "primary_muscles",
+            "secondary_muscles",
+            "category",
+            "instructions",
+            "image_url",
+            "updated_at",
+        )
+        read_only_fields = fields
+
+    def get_image_url(self, obj):
+        return resolve_image_url(obj)
+
+
+class ManualRoutineInputSerializer(serializers.Serializer):
+    """Accepts a user-built routine (weeks -> days -> exercises).
+
+    Delegates the heavy lifting to ``routine_validation.validate_manual_routine_payload``
+    so the normalized shape matches what ``persist_routine`` expects.
+    """
+
+    weeks = serializers.ListField(child=serializers.DictField(), allow_empty=False)
+
+    def validate(self, attrs):
+        from .services.routine_validation import validate_manual_routine_payload
+
+        return validate_manual_routine_payload(self.initial_data)

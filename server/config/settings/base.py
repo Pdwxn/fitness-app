@@ -159,5 +159,6 @@ REST_FRAMEWORK = {
         "user": "100/hour",
         "anon": "10/hour",
         "generate_routine": "3/day",
+        "manual_routine": "60/day",
     },
 }
