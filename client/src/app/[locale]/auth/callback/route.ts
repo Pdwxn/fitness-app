@@ -9,8 +9,9 @@ export async function GET(
   const { locale } = await context.params;
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const intent = searchParams.get("intent");
-  const next = searchParams.get("next") ?? (intent === "register" ? `/${locale}/onboarding` : `/${locale}/dashboard`);
+  // Both sign-in and sign-up land on the dashboard; the dashboard routes new
+  // users to the routine choice screen when they have no active routine.
+  const next = searchParams.get("next") ?? `/${locale}/dashboard`;
 
   if (code) {
     const supabase = await createSupabaseServerClient();
