@@ -1,7 +1,9 @@
 import json
+import time
 
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.profiles.models import UserHealthData
@@ -12,7 +14,7 @@ from apps.routines.models import (
     RoutineWeek,
     StoredExercise,
 )
-from apps.routines.services import generation_service
+from apps.routines.services import exercise_sync, generation_service
 from apps.routines.services.generation_service import (
     ActiveManualRoutineError,
     persist_manual_routine,
@@ -334,6 +336,113 @@ class TestExerciseCatalog:
 
         response = client.get(reverse("exercise-catalog"))
         assert response.json()["count"] == 1
+
+    def test_updated_since_filters_to_changed_rows(self):
+        self._make_exercises(3)
+        cutoff = timezone.now()
+        StoredExercise.objects.filter(external_id="ex-001").update(updated_at=timezone.now())
+
+        user = make_user()
+        client = APIClient()
+        client.force_authenticate(user=user)
+
+        response = client.get(
+            reverse("exercise-catalog"), {"updated_since": cutoff.isoformat()}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["count"] == 1
+        assert data["results"][0]["external_id"] == "ex-001"
+
+    def test_updated_since_invalid_format_is_400(self):
+        self._make_exercises(1)
+        user = make_user()
+        client = APIClient()
+        client.force_authenticate(user=user)
+
+        response = client.get(reverse("exercise-catalog"), {"updated_since": "not-a-date"})
+        assert response.status_code == 400
+
+
+# --------------------------------------------------------------------------- #
+# exercise_sync.sync_exercises (importer diffing logic)
+# --------------------------------------------------------------------------- #
+@pytest.mark.django_db
+class TestExerciseSync:
+    def _entry(self, ext_id, **overrides):
+        entry = {
+            "id": ext_id,
+            "name": f"Exercise {ext_id}",
+            "force": "push",
+            "level": "beginner",
+            "primaryMuscles": ["chest"],
+            "secondaryMuscles": [],
+            "instructions": ["Step 1", "Step 2"],
+            "category": "strength",
+            "equipment": "barbell",
+            "images": [f"{ext_id}/0.jpg"],
+        }
+        entry.update(overrides)
+        return entry
+
+    def setup_method(self):
+        StoredExercise.all_objects.all().delete()
+
+    def test_creates_new_exercises(self):
+        counts = exercise_sync.sync_exercises([self._entry("a"), self._entry("b")])
+        assert counts == {
+            "created": 2, "updated": 0, "restored": 0, "unchanged": 0,
+            "removed": 0, "active_total": 2,
+        }
+        ex = StoredExercise.objects.get(external_id="a")
+        assert ex.instructions == "Step 1\nStep 2"
+        assert ex.primary_muscles == ["chest"]
+
+    def test_second_identical_run_is_a_no_op(self):
+        entries = [self._entry("a"), self._entry("b")]
+        exercise_sync.sync_exercises(entries)
+        original_updated_at = StoredExercise.objects.get(external_id="a").updated_at
+
+        time.sleep(0.01)
+        counts = exercise_sync.sync_exercises(entries)
+
+        assert counts["created"] == 0
+        assert counts["updated"] == 0
+        assert counts["unchanged"] == 2
+        assert StoredExercise.objects.get(external_id="a").updated_at == original_updated_at
+
+    def test_changed_field_bumps_updated_at(self):
+        exercise_sync.sync_exercises([self._entry("a")])
+        original_updated_at = StoredExercise.objects.get(external_id="a").updated_at
+
+        time.sleep(0.01)
+        counts = exercise_sync.sync_exercises([self._entry("a", equipment="dumbbell")])
+
+        assert counts["updated"] == 1
+        assert counts["unchanged"] == 0
+        ex = StoredExercise.objects.get(external_id="a")
+        assert ex.equipment == "dumbbell"
+        assert ex.updated_at > original_updated_at
+
+    def test_removed_from_source_is_soft_deleted(self):
+        exercise_sync.sync_exercises([self._entry("a"), self._entry("b")])
+        counts = exercise_sync.sync_exercises([self._entry("a")])
+
+        assert counts["removed"] == 1
+        assert counts["active_total"] == 1
+        assert StoredExercise.objects.filter(external_id="b").count() == 0
+        assert StoredExercise.all_objects.get(external_id="b").deleted_at is not None
+
+    def test_reappearing_exercise_is_restored(self):
+        exercise_sync.sync_exercises([self._entry("a"), self._entry("b")])
+        exercise_sync.sync_exercises([self._entry("a")])  # "b" soft-deleted
+        assert StoredExercise.objects.filter(external_id="b").count() == 0
+
+        counts = exercise_sync.sync_exercises([self._entry("a"), self._entry("b")])
+
+        assert counts["restored"] == 1
+        ex = StoredExercise.objects.get(external_id="b")
+        assert ex.deleted_at is None
 
 
 # --------------------------------------------------------------------------- #
