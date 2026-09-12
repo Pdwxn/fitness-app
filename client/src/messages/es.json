@@ -457,6 +457,16 @@
       "pendingSync": "Pendientes de sync"
     }
   },
+  "Push": {
+    "eyebrow": "Recordatorios",
+    "description": "Recibí un aviso cuando tu nueva rutina mensual esté lista.",
+    "enable": "Activar recordatorios",
+    "enabling": "Activando...",
+    "enabledDescription": "Los recordatorios están activos en este dispositivo.",
+    "disable": "Desactivar",
+    "disabling": "Desactivando...",
+    "iosHint": "Instalá Apex Fit en tu pantalla de inicio (Compartir -> Agregar a inicio) para activar recordatorios en iPhone/iPad."
+  },
   "Profile": {
     "title": "Perfil",
     "description": "Gestiona tus datos personales, idioma, unidades y preferencias de entrenamiento.",
