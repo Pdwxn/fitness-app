@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/v1/routines/', include('apps.routines.urls')),
     path('api/v1/exercises/', include('apps.routines.exercises_urls')),
     path('api/v1/progress/', include('apps.progress.urls')),
+    path('api/v1/push/', include('apps.notifications.urls')),
 ]
 
 if settings.DEBUG:
