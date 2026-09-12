@@ -1,12 +1,66 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { db, getMeta, META_KEYS } from "@/lib/db";
 import {
   useRoutineBuilderStore,
   validateDraft,
 } from "@/store/routineBuilderStore";
 import type { Exercise } from "@/types/exercise";
+import type { Routine } from "@/types/routine";
 
 const store = () => useRoutineBuilderStore.getState();
+
+const existingRoutine: Routine = {
+  id: "r1",
+  source: "manual",
+  month: null,
+  year: null,
+  is_active: true,
+  generated_at: null,
+  gemini_prompt_hash: "",
+  created_at: "2026-01-01T00:00:00Z",
+  updated_at: "2026-01-01T00:00:00Z",
+  weeks: [
+    {
+      id: "w1",
+      week_number: 1,
+      focus: "Base",
+      notes: "",
+      created_at: "",
+      updated_at: "",
+      days: [
+        {
+          id: "d1",
+          day_number: 1,
+          day_name: "Push",
+          is_rest_day: false,
+          created_at: "",
+          updated_at: "",
+          exercises: [
+            {
+              id: "e1",
+              name: "Bench Press",
+              muscle_group: "chest",
+              source_external_id: "Bench_Press",
+              sets: 4,
+              reps: "8",
+              weight_kg: "40.00",
+              rest_seconds: 90,
+              image_url: "",
+              video_url: "",
+              variants: [],
+              instructions: "",
+              search_term: "",
+              order: 1,
+              created_at: "",
+              updated_at: "",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
 
 const catalogExercise: Exercise = {
   external_id: "Bench_Press",
@@ -138,5 +192,50 @@ describe("validateDraft", () => {
     store().addExercise(0, 0);
     store().setExerciseField(0, 0, 0, { name: "Bench Press" });
     expect(validateDraft(store().draft)).toHaveLength(0);
+  });
+});
+
+describe("editing an existing routine", () => {
+  beforeEach(async () => {
+    vi.useRealTimers();
+    await db.meta.clear();
+  });
+
+  it("startEditing loads the routine into the draft and sets editingRoutineId", () => {
+    store().startEditing(existingRoutine);
+    expect(store().editingRoutineId).toBe("r1");
+    expect(store().draft.weeks[0].focus).toBe("Base");
+    expect(store().draft.weeks[0].days[0].exercises[0]).toMatchObject({
+      name: "Bench Press",
+      external_id: "Bench_Press",
+      sets: 4,
+    });
+  });
+
+  it("does not persist edit changes to the create-flow's Dexie draft", async () => {
+    // Simulate an abandoned "create" draft already on disk.
+    await db.meta.put({ key: META_KEYS.routineBuilderDraft, value: JSON.stringify({ weeks: [] }) });
+
+    store().startEditing(existingRoutine);
+    store().addExercise(0, 0);
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const stillTheOldDraft = await getMeta(META_KEYS.routineBuilderDraft);
+    expect(stillTheOldDraft).toBe(JSON.stringify({ weeks: [] }));
+  });
+
+  it("reset() clears editingRoutineId and returns to a blank draft", () => {
+    store().startEditing(existingRoutine);
+    store().reset();
+    expect(store().editingRoutineId).toBeNull();
+    expect(store().draft.weeks).toHaveLength(1);
+    expect(store().draft.weeks[0].days[0].exercises).toHaveLength(0);
+  });
+
+  it("hydrate() (create flow) clears any stale editingRoutineId", async () => {
+    store().startEditing(existingRoutine);
+    useRoutineBuilderStore.setState({ hydrated: false });
+    await store().hydrate();
+    expect(store().editingRoutineId).toBeNull();
   });
 });
