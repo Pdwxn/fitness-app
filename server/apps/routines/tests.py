@@ -491,3 +491,58 @@ class TestEditManualRoutine:
         )
 
         assert response.status_code == 400
+
+
+# --------------------------------------------------------------------------- #
+# deleting a manual routine (DELETE /routines/{id}/)
+# --------------------------------------------------------------------------- #
+@pytest.mark.django_db
+class TestDeleteManualRoutine:
+    def test_delete_soft_deletes_the_routine(self):
+        user = make_user()
+        routine = persist_manual_routine(user, manual_payload())
+
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.delete(reverse("routine-detail", args=[routine.id]))
+
+        assert response.status_code == 204
+        assert Routine.objects.filter(id=routine.id).count() == 0
+        assert Routine.all_objects.get(id=routine.id).deleted_at is not None
+
+    def test_delete_rejects_ai_generated_routine(self):
+        user = make_user()
+        routine = persist_routine(user, ai_payload(), source=Routine.Source.AI_GENERATED)
+
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.delete(reverse("routine-detail", args=[routine.id]))
+
+        assert response.status_code == 403
+        assert response.json()["code"] == "ai_routine_not_editable"
+        routine.refresh_from_db()
+        assert routine.deleted_at is None
+
+    def test_delete_another_users_routine_is_404(self):
+        owner = make_user(full_name="Owner")
+        other = make_user(full_name="Other")
+        routine = persist_manual_routine(owner, manual_payload())
+
+        client = APIClient()
+        client.force_authenticate(user=other)
+        response = client.delete(reverse("routine-detail", args=[routine.id]))
+
+        assert response.status_code == 404
+        assert Routine.objects.filter(id=routine.id).count() == 1
+
+    def test_delete_can_target_an_inactive_manual_routine(self):
+        user = make_user()
+        routine = persist_manual_routine(user, manual_payload())
+        routine.is_active = False
+        routine.save(update_fields=["is_active"])
+
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.delete(reverse("routine-detail", args=[routine.id]))
+
+        assert response.status_code == 204

@@ -290,6 +290,19 @@ def persist_routine(user, routine_data, *, source, raw_response=None, prompt=Non
     return Routine.objects.prefetch_related("weeks__days__exercises").get(id=routine.id)
 
 
+def delete_manual_routine(routine):
+    """Soft-deletes a manual routine (whether active or not).
+
+    AI-generated routines aren't deletable this way -- they archive themselves
+    (``is_active=False``) when the next monthly one is generated.
+    """
+    if routine.source != Routine.Source.MANUAL:
+        raise RoutineNotEditableError()
+
+    routine.deleted_at = timezone.now()
+    routine.save(update_fields=["deleted_at", "updated_at"])
+
+
 def persist_generated_routine(user, routine_data, raw_response, prompt, today=None):
     return persist_routine(
         user,
