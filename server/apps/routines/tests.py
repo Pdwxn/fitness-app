@@ -494,6 +494,41 @@ class TestAIPersistenceRegression:
 
 
 # --------------------------------------------------------------------------- #
+# API-wide response compression (GZipMiddleware)
+# --------------------------------------------------------------------------- #
+@pytest.mark.django_db
+class TestGzipCompression:
+    def test_catalog_response_is_gzipped_when_requested(self):
+        StoredExercise.all_objects.all().delete()
+        for i in range(50):
+            StoredExercise.objects.create(
+                external_id=f"ex-{i:03d}",
+                name=f"Exercise {i}",
+                instructions="Long enough instructions text. " * 10,
+                primary_muscles=["chest"],
+            )
+        user = make_user()
+        client = APIClient()
+        client.force_authenticate(user=user)
+
+        response = client.get(reverse("exercise-catalog"), HTTP_ACCEPT_ENCODING="gzip")
+
+        assert response.status_code == 200
+        assert response.get("Content-Encoding") == "gzip"
+
+    def test_response_is_not_gzipped_without_the_header(self):
+        StoredExercise.all_objects.all().delete()
+        StoredExercise.objects.create(external_id="ex-1", name="Exercise 1")
+        user = make_user()
+        client = APIClient()
+        client.force_authenticate(user=user)
+
+        response = client.get(reverse("exercise-catalog"))
+
+        assert response.get("Content-Encoding") != "gzip"
+
+
+# --------------------------------------------------------------------------- #
 # 'routine ready' push notification hook
 # --------------------------------------------------------------------------- #
 @pytest.mark.django_db

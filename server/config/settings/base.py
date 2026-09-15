@@ -47,6 +47,12 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # First in the list so it's the *last* to touch the response body on the
+    # way out (Django runs response-phase middleware bottom-to-top) -- nothing
+    # downstream re-processes already-gzipped content. This is a JSON API with
+    # no CSRF tokens reflected in response bodies, so the usual BREACH-style
+    # concern with GZipMiddleware + CSRF-token-in-HTML doesn't apply here.
+    "django.middleware.gzip.GZipMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
