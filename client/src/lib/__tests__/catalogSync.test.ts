@@ -9,7 +9,7 @@ const fetchFullExerciseCatalog = vi.fn();
 const createManualRoutine = vi.fn();
 
 vi.mock("@/lib/api/exercises", () => ({
-  fetchFullExerciseCatalog: () => fetchFullExerciseCatalog(),
+  fetchFullExerciseCatalog: (updatedSince?: string) => fetchFullExerciseCatalog(updatedSince),
 }));
 vi.mock("@/lib/api/routines", () => ({
   createManualRoutine: (draft: ManualRoutineDraft) => createManualRoutine(draft),
@@ -18,7 +18,7 @@ vi.mock("@/lib/api/routines", () => ({
 // Imported after the mocks are registered.
 const { syncExerciseCatalog, syncPendingRoutines } = await import("@/lib/sync");
 
-function makeExercise(id: string): Exercise {
+function makeExercise(id: string, updatedAt = "2026-01-01T00:00:00Z"): Exercise {
   return {
     external_id: id,
     name: `Exercise ${id}`,
@@ -31,7 +31,7 @@ function makeExercise(id: string): Exercise {
     category: "strength",
     instructions: "",
     image_url: "",
-    updated_at: "2026-01-01T00:00:00Z",
+    updated_at: updatedAt,
   };
 }
 
@@ -101,6 +101,47 @@ describe("syncExerciseCatalog", () => {
 
     expect(ok).toBe(true);
     expect(fetchFullExerciseCatalog).not.toHaveBeenCalled();
+  });
+
+  it("omits updated_since on a genuinely first sync", async () => {
+    fetchFullExerciseCatalog.mockResolvedValue([makeExercise("a")]);
+
+    await syncExerciseCatalog(true);
+
+    expect(fetchFullExerciseCatalog).toHaveBeenCalledWith(undefined);
+  });
+
+  it("passes the previous cursor as updated_since on a forced delta sync", async () => {
+    await db.meta.put({ key: META_KEYS.exercisesSyncedAt, value: "2025-06-01T00:00:00Z" });
+    fetchFullExerciseCatalog.mockResolvedValue([makeExercise("a")]);
+
+    await syncExerciseCatalog(true);
+
+    expect(fetchFullExerciseCatalog).toHaveBeenCalledWith("2025-06-01T00:00:00Z");
+  });
+
+  it("compares updated_at numerically, not as raw strings", async () => {
+    // Same second: "a" has no fractional part, "b" is 500ms later. Naive
+    // string comparison would rank "a" ("...:00Z") ahead of "b" ("...:00.5Z"),
+    // since '.' sorts before 'Z' -- but "b" is the chronologically newer one.
+    await db.meta.put({ key: META_KEYS.exercisesSyncedAt, value: "2025-06-01T00:00:00Z" });
+    fetchFullExerciseCatalog.mockResolvedValue([
+      makeExercise("a", "2026-02-01T00:00:00Z"),
+      makeExercise("b", "2026-02-01T00:00:00.500000Z"),
+    ]);
+
+    await syncExerciseCatalog(true);
+
+    expect(await getMeta(META_KEYS.exercisesSyncedAt)).toBe("2026-02-01T00:00:00.500000Z");
+  });
+
+  it("keeps the previous cursor when the delta comes back empty", async () => {
+    await db.meta.put({ key: META_KEYS.exercisesSyncedAt, value: "2025-06-01T00:00:00Z" });
+    fetchFullExerciseCatalog.mockResolvedValue([]);
+
+    await syncExerciseCatalog(true);
+
+    expect(await getMeta(META_KEYS.exercisesSyncedAt)).toBe("2025-06-01T00:00:00Z");
   });
 });
 

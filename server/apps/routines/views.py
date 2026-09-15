@@ -1,10 +1,12 @@
 import logging
 
 from django.conf import settings
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.utils.decorators import method_decorator
 from django.views.decorators.vary import vary_on_headers
 from rest_framework import status
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -167,17 +169,38 @@ class ExerciseCatalogPagination(PageNumberPagination):
 
 
 class ExerciseCatalogView(ListAPIView):
-    """Full exercise catalog for the offline routine builder.
+    """Exercise catalog for the offline routine builder.
 
     ``StoredExercise.objects`` (ActiveManager) already excludes soft-deleted rows.
-    Response caching is applied at the URLconf level (see ``urls.py``).
+    Response caching is applied at the URLconf level (see ``urls.py``); a
+    distinct ``?updated_since=`` value gets its own cache entry, which is
+    correct (each is a genuinely different response) if a little cache-unfriendly
+    for delta syncs — acceptable at this catalog's size.
+
+    ``?updated_since=<iso-datetime>`` returns only rows changed after that
+    instant (see ``apps.routines.services.exercise_sync`` for how the importer
+    keeps ``updated_at`` meaningful for this). Without it, returns the full
+    catalog.
     """
 
     serializer_class = StoredExerciseSerializer
     pagination_class = ExerciseCatalogPagination
 
     def get_queryset(self):
-        return StoredExercise.objects.all().order_by("external_id")
+        queryset = StoredExercise.objects.all().order_by("external_id")
+
+        updated_since = self.request.query_params.get("updated_since")
+        if updated_since:
+            parsed = parse_datetime(updated_since)
+            if parsed is None:
+                raise ValidationError(
+                    {"updated_since": "Must be an ISO-8601 datetime."}
+                )
+            if timezone.is_naive(parsed):
+                parsed = timezone.make_aware(parsed, timezone.get_current_timezone())
+            queryset = queryset.filter(updated_at__gt=parsed)
+
+        return queryset
 
 
 class ManualRoutineView(APIView):

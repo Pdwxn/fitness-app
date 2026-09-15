@@ -463,6 +463,16 @@
       "pendingSync": "Pending sync"
     }
   },
+  "Push": {
+    "eyebrow": "Reminders",
+    "description": "Get notified when your new monthly routine is ready.",
+    "enable": "Enable reminders",
+    "enabling": "Enabling...",
+    "enabledDescription": "Reminders are on for this device.",
+    "disable": "Turn off",
+    "disabling": "Turning off...",
+    "iosHint": "Install Apex Fit on your home screen (Share -> Add to Home Screen) to enable reminders on iPhone/iPad."
+  },
   "Profile": {
     "title": "Profile",
     "description": "Manage your personal data, language, units, and training preferences.",
