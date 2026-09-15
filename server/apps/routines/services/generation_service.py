@@ -281,6 +281,14 @@ def persist_routine(user, routine_data, *, source, raw_response=None, prompt=Non
     except Exception as exc:
         logger.exception("ExerciseDB enrichment failed for routine %s: %s", routine.id, exc)
 
+    if is_ai:
+        try:
+            from apps.notifications.services.push_service import notify_routine_ready
+
+            notify_routine_ready(user, routine)
+        except Exception:
+            logger.exception("Failed to send 'routine ready' push for routine %s", routine.id)
+
     return Routine.objects.prefetch_related("weeks__days__exercises").get(id=routine.id)
 
 

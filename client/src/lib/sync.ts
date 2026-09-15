@@ -155,28 +155,42 @@ export async function updateStatsLocally(logs: DailyLog[]): Promise<StatsEntry> 
 
 const CATALOG_MAX_AGE_MS = 24 * 60 * 60_000;
 
+/** Latest `updated_at` among the given exercises, compared numerically (not as
+ * raw strings -- DRF's ISO output drops the fractional seconds when they're
+ * zero, which breaks naive string comparison). `null` if the list is empty. */
+function newestUpdatedAt(exercises: { updated_at: string }[]): string | null {
+  return exercises.reduce<string | null>((max, ex) => {
+    if (!max) return ex.updated_at;
+    return new Date(ex.updated_at).getTime() > new Date(max).getTime() ? ex.updated_at : max;
+  }, null);
+}
+
 /**
- * Downloads the full exercise catalog into Dexie.
- * v1: always a full download (no `updated_since` delta). Skips if a sync
- * happened within the last 24h unless `force` is set.
+ * Syncs the exercise catalog into Dexie: a full download on the first run, a
+ * delta (`?updated_since=`) once we have a previous cursor. Skips entirely if
+ * a sync happened within the last 24h, unless `force` is set.
  * Returns false on network failure (the existing catalog stays usable).
  */
 export async function syncExerciseCatalog(force = false): Promise<boolean> {
-  if (!force) {
-    const syncedAt = await getMeta(META_KEYS.exercisesSyncedAt);
-    if (syncedAt) {
-      const age = Date.now() - new Date(syncedAt).getTime();
-      const count = await db.exercises.count().catch(() => 0);
-      if (age < CATALOG_MAX_AGE_MS && count > 0) return true;
-    }
+  const previousCursor = await getMeta(META_KEYS.exercisesSyncedAt);
+
+  if (!force && previousCursor) {
+    const age = Date.now() - new Date(previousCursor).getTime();
+    const count = await db.exercises.count().catch(() => 0);
+    if (age < CATALOG_MAX_AGE_MS && count > 0) return true;
   }
 
   try {
-    const catalog = await fetchFullExerciseCatalog();
+    const catalog = await fetchFullExerciseCatalog(previousCursor ?? undefined);
     if (catalog.length > 0) {
       await db.exercises.bulkPut(catalog);
     }
-    await setMeta(META_KEYS.exercisesSyncedAt, new Date().toISOString());
+    // Cursor for the *next* sync is the newest `updated_at` the server actually
+    // sent us (server clock), not the client's local time -- avoids missing
+    // rows on client/server clock skew. Falls back to the previous cursor, or
+    // now on a genuinely first sync, when nothing came back.
+    const cursor = newestUpdatedAt(catalog) ?? previousCursor ?? new Date().toISOString();
+    await setMeta(META_KEYS.exercisesSyncedAt, cursor);
     return true;
   } catch {
     return false;

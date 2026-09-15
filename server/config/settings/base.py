@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "apps.profiles",
     "apps.routines",
     "apps.progress",
+    "apps.notifications",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -146,6 +147,14 @@ SUPABASE_URL = get_env_or_raise("SUPABASE_URL")
 SUPABASE_SERVICE_ROLE_KEY = get_env_or_raise("SUPABASE_SERVICE_ROLE_KEY")
 GEMINI_API_KEY = get_env_or_raise("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
+
+# Web Push (optional): unset means push notifications are silently skipped
+# (apps.notifications.services.push_service.is_configured() returns False)
+# rather than the app failing to start. Generate a pair with
+# `python manage.py generate_vapid_keys`.
+VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY", "")
+VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY", "")
+VAPID_CLAIM_EMAIL = os.getenv("VAPID_CLAIM_EMAIL", "admin@example.com")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
