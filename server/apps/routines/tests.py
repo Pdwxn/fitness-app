@@ -382,3 +382,47 @@ class TestAIPersistenceRegression:
             generation_service.persist_generated_routine(
                 user, ai_payload(), raw_response="{}", prompt="p"
             )
+
+
+# --------------------------------------------------------------------------- #
+# 'routine ready' push notification hook
+# --------------------------------------------------------------------------- #
+@pytest.mark.django_db
+class TestRoutineReadyPushHook:
+    def test_ai_generation_notifies_the_user(self):
+        from unittest.mock import patch
+
+        user = make_user()
+        with patch(
+            "apps.notifications.services.push_service.notify_routine_ready"
+        ) as mock_notify:
+            routine = generation_service.persist_generated_routine(
+                user, ai_payload(), raw_response="{}", prompt="p"
+            )
+
+        mock_notify.assert_called_once_with(user, routine)
+
+    def test_manual_creation_does_not_notify(self):
+        from unittest.mock import patch
+
+        user = make_user()
+        with patch(
+            "apps.notifications.services.push_service.notify_routine_ready"
+        ) as mock_notify:
+            persist_manual_routine(user, manual_payload())
+
+        mock_notify.assert_not_called()
+
+    def test_a_broken_push_service_does_not_fail_generation(self):
+        from unittest.mock import patch
+
+        user = make_user()
+        with patch(
+            "apps.notifications.services.push_service.notify_routine_ready",
+            side_effect=RuntimeError("push provider is down"),
+        ):
+            routine = generation_service.persist_generated_routine(
+                user, ai_payload(), raw_response="{}", prompt="p"
+            )
+
+        assert routine.source == Routine.Source.AI_GENERATED
