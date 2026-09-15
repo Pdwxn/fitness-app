@@ -32,6 +32,12 @@ class ActiveManualRoutineError(APIException):
     default_code = "active_manual_routine"
 
 
+class RoutineNotEditableError(APIException):
+    status_code = 403
+    default_detail = "AI-generated routines cannot be edited; regenerate instead."
+    default_code = "ai_routine_not_editable"
+
+
 def _ensure_no_active_manual_routine(user):
     active = Routine.objects.filter(user=user, is_active=True).first()
     if active is not None and active.source == Routine.Source.MANUAL:
@@ -292,6 +298,19 @@ def persist_routine(user, routine_data, *, source, raw_response=None, prompt=Non
     return Routine.objects.prefetch_related("weeks__days__exercises").get(id=routine.id)
 
 
+def delete_manual_routine(routine):
+    """Soft-deletes a manual routine (whether active or not).
+
+    AI-generated routines aren't deletable this way -- they archive themselves
+    (``is_active=False``) when the next monthly one is generated.
+    """
+    if routine.source != Routine.Source.MANUAL:
+        raise RoutineNotEditableError()
+
+    routine.deleted_at = timezone.now()
+    routine.save(update_fields=["deleted_at", "updated_at"])
+
+
 def persist_generated_routine(user, routine_data, raw_response, prompt, today=None):
     return persist_routine(
         user,
@@ -309,3 +328,32 @@ def persist_manual_routine(user, routine_data):
 
     normalized = validate_manual_routine_payload(routine_data)
     return persist_routine(user, normalized, source=Routine.Source.MANUAL)
+
+
+def update_manual_routine(routine, routine_data):
+    """Replace the full weeks/days/exercises tree of an existing manual routine.
+
+    Keeps ``id`` / ``is_active`` / ``created_at``. Old weeks are hard-deleted
+    (cascades to days/exercises) and rebuilt from ``routine_data``, which avoids
+    the `order`/`day_number` uniqueness traps a partial update would hit.
+    Only `source=manual` routines are editable — AI-generated ones are
+    regenerated, not edited. Re-runs `enrich_routine` (best-effort).
+    """
+    from .routine_validation import validate_manual_routine_payload
+
+    if routine.source != Routine.Source.MANUAL:
+        raise RoutineNotEditableError()
+
+    normalized = validate_manual_routine_payload(routine_data)
+
+    with transaction.atomic():
+        routine.weeks.all().delete()
+        _build_routine_tree(routine, normalized)
+        routine.save(update_fields=["updated_at"])
+
+    try:
+        enrich_routine(routine)
+    except Exception as exc:
+        logger.exception("ExerciseDB enrichment failed for routine %s: %s", routine.id, exc)
+
+    return Routine.objects.prefetch_related("weeks__days__exercises").get(id=routine.id)

@@ -353,6 +353,9 @@
   "Builder": {
     "title": "Constructor de rutinas",
     "description": "Arma tu rutina semana por semana.",
+    "editEntryCta": "Editar rutina",
+    "editTitle": "Editar tu rutina",
+    "editDescription": "Cambia tus semanas, días y ejercicios.",
     "week": "Semana",
     "addWeek": "Agregar semana",
     "removeWeek": "Quitar semana",
@@ -372,10 +375,13 @@
     "rest": "Descanso (s)",
     "weight": "Kg",
     "save": "Guardar rutina",
+    "saveEdit": "Guardar cambios",
     "saving": "Guardando...",
     "savedOnline": "Rutina creada.",
     "savedOffline": "Rutina guardada. Se subirá cuando tengas conexión.",
+    "savedEdit": "Rutina actualizada.",
     "saveError": "No pudimos guardar tu rutina. Inténtalo de nuevo.",
+    "editOfflineError": "Necesitás conexión para guardar los cambios de tu rutina.",
     "picker": {
       "title": "Elige un ejercicio",
       "search": "Buscar ejercicios",
