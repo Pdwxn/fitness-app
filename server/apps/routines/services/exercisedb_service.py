@@ -12,25 +12,41 @@ GITHUB_IMAGE_BASE = (
     "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/"
 )
 
+# Pinned to a commit (not a branch) so the URLs never change under us --
+# jsDelivr's GitHub proxy caches by ref, and a branch ref can be force-pushed
+# or have its history rewritten upstream. Same dataset/commit openGym itself
+# points at (frontend/package.json, VITE_IMG_BASE / VITE_GIF_BASE).
+EXERCISES_DATASET_COMMIT = "7455efae41b330c265e7cd4b78dfa848e7ce5ebd"
+EXERCISES_DATASET_IMAGE_BASE = (
+    f"https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@{EXERCISES_DATASET_COMMIT}/images/"
+)
+EXERCISES_DATASET_GIF_BASE = (
+    f"https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@{EXERCISES_DATASET_COMMIT}/videos/"
+)
+
 
 def resolve_image_url(exercise: "StoredExercise") -> str:
-    """Resolve the public image URL for a StoredExercise based on its provider.
-
-    Today only ``free-exercise-db`` exists (images served from GitHub raw). The
-    branch is kept ready for a second provider (e.g. a self-hosted pack on S3)
-    without touching call sites.
-    """
+    """Resolve the public image URL for a StoredExercise based on its provider."""
     if not exercise.image_paths:
         return ""
     first = exercise.image_paths[0]
     provider = exercise.image_provider or "free-exercise-db"
-    if provider == "free-exercise-db":
-        return f"{GITHUB_IMAGE_BASE}{first}"
-    # Placeholder for a self-hosted provider (django-storages / S3):
-    # if provider == "gymvisual":
-    #     from django.conf import settings
-    #     return f"{settings.MEDIA_URL}{first}"
+    if provider == "exercises-dataset":
+        return f"{EXERCISES_DATASET_IMAGE_BASE}{first}"
     return f"{GITHUB_IMAGE_BASE}{first}"
+
+
+def resolve_gif_url(exercise: "StoredExercise") -> str:
+    """Resolve the animated-demo URL for a StoredExercise, if its provider has one.
+
+    Only ``exercises-dataset`` ships gifs today; other providers return "".
+    """
+    if not exercise.gif_path:
+        return ""
+    provider = exercise.image_provider or "free-exercise-db"
+    if provider == "exercises-dataset":
+        return f"{EXERCISES_DATASET_GIF_BASE}{exercise.gif_path}"
+    return ""
 
 MUSCLE_MAP = {
     "pectoral": "chest",
@@ -244,7 +260,10 @@ def enrich_exercise(exercise: RoutineExercise) -> bool:
         ).first()
         if stored is not None:
             image_url = resolve_image_url(stored)
+            gif_url = resolve_gif_url(stored)
             updates = {"image_url": image_url}
+            if gif_url:
+                updates["video_url"] = gif_url
             if not exercise.instructions.strip() and stored.instructions:
                 updates["instructions"] = stored.instructions
             RoutineExercise.objects.filter(id=exercise.id).update(**updates)

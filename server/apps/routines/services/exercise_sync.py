@@ -1,4 +1,4 @@
-"""Upserts StoredExercise rows from the free-exercise-db JSON dump.
+"""Upserts StoredExercise rows from the exercises-dataset JSON dump.
 
 Split out of the ``import_exercisedb`` management command so the diffing logic
 is unit-testable without touching the filesystem.
@@ -36,22 +36,33 @@ TRACKED_FIELDS = (
     "instructions",
     "category",
     "image_paths",
+    "gif_path",
+    "image_provider",
 )
 
 
 def fields_from_source(entry: dict) -> dict:
-    """Maps one free-exercise-db JSON entry to StoredExercise field values."""
+    """Maps one exercises-dataset JSON entry to StoredExercise field values.
+
+    Entries are pre-normalized (see ``data/exercises_db_v2.json`` and the
+    conversion from openGym's ``EXDB``) to:
+    ``{id, name, body_part, equipment, primary_muscles, secondary_muscles,
+    instructions, img, gif}``. ``force``/``level``/``mechanic`` aren't present
+    in this dataset -- the model fields stay blank.
+    """
     return {
         "name": entry["name"],
         "force": entry.get("force") or "",
         "level": entry.get("level") or "",
         "mechanic": entry.get("mechanic") or "",
         "equipment": entry.get("equipment") or "",
-        "primary_muscles": entry.get("primaryMuscles", []) or [],
-        "secondary_muscles": entry.get("secondaryMuscles", []) or [],
-        "instructions": "\n".join(entry.get("instructions", []) or []),
-        "category": entry.get("category") or "",
-        "image_paths": entry.get("images", []) or [],
+        "primary_muscles": entry.get("primary_muscles", []) or [],
+        "secondary_muscles": entry.get("secondary_muscles", []) or [],
+        "instructions": entry.get("instructions") or "",
+        "category": entry.get("body_part") or "",
+        "image_paths": [entry["img"]] if entry.get("img") else [],
+        "gif_path": entry.get("gif") or "",
+        "image_provider": "exercises-dataset",
     }
 
 

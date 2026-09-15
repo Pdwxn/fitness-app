@@ -20,6 +20,7 @@ const catalogExercise: Exercise = {
   category: "strength",
   instructions: "",
   image_url: "",
+  gif_url: "",
   updated_at: "2026-01-01T00:00:00Z",
 };
 

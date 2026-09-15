@@ -111,7 +111,11 @@ export function ExercisePicker({ onPick, onAddCustom, onClose }: ExercisePickerP
                     onClick={() => onPick(exercise)}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left hover:bg-white/5"
                   >
-                    <ExerciseThumb src={exercise.image_url} name={exercise.name} />
+                    <ExerciseThumb
+                      src={exercise.image_url}
+                      gifSrc={exercise.gif_url}
+                      name={exercise.name}
+                    />
                     <span className="flex-1 text-sm font-bold text-white">{exercise.name}</span>
                     <span className="hidden text-xs text-white/45 sm:block">
                       {exercise.primary_muscles[0]} · {exercise.equipment}

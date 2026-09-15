@@ -11,6 +11,7 @@ export type Exercise = {
   category: string;
   instructions: string;
   image_url: string;
+  gif_url: string;
   updated_at: string;
 };
 

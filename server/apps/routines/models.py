@@ -18,6 +18,7 @@ class StoredExercise(models.Model):
     instructions = models.TextField(blank=True, default="")
     category = models.CharField(max_length=50, blank=True, default="")
     image_paths = models.JSONField(default=list, blank=True)
+    gif_path = models.CharField(max_length=200, blank=True, default="")
     image_provider = models.CharField(max_length=30, blank=True, default="free-exercise-db")
     image_license_note = models.CharField(max_length=200, blank=True, default="")
     external_id = models.CharField(max_length=100, unique=True)
