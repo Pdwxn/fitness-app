@@ -115,7 +115,8 @@ export function usePushSubscription() {
       await subscribeToPush(subscription.toJSON());
       setStatus("subscribed");
       return true;
-    } catch {
+    } catch (error) {
+      console.error("[usePushSubscription] subscribe failed:", error);
       return false;
     } finally {
       setBusy(false);
