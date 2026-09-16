@@ -26,8 +26,11 @@ from .serializers import (
 )
 from .services.dev_seed import seed_dev_routine
 from .services.generation_service import (
+    RoutineNotEditableError,
+    delete_manual_routine,
     generate_monthly_routine_if_needed,
     persist_manual_routine,
+    update_manual_routine,
 )
 
 
@@ -215,6 +218,53 @@ class ManualRoutineView(APIView):
                 status=exc.status_code,
             )
         return Response(RoutineSerializer(routine).data, status=status.HTTP_201_CREATED)
+
+
+class ManualRoutineDetailView(APIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "manual_routine"
+
+    def _get_owned_routine(self, request, routine_id):
+        return Routine.objects.filter(id=routine_id, user=request.user).first()
+
+    def patch(self, request, routine_id):
+        routine = self._get_owned_routine(request, routine_id)
+        if routine is None:
+            return Response(
+                {"detail": "Routine not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = ManualRoutineInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            updated = update_manual_routine(routine, serializer.validated_data)
+        except APIException as exc:
+            return Response(
+                {"detail": exc.detail, "code": exc.get_codes()},
+                status=exc.status_code,
+            )
+
+        return Response(RoutineSerializer(updated).data)
+
+    def delete(self, request, routine_id):
+        routine = self._get_owned_routine(request, routine_id)
+        if routine is None:
+            return Response(
+                {"detail": "Routine not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        try:
+            delete_manual_routine(routine)
+        except RoutineNotEditableError as exc:
+            return Response(
+                {"detail": exc.detail, "code": exc.get_codes()},
+                status=exc.status_code,
+            )
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class RoutineDeactivateView(APIView):

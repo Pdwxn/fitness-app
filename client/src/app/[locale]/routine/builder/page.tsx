@@ -5,16 +5,24 @@ import { RoutineBuilderWizard } from "@/components/routine/builder/RoutineBuilde
 
 export default async function RoutineBuilderPage({
   params,
+  searchParams,
 }: Readonly<{
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ mode?: string }>;
 }>) {
   const { locale } = await params;
+  const { mode: modeParam } = await searchParams;
+  const mode = modeParam === "edit" ? "edit" : "create";
   setRequestLocale(locale);
   const t = await getTranslations("Builder");
 
   return (
-    <AppShell locale={locale} title={t("title")} description={t("description")}>
-      <RoutineBuilderWizard locale={locale} />
+    <AppShell
+      locale={locale}
+      title={mode === "edit" ? t("editTitle") : t("title")}
+      description={mode === "edit" ? t("editDescription") : t("description")}
+    >
+      <RoutineBuilderWizard locale={locale} mode={mode} />
     </AppShell>
   );
 }

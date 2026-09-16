@@ -8,8 +8,9 @@ import { toast } from "sonner";
 import { queryKeys } from "@/lib/query-keys";
 import { queryClient } from "@/lib/query-client";
 import { db } from "@/lib/db";
-import { createManualRoutine } from "@/lib/api/routines";
+import { createManualRoutine, updateManualRoutine } from "@/lib/api/routines";
 import { ApiError } from "@/lib/api/authenticated-client";
+import { useRoutineCache } from "@/hooks/useRoutineCache";
 import {
   queuePendingRoutine,
   useRoutineBuilderStore,
@@ -19,7 +20,7 @@ import {
 
 import { RoutineWeekEditor } from "./RoutineWeekEditor";
 
-type RoutineBuilderWizardProps = { locale: string };
+type RoutineBuilderWizardProps = { locale: string; mode?: "create" | "edit" };
 
 type ValidationTranslator = (key: string, values?: Record<string, string | number>) => string;
 
@@ -36,28 +37,52 @@ function messageFor(tv: ValidationTranslator, error: DraftValidationError): stri
   }
 }
 
-export function RoutineBuilderWizard({ locale }: RoutineBuilderWizardProps) {
+export function RoutineBuilderWizard({ locale, mode = "create" }: RoutineBuilderWizardProps) {
   const t = useTranslations("Builder");
   const tvRaw = useTranslations("Builder.validation");
   const tv: ValidationTranslator = (key, values) => tvRaw(key, values);
   const router = useRouter();
 
+  // Edit mode loads the current active routine; create mode never fetches it.
+  const { routine, isLoading: routineLoading } = useRoutineCache();
+
   const draft = useRoutineBuilderStore((state) => state.draft);
   const hydrated = useRoutineBuilderStore((state) => state.hydrated);
   const hydrate = useRoutineBuilderStore((state) => state.hydrate);
+  const startEditing = useRoutineBuilderStore((state) => state.startEditing);
+  const editingRoutineId = useRoutineBuilderStore((state) => state.editingRoutineId);
   const addWeek = useRoutineBuilderStore((state) => state.addWeek);
   const reset = useRoutineBuilderStore((state) => state.reset);
 
   const [saving, setSaving] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
+  const [editUnavailable, setEditUnavailable] = useState(false);
 
   useEffect(() => {
-    void hydrate();
-  }, [hydrate]);
+    if (mode !== "edit") {
+      void hydrate();
+      return;
+    }
+    if (routineLoading) return;
+    if (routine && routine.source === "manual") {
+      startEditing(routine);
+    } else {
+      // Nothing to edit (no active routine, or it's AI-generated): bounce back.
+      setEditUnavailable(true);
+    }
+  }, [mode, routine, routineLoading, hydrate, startEditing]);
+
+  useEffect(() => {
+    if (editUnavailable) {
+      router.replace(`/${locale}/dashboard`);
+    }
+  }, [editUnavailable, locale, router]);
 
   const errors = useMemo(() => validateDraft(draft), [draft]);
+  const isEditing = mode === "edit" && Boolean(editingRoutineId);
+  const isLoadingState = editUnavailable || !hydrated || (mode === "edit" && routineLoading);
 
-  if (!hydrated) {
+  if (isLoadingState) {
     return <p className="p-4 text-sm text-white/60">{t("states.loading")}</p>;
   }
 
@@ -67,11 +92,30 @@ export function RoutineBuilderWizard({ locale }: RoutineBuilderWizardProps) {
     router.refresh();
   };
 
-  const handleSave = async () => {
-    if (errors.length > 0) {
-      setShowErrors(true);
-      return;
+  const handleSaveEdit = async () => {
+    if (!editingRoutineId) return;
+    setSaving(true);
+    try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new Error("offline");
+      }
+      const updated = await updateManualRoutine(editingRoutineId, draft);
+      await db.routineCache.put(updated);
+      queryClient.setQueryData(queryKeys.routine.active(), updated);
+      reset();
+      toast.success(t("savedEdit"));
+      goToDashboard();
+    } catch (error) {
+      // Edits require connectivity in this version — no offline queue for them
+      // (queuing a partial edit against a routine that might change meanwhile
+      // is riskier than just asking the user to retry when online).
+      const detail = error instanceof ApiError ? error.detail : null;
+      toast.error(detail || t("editOfflineError"));
+      setSaving(false);
     }
+  };
+
+  const handleSaveCreate = async () => {
     setSaving(true);
     try {
       if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -99,6 +143,18 @@ export function RoutineBuilderWizard({ locale }: RoutineBuilderWizardProps) {
         toast.error(t("saveError"));
         setSaving(false);
       }
+    }
+  };
+
+  const handleSave = async () => {
+    if (errors.length > 0) {
+      setShowErrors(true);
+      return;
+    }
+    if (isEditing) {
+      await handleSaveEdit();
+    } else {
+      await handleSaveCreate();
     }
   };
 
@@ -137,7 +193,7 @@ export function RoutineBuilderWizard({ locale }: RoutineBuilderWizardProps) {
         disabled={saving}
         className="apex-button w-full rounded-2xl py-3 text-base font-black"
       >
-        {saving ? t("saving") : t("save")}
+        {saving ? t("saving") : isEditing ? t("saveEdit") : t("save")}
       </button>
     </div>
   );
