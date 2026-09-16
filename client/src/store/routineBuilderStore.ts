@@ -1,7 +1,8 @@
 import { create } from "zustand";
 
 import { db, deleteMeta, getMeta, META_KEYS, setMeta } from "@/lib/db";
-import type { DraftDay, DraftExercise, DraftWeek, ManualRoutineDraft } from "@/types/routine";
+import type { DraftDay, DraftExercise, DraftWeek, ManualRoutineDraft, Routine } from "@/types/routine";
+import { routineToDraft } from "@/types/routine";
 import type { Exercise } from "@/types/exercise";
 
 const MAX_WEEKS = 4;
@@ -73,8 +74,14 @@ function renumber(draft: ManualRoutineDraft): ManualRoutineDraft {
 type BuilderState = {
   draft: ManualRoutineDraft;
   hydrated: boolean;
+  /** Set while editing an existing routine (`PATCH`); `null` when creating (`POST`). */
+  editingRoutineId: string | null;
 
   hydrate: () => Promise<void>;
+  /** Loads an existing routine's content for editing. Does not touch the
+   * create-flow's persisted draft (`db.meta[routine_builder_draft]`), so an
+   * abandoned "create" draft survives an unrelated edit session. */
+  startEditing: (routine: Routine) => void;
   reset: () => void;
 
   setWeekField: (weekIdx: number, patch: Partial<Pick<DraftWeek, "focus" | "notes">>) => void;
@@ -110,7 +117,11 @@ export const useRoutineBuilderStore = create<BuilderState>((set, get) => {
   const commit = (draft: ManualRoutineDraft) => {
     const next = renumber(draft);
     set({ draft: next });
-    schedulePersist(next);
+    // While editing an existing routine, don't overwrite the create-flow's
+    // persisted draft with edit content.
+    if (!get().editingRoutineId) {
+      schedulePersist(next);
+    }
   };
 
   const mutateDay = (
@@ -134,6 +145,7 @@ export const useRoutineBuilderStore = create<BuilderState>((set, get) => {
   return {
     draft: initialDraft(),
     hydrated: false,
+    editingRoutineId: null,
 
     hydrate: async () => {
       if (get().hydrated) return;
@@ -142,20 +154,29 @@ export const useRoutineBuilderStore = create<BuilderState>((set, get) => {
         try {
           const parsed = JSON.parse(raw) as ManualRoutineDraft;
           if (parsed?.weeks?.length) {
-            set({ draft: renumber(parsed), hydrated: true });
+            set({ draft: renumber(parsed), hydrated: true, editingRoutineId: null });
             return;
           }
         } catch {
           /* fall through to a fresh draft */
         }
       }
-      set({ hydrated: true });
+      set({ hydrated: true, editingRoutineId: null });
+    },
+
+    startEditing: (routine) => {
+      if (persistTimer) clearTimeout(persistTimer);
+      set({
+        draft: renumber(routineToDraft(routine)),
+        hydrated: true,
+        editingRoutineId: routine.id,
+      });
     },
 
     reset: () => {
       if (persistTimer) clearTimeout(persistTimer);
       void deleteMeta(META_KEYS.routineBuilderDraft);
-      set({ draft: initialDraft() });
+      set({ draft: initialDraft(), editingRoutineId: null });
     },
 
     setWeekField: (weekIdx, patch) => {

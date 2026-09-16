@@ -95,7 +95,33 @@ export type DraftWeek = {
   days: DraftDay[];
 };
 
-/** Payload sent to `POST /api/v1/routines/manual/`. */
+/** Payload sent to `POST /api/v1/routines/manual/` and `PATCH /api/v1/routines/{id}/`. */
 export type ManualRoutineDraft = {
   weeks: DraftWeek[];
 };
+
+/** Converts a persisted manual routine back into an editable draft. */
+export function routineToDraft(routine: Routine): ManualRoutineDraft {
+  return {
+    weeks: routine.weeks.map((week) => ({
+      week_number: week.week_number,
+      focus: week.focus,
+      notes: week.notes,
+      days: week.days.map((day) => ({
+        day_number: day.day_number,
+        day_name: day.day_name,
+        is_rest_day: day.is_rest_day,
+        exercises: day.exercises.map((exercise) => ({
+          name: exercise.name,
+          external_id: exercise.source_external_id,
+          muscle_group: exercise.muscle_group,
+          sets: exercise.sets,
+          reps: exercise.reps,
+          weight_kg: exercise.weight_kg,
+          rest_seconds: exercise.rest_seconds,
+          order: exercise.order,
+        })),
+      })),
+    })),
+  };
+}

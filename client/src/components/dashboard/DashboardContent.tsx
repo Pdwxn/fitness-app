@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useQueries } from "@tanstack/react-query";
 
 import { fetchActiveRoutine } from "@/hooks/useRoutineCache";
@@ -106,6 +108,7 @@ function formatLastSync(timestamp: number | null) {
 }
 
 export function DashboardContent({ locale, labels }: DashboardContentProps) {
+  const tBuilder = useTranslations("Builder");
   const [
     { data: routine, isLoading: rtLoading, isError: rtError, dataUpdatedAt: lastSync },
     { data: statsData },
@@ -177,7 +180,15 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
 
       {routine ? (
         <>
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end gap-3">
+            {routine.source === "manual" ? (
+              <Link
+                href={`/${locale}/routine/builder?mode=edit`}
+                className="apex-button-outline rounded-xl px-4 py-2 text-xs font-black"
+              >
+                {tBuilder("editEntryCta")}
+              </Link>
+            ) : null}
             <ChangeRoutineButton routineId={routine.id} />
           </div>
           <ActiveRoutineCard

@@ -6,6 +6,7 @@ from .views import (
     ActiveRoutineWeekView,
     DevSeedRoutineView,
     GenerateRoutineView,
+    ManualRoutineDetailView,
     ManualRoutineView,
     RoutineDeactivateView,
 )
@@ -29,6 +30,11 @@ urlpatterns = [
         "<uuid:routine_id>/deactivate/",
         RoutineDeactivateView.as_view(),
         name="routine-deactivate",
+    ),
+    path(
+        "<uuid:routine_id>/",
+        ManualRoutineDetailView.as_view(),
+        name="routine-detail",
     ),
     path("dev/seed/", DevSeedRoutineView.as_view(), name="dev-seed-routine"),
 ]

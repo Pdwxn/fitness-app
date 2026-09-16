@@ -353,6 +353,9 @@
   "Builder": {
     "title": "Routine builder",
     "description": "Build your routine week by week.",
+    "editEntryCta": "Edit routine",
+    "editTitle": "Edit your routine",
+    "editDescription": "Change your weeks, days and exercises.",
     "week": "Week",
     "addWeek": "Add week",
     "removeWeek": "Remove week",
@@ -372,10 +375,13 @@
     "rest": "Rest (s)",
     "weight": "Kg",
     "save": "Save routine",
+    "saveEdit": "Save changes",
     "saving": "Saving...",
     "savedOnline": "Routine created.",
     "savedOffline": "Routine saved. It will upload when you are online.",
+    "savedEdit": "Routine updated.",
     "saveError": "We could not save your routine. Try again.",
+    "editOfflineError": "You need a connection to save changes to your routine.",
     "picker": {
       "title": "Choose an exercise",
       "search": "Search exercises",

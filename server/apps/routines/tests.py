@@ -17,8 +17,10 @@ from apps.routines.models import (
 from apps.routines.services import exercise_sync, generation_service
 from apps.routines.services.generation_service import (
     ActiveManualRoutineError,
+    RoutineNotEditableError,
     persist_manual_routine,
     persist_routine,
+    update_manual_routine,
 )
 from apps.users.models import UserProfile
 
@@ -491,6 +493,168 @@ class TestAIPersistenceRegression:
             generation_service.persist_generated_routine(
                 user, ai_payload(), raw_response="{}", prompt="p"
             )
+
+
+# --------------------------------------------------------------------------- #
+# editing a manual routine (PATCH /routines/{id}/)
+# --------------------------------------------------------------------------- #
+def edited_manual_payload():
+    payload = manual_payload()
+    # Replace the tree entirely: drop "Pull" day, rename "Push", add a new exercise.
+    payload["weeks"][0]["days"] = [
+        {
+            "day_number": 1,
+            "day_name": "Upper Body",
+            "is_rest_day": False,
+            "exercises": [
+                {"name": "Incline Press", "sets": 4, "reps": "6-8"},
+                {"name": "Lat Pulldown", "sets": 3, "reps": "10-12"},
+            ],
+        },
+    ]
+    return payload
+
+
+@pytest.mark.django_db
+class TestEditManualRoutine:
+    def test_patch_replaces_the_tree(self):
+        user = make_user()
+        routine = persist_manual_routine(user, manual_payload())
+        original_id, original_created_at = routine.id, routine.created_at
+
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.patch(
+            reverse("routine-detail", args=[routine.id]),
+            edited_manual_payload(),
+            format="json",
+        )
+
+        assert response.status_code == 200, response.content
+        data = response.json()
+        assert data["id"] == str(original_id)
+        assert len(data["weeks"][0]["days"]) == 1
+        assert data["weeks"][0]["days"][0]["day_name"] == "Upper Body"
+        assert {e["name"] for e in data["weeks"][0]["days"][0]["exercises"]} == {
+            "Incline Press",
+            "Lat Pulldown",
+        }
+
+        routine.refresh_from_db()
+        assert routine.id == original_id
+        assert routine.created_at == original_created_at
+        assert routine.is_active is True
+
+    def test_patch_does_not_create_a_second_active_routine(self):
+        user = make_user()
+        routine = persist_manual_routine(user, manual_payload())
+        update_manual_routine(routine, edited_manual_payload())
+        assert Routine.objects.filter(user=user, is_active=True).count() == 1
+
+    def test_patch_rejects_ai_generated_routine(self):
+        user = make_user()
+        routine = persist_routine(user, ai_payload(), source=Routine.Source.AI_GENERATED)
+
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.patch(
+            reverse("routine-detail", args=[routine.id]),
+            edited_manual_payload(),
+            format="json",
+        )
+
+        assert response.status_code == 403
+        assert response.json()["code"] == "ai_routine_not_editable"
+
+    def test_update_manual_routine_raises_for_ai_source(self):
+        user = make_user()
+        routine = persist_routine(user, ai_payload(), source=Routine.Source.AI_GENERATED)
+        with pytest.raises(RoutineNotEditableError):
+            update_manual_routine(routine, edited_manual_payload())
+
+    def test_patch_another_users_routine_is_404(self):
+        owner = make_user(full_name="Owner")
+        other = make_user(full_name="Other")
+        routine = persist_manual_routine(owner, manual_payload())
+
+        client = APIClient()
+        client.force_authenticate(user=other)
+        response = client.patch(
+            reverse("routine-detail", args=[routine.id]),
+            edited_manual_payload(),
+            format="json",
+        )
+
+        assert response.status_code == 404
+
+    def test_patch_invalid_payload_is_400(self):
+        user = make_user()
+        routine = persist_manual_routine(user, manual_payload())
+
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.patch(
+            reverse("routine-detail", args=[routine.id]),
+            {"weeks": []},
+            format="json",
+        )
+
+        assert response.status_code == 400
+
+
+# --------------------------------------------------------------------------- #
+# deleting a manual routine (DELETE /routines/{id}/)
+# --------------------------------------------------------------------------- #
+@pytest.mark.django_db
+class TestDeleteManualRoutine:
+    def test_delete_soft_deletes_the_routine(self):
+        user = make_user()
+        routine = persist_manual_routine(user, manual_payload())
+
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.delete(reverse("routine-detail", args=[routine.id]))
+
+        assert response.status_code == 204
+        assert Routine.objects.filter(id=routine.id).count() == 0
+        assert Routine.all_objects.get(id=routine.id).deleted_at is not None
+
+    def test_delete_rejects_ai_generated_routine(self):
+        user = make_user()
+        routine = persist_routine(user, ai_payload(), source=Routine.Source.AI_GENERATED)
+
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.delete(reverse("routine-detail", args=[routine.id]))
+
+        assert response.status_code == 403
+        assert response.json()["code"] == "ai_routine_not_editable"
+        routine.refresh_from_db()
+        assert routine.deleted_at is None
+
+    def test_delete_another_users_routine_is_404(self):
+        owner = make_user(full_name="Owner")
+        other = make_user(full_name="Other")
+        routine = persist_manual_routine(owner, manual_payload())
+
+        client = APIClient()
+        client.force_authenticate(user=other)
+        response = client.delete(reverse("routine-detail", args=[routine.id]))
+
+        assert response.status_code == 404
+        assert Routine.objects.filter(id=routine.id).count() == 1
+
+    def test_delete_can_target_an_inactive_manual_routine(self):
+        user = make_user()
+        routine = persist_manual_routine(user, manual_payload())
+        routine.is_active = False
+        routine.save(update_fields=["is_active"])
+
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.delete(reverse("routine-detail", args=[routine.id]))
+
+        assert response.status_code == 204
 
 
 # --------------------------------------------------------------------------- #
