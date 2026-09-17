@@ -438,6 +438,16 @@
       "loading": "Loading routine day...",
       "error": "We could not load this day. Try refreshing the page.",
       "notFound": "We could not find this day in your active routine."
+    },
+    "progression": {
+      "label": "Suggestion",
+      "nextWeight": "{weight} kg x {reps}",
+      "reasons": {
+        "repeat_incomplete_sets": "Complete every planned set before increasing weight.",
+        "repeat_missed_reps": "You didn't hit the rep range last time — repeat the same weight.",
+        "increase_reps": "You hit the bottom of the range — add reps before adding weight.",
+        "increase_weight": "You hit the top of the range last time — try +{increment}kg."
+      }
     }
   },
   "Progress": {

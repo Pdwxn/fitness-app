@@ -2,11 +2,44 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { StatusCard } from "@/components/ui/StatusCard";
 import { useRoutineCache } from "@/hooks/useRoutineCache";
+import { useProgressionSuggestion } from "@/hooks/useProgression";
+import type { ProgressionKind } from "@/lib/progression";
+import type { RoutineExercise } from "@/types/routine";
 
 import { DailyLogForm } from "./DailyLogForm";
+
+/** Kinds worth showing a badge for -- "no history yet" or "off" would just be noise. */
+const ACTIONABLE_KINDS: ProgressionKind[] = [
+  "repeat_incomplete_sets",
+  "repeat_missed_reps",
+  "increase_reps",
+  "increase_weight",
+];
+
+function ProgressionBadge({ exercise }: { exercise: RoutineExercise }) {
+  const t = useTranslations("RoutineDay.progression");
+  const suggestion = useProgressionSuggestion(exercise);
+
+  if (!suggestion || !ACTIONABLE_KINDS.includes(suggestion.kind)) return null;
+
+  return (
+    <div className="mt-3 rounded-2xl border border-[#a6ff00]/30 bg-[#a6ff00]/10 px-4 py-3 text-sm text-[#d7ff8a]">
+      <p className="text-xs font-black uppercase tracking-[0.14em]">{t("label")}</p>
+      <p className="mt-1 font-bold">
+        {t(`reasons.${suggestion.kind}`, suggestion.params)}
+      </p>
+      {suggestion.kind === "increase_weight" && suggestion.nextWeightKg != null ? (
+        <p className="mt-1 text-white/70">
+          {t("nextWeight", { weight: suggestion.nextWeightKg, reps: suggestion.nextReps ?? "" })}
+        </p>
+      ) : null}
+    </div>
+  );
+}
 
 type RoutineDayPageContentProps = {
   dayId: string;
@@ -124,6 +157,8 @@ export function RoutineDayPageContent({ dayId, locale, labels }: RoutineDayPageC
                   </span>
                 ) : null}
               </div>
+
+              <ProgressionBadge exercise={exercise} />
 
               {exercise.instructions ? (
                 <p className="mt-4 text-sm leading-6 text-white/60">{exercise.instructions}</p>

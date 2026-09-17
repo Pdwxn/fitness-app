@@ -45,6 +45,7 @@ function buildExerciseLogs(day: RoutineDay): ExerciseLog[] {
   return day.exercises.map((exercise) => ({
     exercise_id: exercise.id,
     exercise_name: exercise.name,
+    source_external_id: exercise.source_external_id || undefined,
     completed: false,
     actual_sets: exercise.sets,
     actual_reps: exercise.reps || null,
