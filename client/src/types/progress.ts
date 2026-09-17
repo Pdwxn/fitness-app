@@ -1,6 +1,10 @@
 export type ExerciseLog = {
   exercise_id: string;
   exercise_name: string;
+  /** Stable catalog id (`StoredExercise.external_id`), when the exercise has
+   * one -- lets the progression engine group logs across routines/months,
+   * since `exercise_id` (a `RoutineExercise.id`) is different every time. */
+  source_external_id?: string;
   completed: boolean;
   actual_sets: number | null;
   actual_reps: string | null;

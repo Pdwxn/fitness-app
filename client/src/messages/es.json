@@ -438,6 +438,16 @@
       "loading": "Cargando día de rutina...",
       "error": "No pudimos cargar el día. Intenta recargar la página.",
       "notFound": "No encontramos este día en tu rutina activa."
+    },
+    "progression": {
+      "label": "Sugerencia",
+      "nextWeight": "{weight} kg x {reps}",
+      "reasons": {
+        "repeat_incomplete_sets": "Completa todas las series planificadas antes de subir de peso.",
+        "repeat_missed_reps": "No llegaste al rango de reps la última vez — repite el mismo peso.",
+        "increase_reps": "Llegaste al mínimo del rango — sube reps antes de subir peso.",
+        "increase_weight": "Completaste el tope de reps la última vez — prueba +{increment}kg."
+      }
     }
   },
   "Progress": {

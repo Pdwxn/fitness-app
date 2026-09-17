@@ -29,6 +29,19 @@ export interface PendingRoutineItem {
   createdAt: string;
 }
 
+/**
+ * A user's chosen progression policy for one exercise (by its stable catalog
+ * id, `StoredExercise.external_id`), overriding the experience-level default.
+ * Local-only in v1 -- deliberately not synced to the backend (see
+ * `apex-fit-progression-engine-plan.md`): it's a low-stakes preference, and
+ * requiring a round trip to change it would fight the "must work with no
+ * signal in the gym" goal this whole feature exists for.
+ */
+export interface ProgressionPrefEntry {
+  source_external_id: string;
+  policy: "off" | "linear" | "double";
+}
+
 export const META_KEYS = {
   exercisesSyncedAt: "exercises_synced_at",
   routineBuilderDraft: "routine_builder_draft",
@@ -43,6 +56,7 @@ export class ApexFitDB extends Dexie {
   exercises!: EntityTable<Exercise, "external_id">;
   meta!: EntityTable<MetaEntry, "key">;
   pendingRoutines!: EntityTable<PendingRoutineItem, "id">;
+  progressionPrefs!: EntityTable<ProgressionPrefEntry, "source_external_id">;
 
   constructor() {
     super("apex-fit");
@@ -60,6 +74,9 @@ export class ApexFitDB extends Dexie {
       exercises: "&external_id, name, category, equipment, *primary_muscles, updated_at",
       meta: "&key",
       pendingRoutines: "&id, createdAt",
+    });
+    this.version(3).stores({
+      progressionPrefs: "&source_external_id",
     });
   }
 }

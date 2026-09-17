@@ -224,6 +224,7 @@ def _result_from_stored(ex: StoredExercise) -> dict:
         "name": ex.name,
         "image_url": resolve_image_url(ex),
         "instructions": ex.instructions,
+        "external_id": ex.external_id,
     }
 
 
@@ -255,6 +256,12 @@ def enrich_exercise(exercise: RoutineExercise) -> bool:
             )
             return bool(image_url)
 
+    # Everything below matches by name (bank translation or fuzzy search), so
+    # it never had a source_external_id to begin with -- this is the identity
+    # the progression engine needs (a stable link to the catalog across
+    # months/routines), so we persist it here too, not just on the fast path.
+    already_identified = bool(exercise.source_external_id)
+
     bank_match = lookup_exercise_in_bank(exercise.name)
 
     if bank_match:
@@ -264,9 +271,9 @@ def enrich_exercise(exercise: RoutineExercise) -> bool:
             exercise.id, exercise.name, exercise.muscle_group, search_term,
         )
     else:
-        if exercise.image_url:
+        if exercise.image_url and already_identified:
             logger.debug(
-                ">>> enrich[%s] name='%s' | NOT in bank, has image, SKIP",
+                ">>> enrich[%s] name='%s' | NOT in bank, already enriched, SKIP",
                 exercise.id, exercise.name,
             )
             return True
@@ -296,18 +303,22 @@ def enrich_exercise(exercise: RoutineExercise) -> bool:
         return False
 
     image_url = match["image_url"]
-    instructions = match.get("instructions", "")
+    external_id = match.get("external_id", "")
 
     logger.info(
-        ">>> enrich[%s] name='%s' | UPDATED image_url='%s'",
-        exercise.id, exercise.name, image_url[:80] if image_url else "",
+        ">>> enrich[%s] name='%s' | UPDATED image_url='%s' external_id='%s'",
+        exercise.id, exercise.name, image_url[:80] if image_url else "", external_id,
     )
 
-    RoutineExercise.objects.filter(id=exercise.id).update(
-        image_url=image_url,
-    )
+    updates = {}
+    if not exercise.image_url:
+        updates["image_url"] = image_url
+    if external_id and not already_identified:
+        updates["source_external_id"] = external_id
+    if updates:
+        RoutineExercise.objects.filter(id=exercise.id).update(**updates)
 
-    return bool(image_url)
+    return bool(exercise.image_url or image_url)
 
 
 def enrich_routine(routine) -> int:
