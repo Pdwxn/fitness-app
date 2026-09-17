@@ -10,7 +10,7 @@ HERE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 
 class Command(BaseCommand):
     help = (
-        "Import/sync exercises from exercises_db.json into StoredExercise. "
+        "Import/sync exercises from exercises_db_v2.json into StoredExercise. "
         "Upserts by external_id: only rows whose tracked fields actually "
         "changed get a bumped updated_at (so GET /api/v1/exercises/"
         "?updated_since= can delta-sync instead of downloading the whole "
@@ -19,7 +19,7 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        path = os.path.join(HERE, "data", "exercises_db.json")
+        path = os.path.join(HERE, "data", "exercises_db_v2.json")
         with open(path, encoding="utf-8") as f:
             source_entries = json.load(f)
 

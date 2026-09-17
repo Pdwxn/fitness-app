@@ -314,6 +314,7 @@ class TestExerciseCatalog:
         first = data["results"][0]
         assert first["image_url"].startswith("https://raw.githubusercontent.com/yuhonas/")
         assert first["image_url"].endswith("Exercise_0/0.jpg")
+        assert first["gif_url"] == ""
 
     def test_pagination(self):
         self._make_exercises(5)
@@ -375,14 +376,13 @@ class TestExerciseSync:
         entry = {
             "id": ext_id,
             "name": f"Exercise {ext_id}",
-            "force": "push",
-            "level": "beginner",
-            "primaryMuscles": ["chest"],
-            "secondaryMuscles": [],
-            "instructions": ["Step 1", "Step 2"],
-            "category": "strength",
+            "body_part": "chest",
             "equipment": "barbell",
-            "images": [f"{ext_id}/0.jpg"],
+            "primary_muscles": ["chest"],
+            "secondary_muscles": [],
+            "instructions": "Step 1\nStep 2",
+            "img": f"{ext_id}-0.jpg",
+            "gif": f"{ext_id}-0.gif",
         }
         entry.update(overrides)
         return entry
@@ -467,6 +467,31 @@ class TestResolveImageUrl:
 
         ex = StoredExercise.objects.create(external_id="y", name="Y", image_paths=[])
         assert resolve_image_url(ex) == ""
+
+    def test_exercises_dataset_provider(self):
+        from apps.routines.services.exercisedb_service import resolve_gif_url, resolve_image_url
+
+        ex = StoredExercise.objects.create(
+            external_id="z",
+            name="Z",
+            image_paths=["0001-abc.jpg"],
+            gif_path="0001-abc.gif",
+            image_provider="exercises-dataset",
+        )
+        assert resolve_image_url(ex) == (
+            "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset"
+            "@7455efae41b330c265e7cd4b78dfa848e7ce5ebd/images/0001-abc.jpg"
+        )
+        assert resolve_gif_url(ex) == (
+            "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset"
+            "@7455efae41b330c265e7cd4b78dfa848e7ce5ebd/videos/0001-abc.gif"
+        )
+
+    def test_gif_url_empty_when_no_gif_path(self):
+        from apps.routines.services.exercisedb_service import resolve_gif_url
+
+        ex = StoredExercise.objects.create(external_id="w", name="W")
+        assert resolve_gif_url(ex) == ""
 
 
 # --------------------------------------------------------------------------- #

@@ -3,7 +3,7 @@ from rest_framework import serializers
 from apps.progress.models import DailyLog
 
 from .models import Routine, RoutineDay, RoutineExercise, RoutineWeek, StoredExercise
-from .services.exercisedb_service import resolve_image_url
+from .services.exercisedb_service import resolve_gif_url, resolve_image_url
 
 
 class RoutineExerciseSerializer(serializers.ModelSerializer):
@@ -110,6 +110,7 @@ class RoutineSerializer(serializers.ModelSerializer):
 
 class StoredExerciseSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
+    gif_url = serializers.SerializerMethodField()
 
     class Meta:
         model = StoredExercise
@@ -125,12 +126,16 @@ class StoredExerciseSerializer(serializers.ModelSerializer):
             "category",
             "instructions",
             "image_url",
+            "gif_url",
             "updated_at",
         )
         read_only_fields = fields
 
     def get_image_url(self, obj):
         return resolve_image_url(obj)
+
+    def get_gif_url(self, obj):
+        return resolve_gif_url(obj)
 
 
 class ManualRoutineInputSerializer(serializers.Serializer):

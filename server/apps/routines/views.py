@@ -172,10 +172,16 @@ class ExerciseCatalogView(ListAPIView):
     """Exercise catalog for the offline routine builder.
 
     ``StoredExercise.objects`` (ActiveManager) already excludes soft-deleted rows.
-    Response caching is applied at the URLconf level (see ``urls.py``); a
-    distinct ``?updated_since=`` value gets its own cache entry, which is
-    correct (each is a genuinely different response) if a little cache-unfriendly
-    for delta syncs — acceptable at this catalog's size.
+    Deliberately not response-cached: this used to sit behind ``cache_page`` at
+    the URLconf level, but a time-based cache keyed by the full query string
+    has no way to know a bulk dataset import (``import_exercisedb``, run
+    rarely but at unpredictable times) just changed every row underneath it —
+    it kept serving pre-import data for up to the cache timeout with zero
+    signal anything was wrong (this is exactly what happened switching
+    datasets: stale ``count``/rows from before the swap). Same reasoning that
+    already dropped ``cache_page`` from the ``ActiveRoutine*`` views. The
+    client's own delta sync (``?updated_since=``, see below) is what keeps
+    repeat requests cheap instead.
 
     ``?updated_since=<iso-datetime>`` returns only rows changed after that
     instant (see ``apps.routines.services.exercise_sync`` for how the importer
