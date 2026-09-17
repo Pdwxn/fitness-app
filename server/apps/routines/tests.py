@@ -470,6 +470,66 @@ class TestResolveImageUrl:
 
 
 # --------------------------------------------------------------------------- #
+# enrich_exercise backfills a stable identity (source_external_id) even when
+# matched by name (bank/fuzzy), not just the manual-builder fast path --
+# needed for the client-side progression engine to group logs across months.
+# --------------------------------------------------------------------------- #
+@pytest.mark.django_db
+class TestEnrichExerciseIdentityBackfill:
+    def test_name_match_backfills_source_external_id(self):
+        from apps.routines.services.exercisedb_service import enrich_exercise
+
+        StoredExercise.objects.create(
+            external_id="ext-bp",
+            name="Bench Press",
+            instructions="Do it",
+            image_paths=["Bench_Press/0.jpg"],
+        )
+        user = make_user()
+        routine = persist_manual_routine(user, manual_payload())
+        exercise = RoutineExercise.objects.get(day__week__routine=routine, name="Overhead Press")
+        assert exercise.source_external_id == ""
+        exercise.search_term = "Bench Press"
+        exercise.save()
+
+        enrich_exercise(exercise)
+
+        exercise.refresh_from_db()
+        assert exercise.source_external_id == "ext-bp"
+        assert exercise.image_url
+
+    def test_does_not_overwrite_an_existing_source_external_id(self):
+        from apps.routines.services.exercisedb_service import enrich_exercise
+
+        StoredExercise.objects.create(external_id="ext-other", name="Bench Press")
+        user = make_user()
+        routine = persist_manual_routine(user, manual_payload())
+        exercise = RoutineExercise.objects.get(day__week__routine=routine, name="Bench Press")
+        assert exercise.source_external_id == "Bench_Press"  # set by the manual builder fast path
+
+        exercise.search_term = "Bench Press"
+        exercise.save()
+        enrich_exercise(exercise)
+
+        exercise.refresh_from_db()
+        assert exercise.source_external_id == "Bench_Press"
+
+    def test_no_match_leaves_source_external_id_blank(self):
+        from apps.routines.services.exercisedb_service import enrich_exercise
+
+        user = make_user()
+        routine = persist_manual_routine(user, manual_payload())
+        exercise = RoutineExercise.objects.get(day__week__routine=routine, name="Overhead Press")
+        exercise.search_term = "Something Completely Unmatched Xyz"
+        exercise.save()
+
+        enrich_exercise(exercise)
+
+        exercise.refresh_from_db()
+        assert exercise.source_external_id == ""
+
+
+# --------------------------------------------------------------------------- #
 # regression: AI persistence still stores gemini fields
 # --------------------------------------------------------------------------- #
 @pytest.mark.django_db

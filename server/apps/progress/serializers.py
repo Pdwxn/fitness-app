@@ -11,6 +11,14 @@ from .models import DailyLog
 class ExerciseLogSerializer(serializers.Serializer):
     exercise_id = serializers.UUIDField()
     exercise_name = serializers.CharField(max_length=120)
+    # Stable catalog identity (StoredExercise.external_id), if the routine
+    # exercise has one -- lets the client-side progression engine group logs
+    # for "the same exercise" across routines/months, since exercise_id
+    # (RoutineExercise.id) is different every time. Opaque to the backend:
+    # stored and echoed back as-is, no relation to enforce.
+    source_external_id = serializers.CharField(
+        max_length=100, required=False, allow_blank=True, default=""
+    )
     completed = serializers.BooleanField(default=False)
     actual_sets = serializers.IntegerField(min_value=0, required=False, allow_null=True)
     actual_reps = serializers.CharField(max_length=40, required=False, allow_blank=True, allow_null=True)
@@ -98,6 +106,7 @@ def normalize_exercise_log(exercise):
     return {
         "exercise_id": str(exercise["exercise_id"]),
         "exercise_name": exercise["exercise_name"],
+        "source_external_id": exercise.get("source_external_id", ""),
         "completed": exercise.get("completed", False),
         "actual_sets": exercise.get("actual_sets"),
         "actual_reps": exercise.get("actual_reps"),
