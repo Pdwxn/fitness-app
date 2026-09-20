@@ -310,6 +310,19 @@
       "offlineFallback": "Estás viendo la última rutina guardada en este dispositivo."
     }
   },
+  "OfflineMedia": {
+    "title": "Sin conexión",
+    "description": "Guarda las fotos y demos de los ejercicios de tu rutina para verlos en el gimnasio aunque no haya señal.",
+    "status": "{cached} de {total} archivos guardados",
+    "complete": "Todo disponible sin conexión",
+    "download": "Descargar ahora",
+    "downloading": "Descargando...",
+    "clear": "Borrar copias",
+    "unsupported": "Tu navegador no permite guardar archivos sin conexión.",
+    "offline": "Sin conexión ahora mismo. Se descargará cuando vuelva.",
+    "saveData": "Ahorro de datos activo: la descarga automática está en pausa.",
+    "failed": "{failed, plural, one {# archivo no se pudo descargar} other {# archivos no se pudieron descargar}}. Intenta de nuevo."
+  },
   "Coach": {
     "eyebrow": "Tu coach de IA",
     "reviewTitle": "Ajustes propuestos",

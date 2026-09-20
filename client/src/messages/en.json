@@ -310,6 +310,19 @@
       "offlineFallback": "You are viewing the latest routine saved on this device."
     }
   },
+  "OfflineMedia": {
+    "title": "Offline",
+    "description": "Save the photos and demos of your routine's exercises so you can see them at the gym even without signal.",
+    "status": "{cached} of {total} files saved",
+    "complete": "Everything is available offline",
+    "download": "Download now",
+    "downloading": "Downloading...",
+    "clear": "Delete copies",
+    "unsupported": "Your browser can't store files for offline use.",
+    "offline": "You're offline right now. It will download when you're back online.",
+    "saveData": "Data saver is on: automatic download is paused.",
+    "failed": "{failed, plural, one {# file couldn't be downloaded} other {# files couldn't be downloaded}}. Try again."
+  },
   "Coach": {
     "eyebrow": "Your AI coach",
     "reviewTitle": "Proposed adjustments",

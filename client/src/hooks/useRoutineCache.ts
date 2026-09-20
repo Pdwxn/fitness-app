@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { ApiError, authenticatedClientFetch } from "@/lib/api/authenticated-client";
 import { db } from "@/lib/db";
+import { precacheRoutineMedia } from "@/lib/mediaCache";
 import { queryKeys } from "@/lib/query-keys";
 import type { RoutineCache } from "@/types/routine";
 
@@ -9,6 +10,8 @@ export async function fetchActiveRoutine(): Promise<RoutineCache | null> {
   try {
     const routine = await authenticatedClientFetch<RoutineCache>("/api/v1/routines/active/");
     await db.routineCache.put(routine);
+    // Background: keep the routine's photos/demos available offline.
+    void precacheRoutineMedia(routine).catch(() => undefined);
     return routine;
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {

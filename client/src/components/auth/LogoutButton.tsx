@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { db } from "@/lib/db";
+import { clearAllCaches } from "@/lib/mediaCache";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { STORAGE_KEYS } from "@/lib/storage";
 
@@ -26,6 +27,8 @@ export function LogoutButton({ label, loadingLabel }: LogoutButtonProps) {
       db.dailyLogs.clear(),
       db.pendingSync.clear(),
       db.stats.clear(),
+      // Cached API responses and media belong to the user who just left.
+      clearAllCaches().catch(() => undefined),
     ]);
     router.refresh();
     setIsLoading(false);
