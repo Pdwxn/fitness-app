@@ -67,6 +67,22 @@ function parseDateOnly(value: string): Date | null {
   return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
 }
 
+function formatDateOnly(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+/**
+ * The calendar date (`YYYY-MM-DD`) a week/day falls on the first time the
+ * routine runs through it -- doesn't account for later cycles of a routine
+ * shorter than the time the user has been training, which is enough to tell
+ * whether *this* pass through the plan was logged.
+ */
+export function calendarDateForRoutineDay(routine: Routine, week: RoutineWeek, day: RoutineDay): string | null {
+  const start = routineStartDate(routine);
+  if (!start) return null;
+  return formatDateOnly(addDays(start, (week.week_number - 1) * 7 + (day.day_number - 1)));
+}
+
 function startOfLocalDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }

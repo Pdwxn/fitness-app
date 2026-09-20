@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import en from "@/messages/en.json";
 import es from "@/messages/es.json";
-import type { Routine, RoutineDay, RoutineWeek } from "@/types/routine";
+import type { Routine, RoutineWeek } from "@/types/routine";
 
 vi.mock("next/link", () => ({
   default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
@@ -13,14 +13,8 @@ vi.mock("next/link", () => ({
     </a>
   ),
 }));
-vi.mock("../ExercisePreviewList", () => ({
-  ExercisePreviewList: ({ day }: { day: RoutineDay | null }) => (
-    <div data-testid="selected-day">{day ? day.day_name : "none"}</div>
-  ),
-}));
 
 const { ActiveRoutineCard } = await import("../ActiveRoutineCard");
-const { WeeklyRoutinePreview } = await import("../WeeklyRoutinePreview");
 
 function week(n: number): RoutineWeek {
   const shape = ["Push", "Rest", "Pull", "Rest", "Legs", "Rest", "Rest"];
@@ -45,13 +39,6 @@ const routine = {
 } as unknown as Routine;
 
 const cardLabels = es.Dashboard.activeRoutine;
-const previewLabels = {
-  title: "Vista",
-  week: "Semana",
-  restDay: "Descanso",
-  exercises: "ejercicios",
-  selectedDay: { title: "", restDay: "", sets: "", reps: "", rest: "", weight: "", seconds: "", empty: "" },
-};
 
 function setToday(y: number, m: number, d: number) {
   vi.useFakeTimers({ toFake: ["Date"] });
@@ -117,26 +104,5 @@ describe("ActiveRoutineCard (calendar schedule)", () => {
     setToday(2026, 9, 9);
     renderWith(<ActiveRoutineCard routine={routine} href="/es/routine" labels={cardLabels} />);
     expect(screen.getByRole("link", { name: /Comenzar/ })).toHaveAttribute("href", "/es/routine");
-  });
-});
-
-describe("WeeklyRoutinePreview (opens on today)", () => {
-  const preview = () =>
-    renderWith(
-      <WeeklyRoutinePreview routine={routine} dayHref={(id) => `/es/routine/${id}`} labels={previewLabels} />,
-    );
-
-  it("selects the current week and today's day, and marks it", () => {
-    setToday(2026, 9, 16); // week 2, Wednesday = Pull W2
-    preview();
-    expect(screen.getByTestId("selected-day")).toHaveTextContent("Pull W2");
-    expect(screen.getByRole("button", { name: "Semana 2" })).toHaveClass("bg-[#a6ff00]");
-    expect(screen.getAllByText("Hoy")).toHaveLength(1);
-  });
-
-  it("marks a rest day as today too", () => {
-    setToday(2026, 9, 8); // Tuesday W1 = rest
-    preview();
-    expect(screen.getByTestId("selected-day")).toHaveTextContent("Rest W1");
   });
 });

@@ -71,6 +71,11 @@ export default async function DashboardPage({
             error: t("routineStates.error"),
             offlineFallback: t("routineStates.offlineFallback"),
           },
+          noRoutine: {
+            title: t("noRoutine.title"),
+            description: t("noRoutine.description"),
+            cta: t("noRoutine.cta"),
+          },
         }}
       />
     </AppShell>

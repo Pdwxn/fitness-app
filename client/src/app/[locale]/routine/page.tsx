@@ -13,20 +13,8 @@ export default async function RoutinePage({
   const t = await getTranslations("Routine");
 
   return (
-    <AppShell locale={locale} title={t("title")} description={t("description")}>
-      <RoutinePageContent
-        locale={locale}
-        labels={{
-          loading: t("states.loading"),
-          error: t("states.error"),
-          empty: t("states.empty"),
-          offlineFallback: t("states.offlineFallback"),
-          week: t("week"),
-          restDay: t("restDay"),
-          exercises: t("exercises"),
-          viewDay: t("viewDay"),
-        }}
-      />
+    <AppShell locale={locale} title={t("title")} description={t("description")} hideHeader>
+      <RoutinePageContent locale={locale} />
     </AppShell>
   );
 }

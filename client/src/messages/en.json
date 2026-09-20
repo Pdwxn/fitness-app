@@ -293,6 +293,11 @@
       "loading": "Looking for your active routine...",
       "error": "We could not load your routine. Try refreshing the page.",
       "offlineFallback": "You are viewing the latest routine saved on this device."
+    },
+    "noRoutine": {
+      "title": "You don't have an active routine yet",
+      "description": "Build your own routine or generate a monthly plan with AI.",
+      "cta": "See options"
     }
   },
   "OfflineMedia": {
@@ -362,16 +367,21 @@
   "Routine": {
     "title": "Active routine",
     "description": "Review your full monthly plan, week by week.",
+    "eyebrow": "Your routine",
+    "activeTitle": "Active routine",
+    "monthlyBadge": "Monthly plan {period}",
+    "manualBadge": "Manual routine",
+    "editRoutine": "Edit routine",
     "week": "Week",
     "restDay": "Rest",
     "exercises": "exercises",
-    "viewDay": "View day details",
+    "today": "TODAY",
+    "completedAria": "Completed",
     "nextRoutineReady": "🎯 Your new routine for {month} is ready!",
     "viewRoutine": "View routine",
     "states": {
       "loading": "Loading your routine...",
       "error": "We could not load your routine. Try refreshing the page.",
-      "empty": "No active routine yet. Apex Fit will generate it automatically after onboarding.",
       "offlineFallback": "You are viewing the latest routine saved on this device."
     }
   },
@@ -381,13 +391,12 @@
     "description": "Build your own routine choosing exercises, or let AI design a personalized monthly plan.",
     "manual": {
       "title": "Build my routine",
-      "description": "Pick exercises, set your weeks and days. Works fully offline.",
-      "cta": "Build my routine"
+      "description": "Pick exercises, set weeks and days.",
+      "offline": "Works fully offline"
     },
     "ai": {
       "title": "Generate with AI",
-      "description": "Answer a few questions and get a science-based monthly plan.",
-      "cta": "Generate with AI"
+      "description": "Answer a few questions and get a science-based monthly plan."
     },
     "pendingBanner": "Your routine was saved on this device and will upload when you are online.",
     "change": {

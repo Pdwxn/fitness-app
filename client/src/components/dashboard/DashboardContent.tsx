@@ -2,17 +2,14 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { ClipboardList } from "lucide-react";
 import { useQueries } from "@tanstack/react-query";
 
 import { fetchActiveRoutine } from "@/hooks/useRoutineCache";
 import { fetchProgressStats } from "@/hooks/useProgressStats";
-import { usePendingRoutine } from "@/hooks/usePendingRoutine";
 import { queryKeys } from "@/lib/query-keys";
 
 import { CoachProposalBanner } from "@/components/coach/CoachProposalBanner";
-import { ChangeRoutineButton } from "@/components/routine/ChangeRoutineButton";
-import { RoutineChoiceScreen } from "@/components/routine/RoutineChoiceScreen";
 import { ActiveRoutineCard } from "./ActiveRoutineCard";
 import { StatsPreview } from "./StatsPreview";
 import { TodayExercisePreview } from "./TodayExercisePreview";
@@ -77,6 +74,11 @@ type DashboardContentProps = {
       error: string;
       offlineFallback: string;
     };
+    noRoutine: {
+      title: string;
+      description: string;
+      cta: string;
+    };
   };
 };
 
@@ -91,7 +93,6 @@ function formatLastSync(timestamp: number | null) {
 }
 
 export function DashboardContent({ locale, labels }: DashboardContentProps) {
-  const tBuilder = useTranslations("Builder");
   const [
     { data: routine, isLoading: rtLoading, isError: rtError, dataUpdatedAt: lastSync },
     { data: statsData },
@@ -110,9 +111,7 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
       },
     ],
   });
-  const { hasPending, isLoading: pendingLoading } = usePendingRoutine();
 
-  const isRoutineLoading = rtLoading || pendingLoading;
   const hasRoutineError = rtError && !routine;
   const isOfflineFallback = rtError && Boolean(routine);
   const stats = statsData ?? null;
@@ -125,10 +124,6 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
     return `${routine.month}/${routine.year}`;
   }, [routine, labels.stats.pending, labels.activeRoutine.eyebrow]);
   const completedDays = stats?.completed_days ?? 0;
-
-  if (!isRoutineLoading && !routine && !hasPending) {
-    return <RoutineChoiceScreen locale={locale} />;
-  }
 
   return (
     <div className="flex flex-col gap-5">
@@ -155,30 +150,30 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
         </section>
       ) : null}
 
-      {isRoutineLoading ? (
+      {rtLoading ? (
         <section className="apex-card rounded-[2rem] p-6">
           <p className="text-sm font-bold text-white/65">{labels.routineStates.loading}</p>
         </section>
       ) : null}
 
-      {!isRoutineLoading && !routine && hasPending ? (
-        <RoutineChoiceScreen locale={locale} hasPending />
+      {!rtLoading && !routine && !hasRoutineError ? (
+        <section className="apex-card flex flex-col items-start gap-4 rounded-[2rem] p-6 text-white">
+          <span className="grid size-14 place-items-center rounded-full border-[1.5px] border-[#a6ff00]/55 bg-[#a6ff00]/10 text-[#a6ff00]">
+            <ClipboardList aria-hidden="true" size={26} strokeWidth={1.6} />
+          </span>
+          <div>
+            <p className="text-xl font-black tracking-tight">{labels.noRoutine.title}</p>
+            <p className="mt-1 text-sm leading-6 text-white/60">{labels.noRoutine.description}</p>
+          </div>
+          <Link href={`/${locale}/routine`} className="apex-button rounded-2xl px-5 py-3 text-sm font-black">
+            {labels.noRoutine.cta}
+          </Link>
+        </section>
       ) : null}
 
       {routine ? (
         <>
           <CoachProposalBanner locale={locale} />
-          <div className="flex items-center justify-end gap-3">
-            {routine.source === "manual" ? (
-              <Link
-                href={`/${locale}/routine/builder?mode=edit`}
-                className="apex-button-outline rounded-xl px-4 py-2 text-xs font-black"
-              >
-                {tBuilder("editEntryCta")}
-              </Link>
-            ) : null}
-            <ChangeRoutineButton routineId={routine.id} />
-          </div>
           <ActiveRoutineCard
             routine={routine}
             href={`/${locale}/routine`}

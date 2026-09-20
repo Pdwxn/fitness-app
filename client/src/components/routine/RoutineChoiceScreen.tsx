@@ -2,44 +2,45 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { ArrowRight, ClipboardList, Sparkles, WifiOff, type LucideIcon } from "lucide-react";
 
 type RoutineChoiceScreenProps = {
   locale: string;
   hasPending?: boolean;
 };
 
+/** The full-page "how do you want to start?" choice: build manually, or let the AI generate a plan. */
 export function RoutineChoiceScreen({ locale, hasPending = false }: RoutineChoiceScreenProps) {
   const t = useTranslations("RoutineChoice");
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-7">
       {hasPending ? (
         <section className="rounded-[2rem] border border-amber-300/30 bg-amber-400/10 p-4">
           <p className="text-sm font-bold text-amber-100">{t("pendingBanner")}</p>
         </section>
       ) : null}
 
-      <section className="apex-card rounded-[2rem] p-6 text-white">
-        <p className="text-sm font-black uppercase tracking-[0.28em] text-[#a6ff00]">
-          {t("eyebrow")}
-        </p>
-        <h2 className="mt-3 text-3xl font-black tracking-tight">{t("title")}</h2>
-        <p className="mt-3 text-base leading-7 text-white/65">{t("description")}</p>
-      </section>
+      <div className="flex flex-col gap-3">
+        <p className="text-sm font-black uppercase tracking-[0.22em] text-[#a6ff00]">{t("eyebrow")}</p>
+        <h1 className="text-4xl font-black leading-[1.02] tracking-tight md:text-6xl">{t("title")}</h1>
+        <p className="max-w-xl text-lg font-medium leading-snug text-white/60">{t("description")}</p>
+      </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         <ChoiceCard
           href={`/${locale}/routine/builder`}
+          icon={ClipboardList}
           title={t("manual.title")}
           description={t("manual.description")}
-          cta={t("manual.cta")}
-          primary
+          badge={t("manual.offline")}
         />
         <ChoiceCard
           href={`/${locale}/onboarding`}
+          icon={Sparkles}
           title={t("ai.title")}
           description={t("ai.description")}
-          cta={t("ai.cta")}
+          highlighted
         />
       </div>
     </div>
@@ -48,27 +49,46 @@ export function RoutineChoiceScreen({ locale, hasPending = false }: RoutineChoic
 
 function ChoiceCard({
   href,
+  icon: Icon,
   title,
   description,
-  cta,
-  primary = false,
+  badge,
+  highlighted = false,
 }: {
   href: string;
+  icon: LucideIcon;
   title: string;
   description: string;
-  cta: string;
-  primary?: boolean;
+  badge?: string;
+  highlighted?: boolean;
 }) {
   return (
-    <section className="apex-card flex flex-col rounded-[1.5rem] p-5 text-white">
-      <h3 className="text-xl font-black tracking-tight">{title}</h3>
-      <p className="mt-2 flex-1 text-sm leading-6 text-white/60">{description}</p>
-      <Link
-        href={href}
-        className={`${primary ? "apex-button" : "apex-button-outline"} mt-4 rounded-2xl py-3 text-center text-sm font-black`}
-      >
-        {cta}
-      </Link>
-    </section>
+    <Link
+      href={href}
+      className={`group flex min-h-[220px] flex-col gap-4 rounded-[2rem] text-white ${
+        highlighted
+          ? "border border-[#a6ff00]/55 bg-[#a6ff00]/[0.07] p-6"
+          : "border-t border-white/[0.13] pt-6"
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <span className="grid size-[60px] shrink-0 place-items-center rounded-full border-[1.5px] border-[#a6ff00]/55 bg-[#a6ff00]/10 text-[#a6ff00]">
+          <Icon aria-hidden="true" size={28} strokeWidth={1.5} />
+        </span>
+        <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#a6ff00] text-black transition group-hover:translate-x-0.5">
+          <ArrowRight aria-hidden="true" size={24} strokeWidth={2.2} />
+        </span>
+      </div>
+      <div className="flex flex-col gap-2">
+        <p className="text-[28px] font-black leading-tight tracking-tight">{title}</p>
+        <p className="text-base leading-6 text-white/60">{description}</p>
+      </div>
+      {badge ? (
+        <span className="mt-auto flex w-fit items-center gap-2 rounded-full border border-[#a6ff00]/40 px-3.5 py-2 text-sm font-semibold text-[#a6ff00]">
+          <WifiOff aria-hidden="true" size={18} strokeWidth={1.5} />
+          {badge}
+        </span>
+      ) : null}
+    </Link>
   );
 }

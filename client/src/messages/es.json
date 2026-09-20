@@ -293,6 +293,11 @@
       "loading": "Buscando tu rutina activa...",
       "error": "No pudimos cargar tu rutina. Intenta recargar la página.",
       "offlineFallback": "Estás viendo la última rutina guardada en este dispositivo."
+    },
+    "noRoutine": {
+      "title": "Aún no tienes una rutina activa",
+      "description": "Crea tu propia rutina o genera un plan mensual con IA.",
+      "cta": "Ver opciones"
     }
   },
   "OfflineMedia": {
@@ -362,16 +367,21 @@
   "Routine": {
     "title": "Rutina activa",
     "description": "Consulta tu plan mensual completo, semana por semana.",
+    "eyebrow": "Tu rutina",
+    "activeTitle": "Rutina activa",
+    "monthlyBadge": "Plan mensual {period}",
+    "manualBadge": "Rutina manual",
+    "editRoutine": "Editar rutina",
     "week": "Semana",
     "restDay": "Descanso",
     "exercises": "ejercicios",
-    "viewDay": "Ver detalle del día",
+    "today": "HOY",
+    "completedAria": "Completado",
     "nextRoutineReady": "🎯 ¡Tu nueva rutina para {month} está lista!",
     "viewRoutine": "Ver rutina",
     "states": {
       "loading": "Cargando tu rutina...",
       "error": "No pudimos cargar tu rutina. Intenta recargar la página.",
-      "empty": "Aún no tienes rutina activa. Apex Fit la generará automáticamente después del onboarding.",
       "offlineFallback": "Estás viendo la última rutina guardada en este dispositivo."
     }
   },
@@ -381,13 +391,12 @@
     "description": "Arma tu propia rutina eligiendo ejercicios, o deja que la IA diseñe un plan mensual personalizado.",
     "manual": {
       "title": "Crear mi rutina",
-      "description": "Elige ejercicios, define tus semanas y días. Funciona sin conexión.",
-      "cta": "Crear mi rutina"
+      "description": "Elige ejercicios, define semanas y días.",
+      "offline": "Funciona sin conexión"
     },
     "ai": {
       "title": "Generar con IA",
-      "description": "Responde unas preguntas y obtén un plan mensual basado en ciencia.",
-      "cta": "Generar con IA"
+      "description": "Responde unas preguntas y obtén un plan mensual basado en ciencia."
     },
     "pendingBanner": "Tu rutina se guardó en este dispositivo y se subirá cuando tengas conexión.",
     "change": {
