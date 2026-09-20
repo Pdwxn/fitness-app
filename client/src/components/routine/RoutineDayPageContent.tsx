@@ -62,10 +62,6 @@ type RoutineDayPageContentProps = {
       completedDay: string;
       dayNote: string;
       dayNotePlaceholder: string;
-      exerciseCompleted: string;
-      actualSets: string;
-      actualReps: string;
-      actualWeight: string;
       exerciseNote: string;
       exerciseNotePlaceholder: string;
       save: string;
