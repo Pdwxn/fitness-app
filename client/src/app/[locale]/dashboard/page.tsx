@@ -13,7 +13,7 @@ export default async function DashboardPage({
   const t = await getTranslations("Dashboard");
 
   return (
-    <AppShell locale={locale} title={t("title")} description={t("description")}>
+    <AppShell locale={locale} title={t("title")} description={t("description")} hideHeader>
       <DashboardContent
         locale={locale}
         labels={{
@@ -61,28 +61,10 @@ export default async function DashboardPage({
             startWorkout: t("activeRoutine.startWorkout"),
             exercises: t("activeRoutine.exercises"),
             title: t("activeRoutine.title"),
-            description: t("activeRoutine.description"),
-            cta: t("activeRoutine.cta"),
-            weeks: t("activeRoutine.weeks"),
-            activeDays: t("activeRoutine.activeDays"),
-            nextWorkout: t("activeRoutine.nextWorkout"),
-            restDay: t("activeRoutine.restDay"),
           },
-          weeklyPreview: {
-            title: t("weeklyPreview.title"),
-            week: t("weeklyPreview.week"),
-            restDay: t("weeklyPreview.restDay"),
-            exercises: t("weeklyPreview.exercises"),
-            selectedDay: {
-              title: t("weeklyPreview.selectedDay.title"),
-              restDay: t("weeklyPreview.selectedDay.restDay"),
-              sets: t("weeklyPreview.selectedDay.sets"),
-              reps: t("weeklyPreview.selectedDay.reps"),
-              rest: t("weeklyPreview.selectedDay.rest"),
-              weight: t("weeklyPreview.selectedDay.weight"),
-              seconds: t("weeklyPreview.selectedDay.seconds"),
-              empty: t("weeklyPreview.selectedDay.empty"),
-            },
+          todayPreview: {
+            title: t("todayPreview.title"),
+            viewRoutine: t("todayPreview.viewRoutine"),
           },
           routineStates: {
             loading: t("routineStates.loading"),

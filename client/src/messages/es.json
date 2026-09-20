@@ -281,31 +281,13 @@
       "startWorkout": "Comenzar entrenamiento →",
       "exercises": "ejercicios",
       "title": "Plan mensual",
-      "description": "Tu rutina personalizada ya está guardada. Revisa la semana, elige un día y prepara tu siguiente entrenamiento.",
-      "cta": "Ver rutina completa",
-      "weeks": "Semanas",
-      "activeDays": "Días activos",
-      "nextWorkout": "Próximo entrenamiento",
-      "restDay": "Descanso",
       "today": "Hoy",
       "tomorrow": "Mañana",
       "restToday": "Hoy es día de descanso. Tu próximo entrenamiento:"
     },
-    "weeklyPreview": {
-      "title": "Vista semanal",
-      "week": "Semana",
-      "restDay": "Descanso",
-      "exercises": "ejercicios",
-      "selectedDay": {
-        "title": "Ejercicios",
-        "restDay": "Día de descanso. Enfócate en recuperación, movilidad ligera y sueño.",
-        "sets": "series",
-        "reps": "reps",
-        "rest": "Descanso",
-        "weight": "Peso",
-        "seconds": "seg",
-        "empty": "Selecciona un día de entrenamiento para ver sus ejercicios."
-      }
+    "todayPreview": {
+      "title": "Primeros ejercicios",
+      "viewRoutine": "Ver rutina"
     },
     "routineStates": {
       "loading": "Buscando tu rutina activa...",
@@ -376,7 +358,7 @@
       "ready": "Tu coach preparó ajustes para tu rutina de {month}.",
       "review": "Revisar"
     }
-  },
+  },
   "Routine": {
     "title": "Rutina activa",
     "description": "Consulta tu plan mensual completo, semana por semana.",
@@ -437,10 +419,6 @@
     "removeExercise": "Quitar",
     "moveUp": "Subir",
     "moveDown": "Bajar",
-    "sets": "Series",
-    "reps": "Reps",
-    "rest": "Descanso (s)",
-    "weight": "Kg",
     "save": "Guardar rutina",
     "saveEdit": "Guardar cambios",
     "saving": "Guardando...",
@@ -477,16 +455,12 @@
     "title": "Detalle del día",
     "description": "Revisa ejercicios, series, repeticiones, pesos sugeridos e instrucciones.",
     "back": "Volver a rutina",
+    "weekAndDay": "Semana {week} · {weekday}",
+    "durationAndCount": "{count} ejercicios · ~{minutes} min",
+    "focus": "Enfoque: {muscles}",
+    "progress": "Progreso: {done} / {total} ejercicios",
     "restDay": "Día de descanso",
-    "sets": "series",
-    "reps": "reps",
-    "rest": "Descanso",
-    "weight": "Peso",
-    "seconds": "seg",
-    "variants": "Variantes",
     "tracker": {
-      "title": "Registrar progreso",
-      "description": "Marca lo que completaste hoy. Se guarda primero en este dispositivo y se sincroniza cuando haya conexión.",
       "completedDay": "Día completado",
       "dayNote": "Nota del día",
       "dayNotePlaceholder": "Ej: Me sentí fuerte, bajé intensidad por molestia en hombro...",
@@ -494,12 +468,9 @@
       "actualSets": "Series",
       "actualReps": "Reps",
       "actualWeight": "Kg",
-      "exerciseNote": "Nota",
-      "exerciseNotePlaceholder": "Opcional",
       "save": "Guardar progreso",
       "saving": "Guardando...",
       "savedLocal": "Guardado localmente. Se sincronizará cuando haya conexión.",
-      "synced": "Progreso guardado y sincronización intentada.",
       "setNumber": "Serie",
       "reps": "Reps",
       "kg": "Kg",
@@ -508,8 +479,23 @@
       "kgAria": "Peso de la serie {number} de {exercise}",
       "doneAria": "Serie {number} de {exercise} completada",
       "addSet": "+ Serie",
-      "removeSet": "− Serie",
-      "exerciseDone": "Ejercicio completo"
+      "removeSet": "− Serie"
+    },
+    "restDayCard": {
+      "title": "Día de descanso",
+      "subtitle": "Sin ejercicios programados.",
+      "notePlaceholder": "¿Cómo te sentiste hoy?"
+    },
+    "sheet": {
+      "close": "Cerrar",
+      "closeBackdrop": "Cerrar hoja",
+      "exerciseDone": "Ejercicio completo",
+      "noteLabel": "Nota del ejercicio",
+      "notePlaceholder": "Agregar nota del ejercicio",
+      "variants": "Variantes",
+      "nextExercise": "Siguiente ejercicio",
+      "backToList": "Volver a la lista",
+      "rowAriaLabel": "{name}, {done} de {total} series"
     },
     "states": {
       "loading": "Cargando día de rutina...",

@@ -281,31 +281,13 @@
       "startWorkout": "Start workout →",
       "exercises": "exercises",
       "title": "Monthly plan",
-      "description": "Your personalized routine is saved. Review the week, pick a day, and prepare your next workout.",
-      "cta": "View full routine",
-      "weeks": "Weeks",
-      "activeDays": "Active days",
-      "nextWorkout": "Next workout",
-      "restDay": "Rest",
       "today": "Today",
       "tomorrow": "Tomorrow",
       "restToday": "Today is a rest day. Your next workout:"
     },
-    "weeklyPreview": {
-      "title": "Weekly view",
-      "week": "Week",
-      "restDay": "Rest",
-      "exercises": "exercises",
-      "selectedDay": {
-        "title": "Exercises",
-        "restDay": "Rest day. Focus on recovery, light mobility, and sleep.",
-        "sets": "sets",
-        "reps": "reps",
-        "rest": "Rest",
-        "weight": "Weight",
-        "seconds": "sec",
-        "empty": "Select a training day to see its exercises."
-      }
+    "todayPreview": {
+      "title": "First exercises",
+      "viewRoutine": "View routine"
     },
     "routineStates": {
       "loading": "Looking for your active routine...",
@@ -376,7 +358,7 @@
       "ready": "Your coach prepared adjustments for your {month} routine.",
       "review": "Review"
     }
-  },
+  },
   "Routine": {
     "title": "Active routine",
     "description": "Review your full monthly plan, week by week.",
@@ -437,10 +419,6 @@
     "removeExercise": "Remove",
     "moveUp": "Move up",
     "moveDown": "Move down",
-    "sets": "Sets",
-    "reps": "Reps",
-    "rest": "Rest (s)",
-    "weight": "Kg",
     "save": "Save routine",
     "saveEdit": "Save changes",
     "saving": "Saving...",
@@ -477,16 +455,12 @@
     "title": "Day details",
     "description": "Review exercises, sets, reps, suggested weights, and instructions.",
     "back": "Back to routine",
+    "weekAndDay": "Week {week} · {weekday}",
+    "durationAndCount": "{count} exercises · ~{minutes} min",
+    "focus": "Focus: {muscles}",
+    "progress": "Progress: {done} / {total} exercises",
     "restDay": "Rest day",
-    "sets": "sets",
-    "reps": "reps",
-    "rest": "Rest",
-    "weight": "Weight",
-    "seconds": "sec",
-    "variants": "Variants",
     "tracker": {
-      "title": "Log progress",
-      "description": "Mark what you completed today. It saves on this device first and syncs when online.",
       "completedDay": "Day completed",
       "dayNote": "Day note",
       "dayNotePlaceholder": "Example: Felt strong, reduced intensity due to shoulder discomfort...",
@@ -494,12 +468,9 @@
       "actualSets": "Sets",
       "actualReps": "Reps",
       "actualWeight": "Kg",
-      "exerciseNote": "Note",
-      "exerciseNotePlaceholder": "Optional",
       "save": "Save progress",
       "saving": "Saving...",
       "savedLocal": "Saved locally. It will sync when connection is available.",
-      "synced": "Progress saved and sync attempted.",
       "setNumber": "Set",
       "reps": "Reps",
       "kg": "Kg",
@@ -508,8 +479,23 @@
       "kgAria": "Weight for set {number} of {exercise}",
       "doneAria": "Set {number} of {exercise} completed",
       "addSet": "+ Set",
-      "removeSet": "− Set",
-      "exerciseDone": "Exercise complete"
+      "removeSet": "− Set"
+    },
+    "restDayCard": {
+      "title": "Rest day",
+      "subtitle": "No exercises scheduled.",
+      "notePlaceholder": "How did you feel today?"
+    },
+    "sheet": {
+      "close": "Close",
+      "closeBackdrop": "Close sheet",
+      "exerciseDone": "Exercise complete",
+      "noteLabel": "Exercise note",
+      "notePlaceholder": "Add a note for this exercise",
+      "variants": "Variants",
+      "nextExercise": "Next exercise",
+      "backToList": "Back to list",
+      "rowAriaLabel": "{name}, {done} of {total} sets"
     },
     "states": {
       "loading": "Loading routine day...",

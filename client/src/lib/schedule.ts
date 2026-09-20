@@ -41,6 +41,17 @@ function isoWeekday(date: Date): number {
   return ((date.getDay() + 6) % 7) + 1;
 }
 
+// A known Monday, used only to turn a day_number (1-7) into a weekday name --
+// never compared against real dates.
+const REFERENCE_MONDAY = new Date(2024, 0, 1);
+
+/** The weekday name for a `day_number` (1-7, Monday-Sunday), independent of any real date. */
+export function weekdayNameForDayNumber(dayNumber: number, locale: string): string {
+  const date = addDays(REFERENCE_MONDAY, dayNumber - 1);
+  const name = new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date);
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
 function mondayNumber(date: Date): number {
   return dayNumber(date) - (isoWeekday(date) - 1);
 }

@@ -1,26 +1,15 @@
 import { getTranslations } from "next-intl/server";
 
 import { LogoutButton } from "@/components/auth/LogoutButton";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type PrivateHeaderProps = {
   title: string;
   description: string;
+  userLabel: string;
 };
 
-export async function PrivateHeader({ title, description }: PrivateHeaderProps) {
+export async function PrivateHeader({ title, description, userLabel }: PrivateHeaderProps) {
   const t = await getTranslations("PrivateLayout");
-  let userLabel = t("anonymous");
-
-  try {
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    userLabel = user?.email ?? user?.id ?? userLabel;
-  } catch {
-    userLabel = t("sessionUnavailable");
-  }
 
   return (
     <header className="apex-card relative overflow-hidden rounded-[2rem] p-6 text-white">

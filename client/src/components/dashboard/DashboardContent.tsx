@@ -15,7 +15,7 @@ import { ChangeRoutineButton } from "@/components/routine/ChangeRoutineButton";
 import { RoutineChoiceScreen } from "@/components/routine/RoutineChoiceScreen";
 import { ActiveRoutineCard } from "./ActiveRoutineCard";
 import { StatsPreview } from "./StatsPreview";
-import { WeeklyRoutinePreview } from "./WeeklyRoutinePreview";
+import { TodayExercisePreview } from "./TodayExercisePreview";
 
 function getGreeting(greeting: { morning: string; afternoon: string; evening: string }): string {
   const hour = new Date().getHours();
@@ -62,33 +62,15 @@ type DashboardContentProps = {
     athlete: string;
     dayStreak: string;
     activeRoutine: {
-      eyebrow: string;
       upNext: string;
       startWorkout: string;
       exercises: string;
       title: string;
-      description: string;
-      cta: string;
-      weeks: string;
-      activeDays: string;
-      nextWorkout: string;
-      restDay: string;
+      eyebrow: string;
     };
-    weeklyPreview: {
+    todayPreview: {
       title: string;
-      week: string;
-      restDay: string;
-      exercises: string;
-      selectedDay: {
-        title: string;
-        restDay: string;
-        sets: string;
-        reps: string;
-        rest: string;
-        weight: string;
-        seconds: string;
-        empty: string;
-      };
+      viewRoutine: string;
     };
     routineStates: {
       loading: string;
@@ -150,12 +132,16 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
 
   return (
     <div className="flex flex-col gap-5">
-      <section className="relative overflow-hidden rounded-[2rem] p-1">
-        <div className="pointer-events-none absolute right-0 top-0 size-44 rounded-full bg-[#a6ff00]/20 blur-3xl" />
-        <p className="text-xl text-white/70">{getGreeting(labels.greeting)},</p>
-        <h2 className="mt-1 text-6xl font-black tracking-tight text-[#a6ff00]">{labels.athlete} 👋</h2>
-        <p className="mt-3 text-lg font-bold text-white/65">🔥 {Math.max(1, completedDays)} {labels.dayStreak}</p>
-      </section>
+      <div className="flex items-baseline justify-between gap-3">
+        <div>
+          <p className="text-base text-white/60">
+            {getGreeting(labels.greeting)}, <span className="font-black text-white">{labels.athlete}</span>
+          </p>
+          <p className="mt-1 text-sm font-bold text-white/50">
+            🔥 {Math.max(1, completedDays)} {labels.dayStreak}
+          </p>
+        </div>
+      </div>
 
       {isOfflineFallback ? (
         <section className="rounded-[2rem] border border-amber-300/30 bg-amber-400/10 p-4 shadow-sm">
@@ -199,10 +185,11 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
             dayHref={(dayId) => `/${locale}/routine/${dayId}`}
             labels={labels.activeRoutine}
           />
-          <WeeklyRoutinePreview
+          <TodayExercisePreview
             routine={routine}
             dayHref={(dayId) => `/${locale}/routine/${dayId}`}
-            labels={labels.weeklyPreview}
+            routineHref={`/${locale}/routine`}
+            labels={labels.todayPreview}
           />
         </>
       ) : null}
