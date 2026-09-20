@@ -59,6 +59,12 @@ class Routine(models.Model):
     year = models.PositiveSmallIntegerField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     generated_at = models.DateTimeField(null=True, blank=True)
+    # Start of the current training cycle. NULL = since creation. The AI coach
+    # re-uses an AI routine for the next period (approved *or* rejected
+    # proposal), so progress counting -- "is this routine completed?", "enough
+    # history for the coach?" -- must only look at logs from this date on,
+    # or a finished routine would look finished forever.
+    cycle_started_on = models.DateField(null=True, blank=True)
     gemini_prompt_hash = models.CharField(max_length=128, blank=True)
     raw_gemini_response = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -199,3 +205,52 @@ class RoutineExercise(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class RoutineEditProposal(models.Model):
+    """A set of changes the AI coach proposes for an existing AI routine.
+
+    Never applied without explicit approval. ``changes`` holds the validated,
+    normalized list (see ``services/coach_validator.py``), never raw model
+    output.
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    routine = models.ForeignKey(
+        Routine,
+        on_delete=models.CASCADE,
+        related_name="proposals",
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True,
+    )
+    # The period this proposal is *for*; approving/rejecting relabels the
+    # routine with it so the monthly cycle counts as satisfied.
+    target_month = models.PositiveSmallIntegerField()
+    target_year = models.PositiveSmallIntegerField()
+    summary = models.TextField(blank=True)
+    changes = models.JSONField(default=list)
+    raw_gemini_response = models.JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    decided_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+        constraints = (
+            models.UniqueConstraint(
+                fields=("routine",),
+                condition=models.Q(status="pending"),
+                name="unique_pending_proposal_per_routine",
+            ),
+        )
+
+    def __str__(self):
+        return f"Proposal {self.status} for {self.routine_id}"

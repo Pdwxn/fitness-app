@@ -12,7 +12,7 @@ def backfill_source_external_id(apps, schema_editor):
     from apps.routines.services.exercisedb_service import enrich_routine
 
     backfilled = 0
-    for routine in Routine.all_objects.all():
+    for routine in Routine.all_objects.only("id"):  # only(id): later columns do not exist yet at this point in history
         backfilled += enrich_routine(routine)
 
     if backfilled:

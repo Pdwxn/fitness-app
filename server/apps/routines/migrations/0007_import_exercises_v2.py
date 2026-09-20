@@ -37,7 +37,7 @@ def enrich_existing_routines(apps, schema_editor):
     from apps.routines.services.exercisedb_service import enrich_routine
 
     total_exercises = 0
-    for routine in Routine.all_objects.all():
+    for routine in Routine.all_objects.only("id"):  # only(id): later columns do not exist yet at this point in history
         enriched = enrich_routine(routine)
         total_exercises += enriched
 

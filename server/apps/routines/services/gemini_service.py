@@ -254,10 +254,42 @@ def generate_routine_with_gemini(user, previous_month_notes=None):
         raise GeminiGenerationError(str(exc)) from exc
 
 
-def parse_gemini_routine_response(raw_response):
-    if isinstance(raw_response, dict):
-        return validate_routine_payload(raw_response)
+def generate_json_with_gemini(prompt, *, temperature=0.3, max_output_tokens=8192):
+    """Runs an arbitrary prompt expecting a JSON object back (used by the AI coach).
 
+    Same configuration and error mapping as ``generate_routine_with_gemini``;
+    kept separate so the routine-generation path stays untouched.
+    """
+    if not settings.GEMINI_API_KEY:
+        raise GeminiConfigurationError()
+
+    try:
+        import google.generativeai as genai
+    except ImportError as exc:
+        raise GeminiConfigurationError("Gemini package is not installed.") from exc
+
+    try:
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        model = genai.GenerativeModel(settings.GEMINI_MODEL)
+        response = model.generate_content(
+            prompt,
+            generation_config={
+                "temperature": temperature,
+                "max_output_tokens": max_output_tokens,
+                "response_mime_type": "application/json",
+            },
+            request_options={"timeout": 60000},
+        )
+        return response.text
+    except Exception as exc:
+        message = str(exc)
+        if "quota" in message.lower() or "429" in message:
+            raise GeminiQuotaError() from exc
+        raise GeminiGenerationError(str(exc)) from exc
+
+
+def extract_json_payload(raw_response):
+    """Tolerantly extracts the JSON object from a raw Gemini text response."""
     if not isinstance(raw_response, str) or not raw_response.strip():
         raise GeminiResponseError("Gemini returned an empty response.")
 
@@ -275,13 +307,20 @@ def parse_gemini_routine_response(raw_response):
         raise GeminiResponseError("Gemini response does not contain a JSON object.")
 
     try:
-        payload = json.loads(raw[start : end + 1])
+        return json.loads(raw[start : end + 1])
     except json.JSONDecodeError as exc:
         if "Unterminated string" in str(exc) or end == len(raw) - 1:
             raise GeminiResponseError(
                 "Gemini response was truncated before valid JSON completed."
             ) from exc
         raise GeminiResponseError("Gemini response is not valid JSON.") from exc
+
+
+def parse_gemini_routine_response(raw_response):
+    if isinstance(raw_response, dict):
+        return validate_routine_payload(raw_response)
+
+    payload = extract_json_payload(raw_response)
 
     try:
         return validate_routine_payload(payload)

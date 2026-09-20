@@ -2,12 +2,15 @@ from django.urls import path
 
 from .views import (
     ActiveRoutineDayView,
+    ApproveProposalView,
     ActiveRoutineView,
     ActiveRoutineWeekView,
     DevSeedRoutineView,
     GenerateRoutineView,
     ManualRoutineDetailView,
     ManualRoutineView,
+    PendingProposalView,
+    RejectProposalView,
     RoutineDeactivateView,
 )
 
@@ -25,6 +28,17 @@ urlpatterns = [
         "active/day/<uuid:day_id>/",
         ActiveRoutineDayView.as_view(),
         name="active-routine-day",
+    ),
+    path("proposals/pending/", PendingProposalView.as_view(), name="proposal-pending"),
+    path(
+        "proposals/<uuid:proposal_id>/approve/",
+        ApproveProposalView.as_view(),
+        name="proposal-approve",
+    ),
+    path(
+        "proposals/<uuid:proposal_id>/reject/",
+        RejectProposalView.as_view(),
+        name="proposal-reject",
     ),
     path(
         "<uuid:routine_id>/deactivate/",

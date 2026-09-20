@@ -113,17 +113,10 @@ def generate_monthly_routine_if_needed(
 
 
 def is_routine_completed(user, routine):
-    from apps.progress.models import DailyLog
+    from .coach_service import cycle_progress
 
-    total_training_days = RoutineDay.objects.filter(
-        week__routine=routine, is_rest_day=False
-    ).count()
-
-    completed_day_ids = DailyLog.objects.filter(
-        user=user, routine_day__week__routine=routine, completed=True
-    ).values_list("routine_day_id", flat=True).distinct()
-
-    return total_training_days > 0 and completed_day_ids.count() >= total_training_days
+    completed, total = cycle_progress(user, routine)
+    return total > 0 and completed >= total
 
 
 def get_routine_daily_notes(user, routine):
