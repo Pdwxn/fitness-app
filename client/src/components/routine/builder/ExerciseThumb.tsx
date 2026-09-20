@@ -21,7 +21,7 @@ export function ExerciseThumb({ src, gifSrc, name }: ExerciseThumbProps) {
 
   if (!resolved || failed) {
     return (
-      <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-white/10 text-sm font-black text-white/60">
+      <span className="grid size-16 shrink-0 place-items-center rounded-2xl border border-white/[0.13] bg-gradient-to-br from-white/[0.08] to-transparent text-lg font-black text-white/40">
         {name.trim().charAt(0).toUpperCase() || "?"}
       </span>
     );
@@ -35,7 +35,7 @@ export function ExerciseThumb({ src, gifSrc, name }: ExerciseThumbProps) {
       loading="lazy"
       decoding="async"
       onError={() => setFailed(true)}
-      className="size-11 shrink-0 rounded-lg bg-white/5 object-cover"
+      className="size-16 shrink-0 rounded-2xl border border-white/[0.13] bg-white/5 object-cover"
     />
   );
 }

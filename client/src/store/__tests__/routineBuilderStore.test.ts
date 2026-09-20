@@ -150,12 +150,19 @@ describe("routineBuilderStore", () => {
     expect(store().draft.weeks[0].days).toHaveLength(1);
   });
 
-  it("toggleRestDay clears exercises", () => {
+  it("toggleRestDay clears exercises and fills in a name if the day doesn't have one", () => {
     store().addExercise(0, 0, catalogExercise);
-    store().toggleRestDay(0, 0);
+    store().toggleRestDay(0, 0, "Rest");
     const day = store().draft.weeks[0].days[0];
     expect(day.is_rest_day).toBe(true);
     expect(day.exercises).toHaveLength(0);
+    expect(day.day_name).toBe("Rest");
+  });
+
+  it("toggleRestDay keeps an existing name", () => {
+    store().setDayName(0, 0, "Active recovery");
+    store().toggleRestDay(0, 0, "Rest");
+    expect(store().draft.weeks[0].days[0].day_name).toBe("Active recovery");
   });
 
   it("reset restores the initial draft", () => {
@@ -170,7 +177,7 @@ describe("routineBuilderStore", () => {
 describe("validateDraft", () => {
   it("flags a week with no training day", () => {
     store().setDayName(0, 0, "Push");
-    store().toggleRestDay(0, 0);
+    store().toggleRestDay(0, 0, "Rest");
     const errors = validateDraft(store().draft);
     expect(errors.some((e) => e.code === "no_training_day")).toBe(true);
   });
