@@ -247,6 +247,7 @@
       },
       "schedule": {
         "minutes": "{count} min",
+        "daysUnit": "días",
         "daysLabel": "¿Cuántos días por semana puedes entrenar?",
         "durationLabel": "¿Cuánto tiempo por sesión?",
         "routineLabel": "Tipo de rutina",
@@ -622,64 +623,76 @@
   },
   "Profile": {
     "title": "Perfil",
-    "description": "Gestiona tus datos personales, idioma, unidades y preferencias de entrenamiento.",
-    "personal": {
-      "eyebrow": "Datos personales",
-      "title": "Tu información base",
-      "description": "Estos datos alimentan las recomendaciones y se guardan en formato métrico internamente."
+    "description": "Gestiona tus datos, ajustes y preferencias de entrenamiento.",
+    "tiles": {
+      "streak": "Racha",
+      "workouts": "Entrenamientos completados",
+      "exercises": "Ejercicios completados"
     },
-    "fitness": {
-      "eyebrow": "Fitness",
-      "title": "Preferencias de entrenamiento",
-      "description": "Actualiza objetivos, equipo y limitaciones para mantener tu perfil preparado para futuras rutinas.",
-      "activity": "Nivel de actividad",
-      "goals": "Objetivos físicos",
-      "equipment": "Tipo de equipo",
-      "homeEquipment": "Equipo disponible en casa",
-      "routine": "Tipo de rutina",
-      "injuries": "Lesiones o molestias"
-    },
-    "routine": {
-      "eyebrow": "Rutina mensual",
-      "activeTitle": "Tienes una rutina activa este mes",
-      "activeDescription": "El perfil puede cambiar sin borrar tu rutina actual. Las futuras generaciones mensuales usarán tus datos actualizados.",
-      "outdatedTitle": "Tu rutina activa no corresponde al mes actual",
-      "outdatedDescription": "La app conserva tu última rutina activa mientras el ciclo mensual prepara una nueva automáticamente.",
-      "emptyTitle": "No hay rutina activa guardada",
-      "emptyDescription": "Si ya completaste onboarding, la generación automática pudo fallar o quedar pendiente. No hay botón manual en el dashboard.",
-      "month": "Mes",
-      "status": "Estado",
-      "weeks": "Semanas",
-      "lastSync": "Último sync",
-      "active": "Activa",
-      "outdated": "Mes anterior",
-      "missing": "Pendiente",
-      "notAvailable": "No disponible",
-      "never": "Nunca"
+    "plan": {
+      "title": "Plan actual",
+      "manual": "Rutina manual",
+      "monthly": "Plan mensual {period}",
+      "cycle": "Avance del ciclo",
+      "week": "Semana {current} de {total}",
+      "view": "Ver rutina",
+      "none": "Aún no tienes una rutina activa.",
+      "choose": "Elegir una rutina"
     },
     "settings": {
-      "eyebrow": "Settings",
-      "title": "Preferencias locales",
-      "description": "Idioma, unidades y estado offline. Por ahora se apoyan en perfil y cache local.",
+      "title": "Ajustes",
       "language": "Idioma",
       "units": "Unidades",
-      "syncStatus": "Estado offline",
-      "pendingSync": "Pendientes de sync",
-      "onlineCache": "Cache al día",
-      "offlineFallback": "Modo offline",
-      "saveHint": "Los cambios de idioma y unidades se guardan con el botón de datos personales."
+      "languageOptions": { "es": "Español", "en": "English" },
+      "unitOptions": { "metric": "Métrico", "imperial": "Imperial" }
+    },
+    "base": { "title": "Información base" },
+    "prefs": {
+      "title": "Preferencias de entrenamiento",
+      "level": "Nivel",
+      "style": "Estilo",
+      "intensity": "Intensidad",
+      "days": "Días de entrenamiento",
+      "duration": "Duración",
+      "equipment": "Equipo",
+      "homeEquipment": "Equipo disponible en casa",
+      "goals": "Objetivos",
+      "specificGoal": "Meta específica",
+      "routine": "Tipo de rutina",
+      "injuries": "Lesiones",
+      "noInjuries": "Sin lesiones registradas",
+      "injuryCount": "{count, plural, one {# lesión registrada} other {# lesiones registradas}}"
+    },
+    "notifications": {
+      "title": "Notificaciones",
+      "reminders": "Recordatorios",
+      "enabled": "Activados",
+      "disabled": "Desactivados",
+      "blocked": "Bloqueados en el navegador",
+      "blockedHelp": "Las notificaciones están bloqueadas en este navegador. Permítelas en los ajustes del sitio para activar los recordatorios.",
+      "unavailable": "No disponibles todavía",
+      "unavailableHelp": "Este navegador no permite recordatorios.",
+      "description": "Activa los avisos para no saltarte entrenamientos.",
+      "iosHelp": "En iPhone tienes que instalar la app: toca Compartir y elige “Añadir a pantalla de inicio”. Después podrás activar los recordatorios."
+    },
+    "sync": {
+      "title": "Sincronización",
+      "last": "Última sincronización",
+      "pending": "Pendientes",
+      "noPending": "Sin pendientes",
+      "never": "Nunca"
     },
     "actions": {
-      "savePersonal": "Guardar datos personales",
-      "saveFitness": "Guardar datos fitness",
-      "saving": "Guardando..."
+      "save": "Guardar",
+      "saving": "Guardando...",
+      "logout": "Cerrar sesión",
+      "loggingOut": "Cerrando..."
     },
     "states": {
       "loading": "Cargando perfil...",
       "loadError": "No pudimos cargar tu perfil. Intenta recargar la página.",
       "saveError": "No pudimos guardar los cambios.",
-      "savedProfile": "Datos personales guardados.",
-      "savedHealth": "Datos fitness guardados."
+      "saved": "Cambios guardados."
     }
   }
 }

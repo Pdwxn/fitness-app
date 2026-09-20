@@ -1,46 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { AlertCircle, CheckCircle2, ChevronRight, Loader2 } from "lucide-react";
 
-import { NumberField, SelectField, TextField } from "@/components/ui/FormFields";
-import {
-  ACTIVITY_LEVELS,
-  EQUIPMENT_TYPES,
-  GENDER_OPTIONS,
-  HOME_EQUIPMENT,
-  PHYSICAL_GOALS,
-  ROUTINE_TYPES,
-} from "@/lib/constants";
-import { useRoutineCache } from "@/hooks/useRoutineCache";
-import { routinePeriodLabel } from "@/types/routine";
+import { LogoutButton } from "@/components/auth/LogoutButton";
+import { OptionChip, StepSection, TextField } from "@/components/onboarding/OnboardingUi";
 import { PushOptIn } from "@/components/notifications/PushOptIn";
 import { OfflineMediaStatus } from "@/components/profile/OfflineMediaStatus";
+import { useDailyLogs } from "@/hooks/useDailyLogs";
+import { useProgressStats } from "@/hooks/useProgressStats";
+import { useRoutineCache } from "@/hooks/useRoutineCache";
 import { ApiError, authenticatedClientFetch } from "@/lib/api/authenticated-client";
+import {
+  DAYS_PER_WEEK,
+  EQUIPMENT_TYPES,
+  EXPERIENCE_LEVELS,
+  GENDER_OPTIONS,
+  HOME_EQUIPMENT,
+  INTENSITY_PREFERENCES,
+  PHYSICAL_GOALS,
+  ROUTINE_TYPES,
+  SESSION_DURATIONS,
+  TRAINING_STYLES,
+} from "@/lib/constants";
 import { db } from "@/lib/db";
+import { getScheduledDay } from "@/lib/schedule";
 import { getFromStorage, setInStorage, STORAGE_KEYS } from "@/lib/storage";
-import type {
-  ActivityLevel,
-  EquipmentType,
-  Gender,
-  HomeEquipment,
-  OnboardingHealth,
-  OnboardingProfile,
-  PhysicalGoal,
-  RoutineType,
-  UnitSystem,
-} from "@/types/onboarding";
+import { computeStreak } from "@/lib/streak";
+import { routinePeriodLabel } from "@/types/routine";
+import type { OnboardingHealth, OnboardingProfile, UnitSystem } from "@/types/onboarding";
 
 type ProfileResponse = OnboardingProfile & { id: string; created_at: string; updated_at: string };
 type HealthResponse = OnboardingHealth & { id: string; created_at: string; updated_at: string };
 type SettingsCache = { preferred_language: "es" | "en"; preferred_units: UnitSystem };
-
-const genders: Gender[] = [...GENDER_OPTIONS];
-const activityLevels: ActivityLevel[] = [...ACTIVITY_LEVELS];
-const goals: PhysicalGoal[] = [...PHYSICAL_GOALS];
-const equipmentTypes: EquipmentType[] = [...EQUIPMENT_TYPES];
-const homeEquipment: HomeEquipment[] = [...HOME_EQUIPMENT];
-const routineTypes: RoutineType[] = [...ROUTINE_TYPES];
 
 const emptyProfile = (locale: string): OnboardingProfile => ({
   full_name: "",
@@ -69,17 +63,26 @@ const emptyHealth: OnboardingHealth = {
   session_duration_minutes: null,
 };
 
+function numberOrNull(raw: string): number | null {
+  const value = Number(raw);
+  return raw.trim() === "" || !Number.isFinite(value) ? null : value;
+}
+
 export function ProfileContent({ locale }: { locale: string }) {
   const t = useTranslations("Profile");
   const onboarding = useTranslations("Onboarding.form");
   const [profile, setProfile] = useState<OnboardingProfile>(emptyProfile(locale));
   const [health, setHealth] = useState<OnboardingHealth>(emptyHealth);
   const [isLoading, setIsLoading] = useState(true);
-  const [savingSection, setSavingSection] = useState<"profile" | "health" | null>(null);
+  const [profileDirty, setProfileDirty] = useState(false);
+  const [healthDirty, setHealthDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
-  const { routine, isOfflineFallback } = useRoutineCache();
+  const { routine, lastSync } = useRoutineCache();
+  const { stats } = useProgressStats();
+  const { logs } = useDailyLogs();
 
   useEffect(() => {
     let cancelled = false;
@@ -122,192 +125,478 @@ export function ProfileContent({ locale }: { locale: string }) {
 
   function updateProfile(value: Partial<OnboardingProfile>) {
     setProfile((current) => ({ ...current, ...value }));
+    setProfileDirty(true);
     setMessage(null);
     setError(null);
   }
 
   function updateHealth(value: Partial<OnboardingHealth>) {
     setHealth((current) => ({ ...current, ...value }));
+    setHealthDirty(true);
     setMessage(null);
     setError(null);
   }
 
-  async function saveProfile() {
-    setSavingSection("profile");
-    setMessage(null);
-    setError(null);
-    try {
-      const response = await authenticatedClientFetch<ProfileResponse>("/api/v1/profile/", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profile),
-      });
-      setProfile(response);
-      setInStorage(STORAGE_KEYS.PROFILE, response);
-      setInStorage(STORAGE_KEYS.SETTINGS, {
-        preferred_language: response.preferred_language,
-        preferred_units: response.preferred_units,
-      });
-      setMessage(t("states.savedProfile"));
-    } catch (saveError) {
-      setError(saveError instanceof ApiError ? saveError.detail : t("states.saveError"));
-    } finally {
-      setSavingSection(null);
-    }
-  }
-
-  async function saveHealth() {
-    setSavingSection("health");
+  async function save() {
+    setSaving(true);
     setMessage(null);
     setError(null);
     try {
-      const payload = {
-        ...health,
-        available_equipment: health.equipment_type === "home" ? health.available_equipment : [],
-      };
-      const response = await authenticatedClientFetch<HealthResponse>("/api/v1/profile/health/", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      setHealth(response);
-      setInStorage(STORAGE_KEYS.HEALTH_PROFILE, response);
-      setInStorage(STORAGE_KEYS.ONBOARDING_STATUS, { completed: true });
-      setMessage(t("states.savedHealth"));
+      if (profileDirty) {
+        const response = await authenticatedClientFetch<ProfileResponse>("/api/v1/profile/", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(profile),
+        });
+        setProfile(response);
+        setInStorage(STORAGE_KEYS.PROFILE, response);
+        setInStorage(STORAGE_KEYS.SETTINGS, {
+          preferred_language: response.preferred_language,
+          preferred_units: response.preferred_units,
+        });
+        setProfileDirty(false);
+      }
+      if (healthDirty) {
+        const payload = {
+          ...health,
+          available_equipment: health.equipment_type === "home" ? health.available_equipment : [],
+        };
+        const response = await authenticatedClientFetch<HealthResponse>("/api/v1/profile/health/", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        setHealth(response);
+        setInStorage(STORAGE_KEYS.HEALTH_PROFILE, response);
+        setInStorage(STORAGE_KEYS.ONBOARDING_STATUS, { completed: true });
+        setHealthDirty(false);
+      }
+      setMessage(t("states.saved"));
     } catch (saveError) {
       setError(saveError instanceof ApiError ? saveError.detail : t("states.saveError"));
     } finally {
-      setSavingSection(null);
+      setSaving(false);
     }
   }
 
-  function toggleGoal(goal: PhysicalGoal) {
-    updateHealth({
-      physical_goals: health.physical_goals.includes(goal)
-        ? health.physical_goals.filter((item) => item !== goal)
-        : [...health.physical_goals, goal],
-    });
+  function toggle<T extends string>(list: T[], item: T): T[] {
+    return list.includes(item) ? list.filter((value) => value !== item) : [...list, item];
   }
 
-  function toggleEquipment(item: HomeEquipment) {
-    updateHealth({
-      available_equipment: health.available_equipment.includes(item)
-        ? health.available_equipment.filter((value) => value !== item)
-        : [...health.available_equipment, item],
-    });
+  const streak = useMemo(() => computeStreak(logs, routine), [logs, routine]);
+  const cycle = useMemo(() => {
+    if (!routine) return null;
+    const scheduled = getScheduledDay(routine, new Date());
+    if (!scheduled) return null;
+    const total = routine.weeks.length;
+    const index = Math.max(0, routine.weeks.findIndex((week) => week.id === scheduled.week.id));
+    const weekday = ((new Date().getDay() + 6) % 7) + 1;
+    return { current: index + 1, total, percent: Math.round(((index + (weekday - 1) / 7) / total) * 100) };
+  }, [routine]);
+
+  if (isLoading) {
+    return (
+      <p role="status" className="flex items-center gap-3 text-base font-bold text-white/70">
+        <Loader2 aria-hidden="true" size={22} className="animate-spin" />
+        {t("states.loading")}
+      </p>
+    );
   }
 
-  if (isLoading) return <StateCard title={t("states.loading")} />;
-
-  const initials = (profile.full_name || "Apex Athlete")
+  const name = profile.full_name || "Apex";
+  const initials = name
     .split(" ")
     .map((part) => part[0])
     .slice(0, 2)
     .join("")
     .toUpperCase();
+  const dirty = profileDirty || healthDirty;
+  const injuries = health.injuries.length;
 
   return (
-    <div className="flex flex-col gap-5 text-white">
-      {message ? <p className="rounded-2xl border border-[#a6ff00]/30 bg-[#a6ff00]/10 px-4 py-3 text-sm font-bold text-[#d7ff8a]">{message}</p> : null}
-      {error ? <p className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-bold text-red-200">{error}</p> : null}
-
-      <section className="apex-card relative overflow-hidden rounded-[2rem] p-6">
-        <div className="pointer-events-none absolute -right-8 -top-10 size-48 rounded-full bg-[#a6ff00]/20 blur-3xl" />
-        <div className="relative flex items-center gap-4">
-          <div className="grid size-20 shrink-0 place-items-center rounded-full border border-[#a6ff00]/50 bg-[#a6ff00]/15 text-2xl font-black text-[#a6ff00]">
-            {initials}
-          </div>
-          <div>
-            <p className="text-sm font-black uppercase tracking-[0.26em] text-[#a6ff00]">Apex Profile</p>
-            <h2 className="mt-1 text-3xl font-black">{profile.full_name || "Apex Athlete"}</h2>
-            <p className="mt-1 text-sm text-white/55">{profile.preferred_language === "en" ? "English" : "Español"} · {profile.preferred_units === "metric" ? "kg / cm" : "lb / ft"}</p>
+    <div className="flex flex-col gap-6 text-white">
+      <div className="flex items-center gap-4">
+        <div className="grid size-[76px] shrink-0 place-items-center rounded-full border-[1.5px] border-[#a6ff00] text-[28px] font-extrabold text-[#a6ff00]">
+          {initials}
+        </div>
+        <div className="min-w-0">
+          <h1 className="truncate text-[32px] font-black leading-tight tracking-tight">{name}</h1>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {health.experience_level ? (
+              <span className="rounded-full border border-[#a6ff00]/55 bg-[#a6ff00]/[0.08] px-3 py-1 text-sm font-bold text-[#a6ff00]">
+                {onboarding(`fitness.experience.${health.experience_level}.label`)}
+              </span>
+            ) : null}
+            {health.days_per_week ? (
+              <span className="rounded-full border border-white/[0.22] px-3 py-1 text-sm font-bold">
+                {health.days_per_week} {onboarding("schedule.daysUnit")}
+              </span>
+            ) : null}
           </div>
         </div>
-      </section>
+      </div>
 
-      <section className="grid gap-3 md:grid-cols-3">
-        <InfoTile
-          label={t("routine.eyebrow")}
-          value={
-            routine
-              ? (routinePeriodLabel(routine) ?? t("routine.notAvailable"))
-              : t("routine.missing")
-          }
+      <dl className="grid grid-cols-3 gap-2 border-t border-white/[0.13] pt-5">
+        <Tile label={t("tiles.streak")} value={streak} accent />
+        <Tile label={t("tiles.workouts")} value={stats?.completed_days ?? 0} />
+        <Tile label={t("tiles.exercises")} value={stats?.total_exercises_completed ?? 0} />
+      </dl>
+
+      <Section title={t("plan.title")}>
+        {routine ? (
+          <>
+            <span className="w-fit rounded-full border border-[#a6ff00]/55 bg-[#a6ff00]/[0.08] px-4 py-1.5 text-base font-extrabold text-[#a6ff00]">
+              {routine.source === "manual"
+                ? t("plan.manual")
+                : t("plan.monthly", { period: routinePeriodLabel(routine) ?? "" })}
+            </span>
+            {cycle ? (
+              <div className="flex flex-col gap-2.5">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-[15px] font-bold text-white/60">{t("plan.cycle")}</span>
+                  <span className="text-[17px] font-extrabold">{cycle.percent}%</span>
+                </div>
+                <div
+                  role="progressbar"
+                  aria-label={t("plan.cycle")}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={cycle.percent}
+                  className="h-3 rounded-full bg-white/10"
+                >
+                  <div className="h-full rounded-full bg-[#a6ff00]" style={{ width: `${cycle.percent}%` }} />
+                </div>
+                <p className="text-sm font-medium text-white/60">
+                  {t("plan.week", { current: cycle.current, total: cycle.total })}
+                </p>
+              </div>
+            ) : null}
+            <LinkButton href={`/${locale}/routine`}>{t("plan.view")}</LinkButton>
+          </>
+        ) : (
+          <>
+            <p className="text-base text-white/60">{t("plan.none")}</p>
+            <LinkButton href={`/${locale}/routine`}>{t("plan.choose")}</LinkButton>
+          </>
+        )}
+      </Section>
+
+      <Section title={t("settings.title")}>
+        <StepSection title={t("settings.language")}>
+          <div className="grid grid-cols-2 gap-2">
+            {(["es", "en"] as const).map((option) => (
+              <OptionChip
+                key={option}
+                tall
+                selected={profile.preferred_language === option}
+                onClick={() => updateProfile({ preferred_language: option })}
+              >
+                {t(`settings.languageOptions.${option}`)}
+              </OptionChip>
+            ))}
+          </div>
+        </StepSection>
+        <StepSection title={t("settings.units")}>
+          <div className="grid grid-cols-2 gap-2">
+            {(["metric", "imperial"] as UnitSystem[]).map((option) => (
+              <OptionChip
+                key={option}
+                tall
+                selected={profile.preferred_units === option}
+                onClick={() => updateProfile({ preferred_units: option })}
+              >
+                {t(`settings.unitOptions.${option}`)}
+              </OptionChip>
+            ))}
+          </div>
+        </StepSection>
+      </Section>
+
+      <Section title={t("base.title")}>
+        <TextField
+          id="profile-name"
+          label={onboarding("personal.fullName")}
+          value={profile.full_name}
+          onChange={(value) => updateProfile({ full_name: value })}
         />
-        <InfoTile label={t("settings.syncStatus")} value={isOfflineFallback ? t("settings.offlineFallback") : t("settings.onlineCache")} />
-        <InfoTile label={t("settings.pendingSync")} value={String(pendingSyncCount)} />
-      </section>
-
-      <section className="apex-card rounded-[2rem] p-6">
-        <p className="text-sm font-black uppercase tracking-[0.28em] text-[#a6ff00]">Settings</p>
-        <div className="mt-5 grid gap-3 md:grid-cols-2">
-          <SelectField label={t("settings.language")} value={profile.preferred_language} onChange={(value) => updateProfile({ preferred_language: value as "es" | "en" })} options={["es", "en"]} />
-          <SelectField label={t("settings.units")} value={profile.preferred_units} onChange={(value) => updateProfile({ preferred_units: value as UnitSystem })} options={["metric", "imperial"]} />
+        <StepSection title={onboarding("personal.gender")}>
+          <div className="grid grid-cols-3 gap-2">
+            {GENDER_OPTIONS.map((option) => (
+              <OptionChip
+                key={option}
+                tall
+                selected={profile.gender === option}
+                onClick={() => updateProfile({ gender: option })}
+              >
+                {onboarding(`personal.genderOptions.${option}`)}
+              </OptionChip>
+            ))}
+          </div>
+        </StepSection>
+        <div className="grid gap-4 md:grid-cols-3">
+          <TextField
+            id="profile-age"
+            label={onboarding("personal.age")}
+            type="number"
+            inputMode="numeric"
+            value={profile.age ?? ""}
+            onChange={(value) => updateProfile({ age: numberOrNull(value) })}
+            suffix={onboarding("personal.ageUnit")}
+          />
+          <TextField
+            id="profile-weight"
+            label={onboarding("personal.weight")}
+            type="number"
+            inputMode="decimal"
+            value={profile.weight_kg ?? ""}
+            onChange={(value) => updateProfile({ weight_kg: numberOrNull(value) })}
+            suffix="kg"
+          />
+          <TextField
+            id="profile-height"
+            label={onboarding("personal.height")}
+            type="number"
+            inputMode="numeric"
+            value={profile.height_cm ?? ""}
+            onChange={(value) => updateProfile({ height_cm: numberOrNull(value) })}
+            suffix="cm"
+          />
         </div>
-        <button type="button" disabled={savingSection !== null} onClick={saveProfile} className="apex-button mt-5 rounded-2xl px-5 py-3 text-sm font-black disabled:opacity-60">
-          {savingSection === "profile" ? t("actions.saving") : t("actions.savePersonal")}
-        </button>
-      </section>
+      </Section>
+
+      <Section title={t("prefs.title")}>
+        <StepSection title={t("prefs.level")}>
+          <div className="grid grid-cols-3 gap-2">
+            {EXPERIENCE_LEVELS.map((option) => (
+              <OptionChip
+                key={option}
+                tall
+                selected={health.experience_level === option}
+                onClick={() => updateHealth({ experience_level: option })}
+              >
+                {onboarding(`fitness.experience.${option}.label`)}
+              </OptionChip>
+            ))}
+          </div>
+        </StepSection>
+        <StepSection title={t("prefs.style")}>
+          <div className="flex flex-wrap gap-2.5">
+            {TRAINING_STYLES.map((option) => (
+              <OptionChip
+                key={option}
+                selected={health.training_style === option}
+                onClick={() => updateHealth({ training_style: option })}
+              >
+                {onboarding(`goals.styles.${option}.label`)}
+              </OptionChip>
+            ))}
+          </div>
+        </StepSection>
+        <StepSection title={t("prefs.intensity")}>
+          <div className="grid grid-cols-3 gap-2">
+            {INTENSITY_PREFERENCES.map((option) => (
+              <OptionChip
+                key={option}
+                tall
+                selected={health.intensity_preference === option}
+                onClick={() => updateHealth({ intensity_preference: option })}
+              >
+                {onboarding(`goals.intensity.${option}`)}
+              </OptionChip>
+            ))}
+          </div>
+        </StepSection>
+        <StepSection title={t("prefs.goals")}>
+          <div className="flex flex-wrap gap-2.5">
+            {PHYSICAL_GOALS.map((goal) => (
+              <OptionChip
+                key={goal}
+                showCheck
+                selected={health.physical_goals.includes(goal)}
+                onClick={() => updateHealth({ physical_goals: toggle(health.physical_goals, goal) })}
+              >
+                {onboarding(`goals.options.${goal}`)}
+              </OptionChip>
+            ))}
+          </div>
+        </StepSection>
+        <TextField
+          id="profile-specific-goal"
+          label={t("prefs.specificGoal")}
+          value={health.specific_goal}
+          onChange={(value) => updateHealth({ specific_goal: value })}
+        />
+        <StepSection title={t("prefs.days")}>
+          <div className="flex flex-wrap gap-2.5">
+            {DAYS_PER_WEEK.map((day) => (
+              <button
+                key={day}
+                type="button"
+                aria-pressed={health.days_per_week === day}
+                onClick={() => updateHealth({ days_per_week: day })}
+                className={`grid size-12 place-items-center rounded-full text-lg font-extrabold ${
+                  health.days_per_week === day
+                    ? "border border-[#a6ff00] bg-[#a6ff00] text-black"
+                    : "border border-white/[0.22]"
+                }`}
+              >
+                {day}
+              </button>
+            ))}
+          </div>
+        </StepSection>
+        <StepSection title={t("prefs.duration")}>
+          <div className="flex flex-wrap gap-2.5">
+            {SESSION_DURATIONS.map((minutes) => (
+              <OptionChip
+                key={minutes}
+                selected={health.session_duration_minutes === minutes}
+                onClick={() => updateHealth({ session_duration_minutes: minutes })}
+              >
+                {onboarding("schedule.minutes", { count: minutes })}
+              </OptionChip>
+            ))}
+          </div>
+        </StepSection>
+        <StepSection title={t("prefs.routine")}>
+          <div className="flex flex-wrap gap-2.5">
+            {ROUTINE_TYPES.map((option) => (
+              <OptionChip
+                key={option}
+                selected={health.routine_type === option}
+                onClick={() => updateHealth({ routine_type: option })}
+              >
+                {onboarding(`schedule.routines.${option}.label`)}
+              </OptionChip>
+            ))}
+          </div>
+        </StepSection>
+        <StepSection title={t("prefs.equipment")}>
+          <div className="flex flex-wrap gap-2.5">
+            {EQUIPMENT_TYPES.map((option) => (
+              <OptionChip
+                key={option}
+                selected={health.equipment_type === option}
+                onClick={() =>
+                  updateHealth({
+                    equipment_type: option,
+                    available_equipment: option === "home" ? health.available_equipment : [],
+                  })
+                }
+              >
+                {onboarding(`equipment.types.${option}.label`)}
+              </OptionChip>
+            ))}
+          </div>
+        </StepSection>
+        {health.equipment_type === "home" ? (
+          <StepSection title={t("prefs.homeEquipment")}>
+            <div className="flex flex-wrap gap-2.5">
+              {HOME_EQUIPMENT.map((item) => (
+                <OptionChip
+                  key={item}
+                  showCheck
+                  selected={health.available_equipment.includes(item)}
+                  onClick={() => updateHealth({ available_equipment: toggle(health.available_equipment, item) })}
+                >
+                  {onboarding(`equipment.home.${item}`)}
+                </OptionChip>
+              ))}
+            </div>
+          </StepSection>
+        ) : null}
+        <div className="flex items-baseline justify-between gap-3 border-t border-white/10 pt-4">
+          <span className="text-base font-semibold text-white/60">{t("prefs.injuries")}</span>
+          <span className="text-base font-bold">
+            {injuries ? t("prefs.injuryCount", { count: injuries }) : t("prefs.noInjuries")}
+          </span>
+        </div>
+      </Section>
+
+      {message ? (
+        <p role="status" className="flex items-center gap-2 text-[15px] font-semibold text-[#d7ff8a]">
+          <CheckCircle2 aria-hidden="true" size={20} strokeWidth={1.8} className="shrink-0" />
+          {message}
+        </p>
+      ) : null}
+      {error ? (
+        <p role="alert" className="flex items-center gap-2 text-[15px] font-semibold text-red-300">
+          <AlertCircle aria-hidden="true" size={20} strokeWidth={1.8} className="shrink-0" />
+          {error}
+        </p>
+      ) : null}
+      <button
+        type="button"
+        onClick={save}
+        disabled={saving || !dirty}
+        className="apex-button flex h-[60px] items-center justify-center rounded-[1.875rem] text-lg font-extrabold disabled:opacity-50"
+      >
+        {saving ? t("actions.saving") : t("actions.save")}
+      </button>
 
       <PushOptIn />
       <OfflineMediaStatus />
 
-      <details className="apex-card rounded-[2rem] p-6">
-        <summary className="cursor-pointer text-sm font-black uppercase tracking-[0.28em] text-[#a6ff00]">{t("personal.title")}</summary>
-        <div className="mt-5 grid gap-3 md:grid-cols-2">
-          <TextField label={onboarding("personal.fullName")} value={profile.full_name} onChange={(value) => updateProfile({ full_name: value })} />
-          <SelectField label={onboarding("personal.gender")} value={profile.gender} onChange={(value) => updateProfile({ gender: value as Gender })} options={genders} />
-          <NumberField label={onboarding("personal.age")} value={profile.age} onChange={(value) => updateProfile({ age: value })} />
-          <NumberField label={onboarding("personal.weightKg")} value={profile.weight_kg} onChange={(value) => updateProfile({ weight_kg: value })} />
-          <NumberField label={onboarding("personal.heightCm")} value={profile.height_cm} onChange={(value) => updateProfile({ height_cm: value })} />
+      <Section title={t("sync.title")}>
+        <div className="flex flex-col">
+          <Row label={t("sync.last")} value={lastSync ? formatSync(lastSync, locale) : t("sync.never")} />
+          <div className="h-px bg-white/10" />
+          <Row
+            label={t("sync.pending")}
+            value={pendingSyncCount ? String(pendingSyncCount) : t("sync.noPending")}
+            accent={pendingSyncCount === 0}
+          />
         </div>
-        <button type="button" disabled={savingSection !== null} onClick={saveProfile} className="apex-button mt-5 rounded-2xl px-5 py-3 text-sm font-black disabled:opacity-60">
-          {savingSection === "profile" ? t("actions.saving") : t("actions.savePersonal")}
-        </button>
-      </details>
+      </Section>
 
-      <details className="apex-card rounded-[2rem] p-6">
-        <summary className="cursor-pointer text-sm font-black uppercase tracking-[0.28em] text-[#a6ff00]">{t("fitness.title")}</summary>
-        <div className="mt-5 grid gap-4">
-          <SelectField label={t("fitness.activity")} value={health.activity_level} onChange={(value) => updateHealth({ activity_level: value as ActivityLevel })} options={activityLevels} />
-          <ChipGroup title={t("fitness.goals")} items={goals} selected={health.physical_goals} onToggle={toggleGoal} label={(goal) => onboarding(`goals.options.${goal}`)} />
-          <TextField label={onboarding("goals.specificGoal")} value={health.specific_goal} onChange={(value) => updateHealth({ specific_goal: value })} />
-          <SelectField label={t("fitness.equipment")} value={health.equipment_type} onChange={(value) => updateHealth({ equipment_type: value as EquipmentType })} options={equipmentTypes} />
-          {health.equipment_type === "home" ? <ChipGroup title={t("fitness.homeEquipment")} items={homeEquipment} selected={health.available_equipment} onToggle={toggleEquipment} label={(item) => onboarding(`equipment.home.${item}`)} /> : null}
-          <SelectField label={t("fitness.routine")} value={health.routine_type} onChange={(value) => updateHealth({ routine_type: value as RoutineType })} options={routineTypes} />
-        </div>
-        <button type="button" disabled={savingSection !== null} onClick={saveHealth} className="apex-button mt-5 rounded-2xl px-5 py-3 text-sm font-black disabled:opacity-60">
-          {savingSection === "health" ? t("actions.saving") : t("actions.saveFitness")}
-        </button>
-      </details>
-    </div>
-  );
-}
-
-function InfoTile({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="apex-card rounded-3xl p-5">
-      <p className="text-xs font-black uppercase tracking-[0.18em] text-white/45">{label}</p>
-      <p className="mt-2 text-2xl font-black text-white">{value}</p>
-    </div>
-  );
-}
-
-function ChipGroup<T extends string>({ title, items, selected, onToggle, label }: { title: string; items: T[]; selected: T[]; onToggle: (item: T) => void; label: (item: T) => string }) {
-  return (
-    <div>
-      <p className="text-sm font-bold text-white/65">{title}</p>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {items.map((item) => (
-          <button key={item} type="button" onClick={() => onToggle(item)} className={`rounded-full border px-4 py-2 text-sm font-bold ${selected.includes(item) ? "border-[#a6ff00] bg-[#a6ff00] text-black" : "border-white/15 bg-white/[0.04] text-white/65"}`}>
-            {label(item)}
-          </button>
-        ))}
+      <div className="border-t border-white/[0.13] pt-6">
+        <LogoutButton label={t("actions.logout")} loadingLabel={t("actions.loggingOut")} />
       </div>
     </div>
   );
 }
 
-function StateCard({ title }: { title: string }) {
-  return <div className="apex-card rounded-[2rem] p-6 text-sm font-bold text-white/65">{title}</div>;
+function formatSync(timestamp: number, locale: string) {
+  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(
+    new Date(timestamp),
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="flex flex-col gap-4 border-t border-white/[0.13] pt-6">
+      <h2 className="text-2xl font-black leading-tight tracking-tight">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+function Tile({ label, value, accent = false }: { label: string; value: number; accent?: boolean }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <dd className={`text-[34px] font-black leading-none ${accent ? "text-[#a6ff00]" : ""}`}>{value}</dd>
+      <dt className="text-[13px] font-semibold leading-snug text-white/60">{label}</dt>
+    </div>
+  );
+}
+
+function Row({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="flex min-h-11 items-center justify-between gap-3">
+      <span className="text-base font-semibold text-white/60">{label}</span>
+      <span className={`text-lg font-extrabold ${accent ? "text-[#a6ff00]" : ""}`}>{value}</span>
+    </div>
+  );
+}
+
+function LinkButton({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="flex h-14 items-center justify-center gap-2.5 rounded-[28px] border-[1.5px] border-white/30 text-lg font-bold"
+    >
+      {children}
+      <ChevronRight aria-hidden="true" size={22} strokeWidth={1.8} />
+    </Link>
+  );
 }
