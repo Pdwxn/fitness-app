@@ -590,25 +590,56 @@
   },
   "Progress": {
     "title": "Progreso",
-    "subtitle": "Sigue tu rendimiento y crecimiento.",
-    "description": "Seguimiento de rachas, días completados y estadísticas de entrenamiento.",
+    "description": "Volumen, constancia y fuerza a partir de tus registros.",
+    "periodLabel": "Periodo",
     "thisWeek": "Esta semana",
-    "aiInsight": "Insight IA",
-    "aiInsightText": "¡Vas por buen camino! Tu consistencia en los entrenamientos está dando resultados. Sigue así.",
-    "recentLogs": "Logs recientes",
-    "emptyLogs": "Todavía no has registrado entrenamientos. Completa un día de rutina para empezar a medir progreso.",
-    "completed": "Completado",
-    "notCompleted": "No completado",
-    "viewDay": "Ver día",
+    "thisMonth": "Este mes",
+    "vsWeek": "vs semana anterior",
+    "vsMonth": "vs mes anterior",
+    "volume": {
+      "title": "Volumen levantado",
+      "unit": "kg",
+      "noPrevious": "Sin datos del periodo anterior",
+      "chartAria": "Volumen diario del periodo"
+    },
+    "workouts": {
+      "title": "Entrenamientos",
+      "ofDays": "/ {planned} días",
+      "daysAria": "{done} de {planned} días de entrenamiento completados"
+    },
+    "consistency": {
+      "title": "Consistencia",
+      "aria": "Consistencia {percent}%",
+      "none": "Todavía no hay días de entrenamiento para medir"
+    },
+    "muscles": {
+      "title": "Grupos musculares",
+      "subtitle": "Series por músculo · {vs}",
+      "sets": "series",
+      "same": "Igual",
+      "empty": "Todavía no hay series registradas en este periodo."
+    },
+    "strength": {
+      "title": "Tendencia de fuerza",
+      "subtitle": "Peso de la serie más pesada por fecha",
+      "exercise": "Ejercicio",
+      "sinceFirst": "desde el primer registro",
+      "chartAria": "Peso de la mejor serie de {exercise} por fecha, de {from} kg el {fromDate} a {to} kg el {toDate}",
+      "empty": "Registra series con peso para ver tu evolución."
+    },
+    "recent": {
+      "title": "Registros recientes",
+      "session": "Entrenamiento",
+      "completed": "Completado",
+      "notCompleted": "No completado",
+      "viewDay": "Ver día",
+      "viewDayAria": "Ver día: {day}, {date}",
+      "empty": "Todavía no has registrado entrenamientos. Completa un día de rutina para empezar a medir progreso."
+    },
     "states": {
       "loading": "Cargando progreso...",
       "error": "No pudimos cargar tu progreso. Intenta recargar la página.",
-      "offlineFallback": "Estás viendo progreso guardado en este dispositivo."
-    },
-    "stats": {
-      "completedDays": "Días completados",
-      "totalExercises": "Ejercicios completados",
-      "pendingSync": "Pendientes de sync"
+      "offline": "Estás viendo progreso guardado en este dispositivo"
     }
   },
   "Push": {

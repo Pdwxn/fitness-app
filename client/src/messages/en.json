@@ -590,25 +590,56 @@
   },
   "Progress": {
     "title": "Progress",
-    "subtitle": "Track your performance and growth.",
-    "description": "Track streaks, completed days, and training statistics.",
+    "description": "Volume, consistency and strength from your logs.",
+    "periodLabel": "Period",
     "thisWeek": "This week",
-    "aiInsight": "AI Insight",
-    "aiInsightText": "Great job. Your training consistency is improving. Keep logging workouts to unlock better recommendations.",
-    "recentLogs": "Recent logs",
-    "emptyLogs": "No workouts logged yet. Complete a routine day to start tracking progress.",
-    "completed": "Completed",
-    "notCompleted": "Not completed",
-    "viewDay": "View day",
+    "thisMonth": "This month",
+    "vsWeek": "vs previous week",
+    "vsMonth": "vs previous month",
+    "volume": {
+      "title": "Volume lifted",
+      "unit": "kg",
+      "noPrevious": "No data from the previous period",
+      "chartAria": "Daily volume for the period"
+    },
+    "workouts": {
+      "title": "Workouts",
+      "ofDays": "/ {planned} days",
+      "daysAria": "{done} of {planned} training days completed"
+    },
+    "consistency": {
+      "title": "Consistency",
+      "aria": "Consistency {percent}%",
+      "none": "No training days to measure yet"
+    },
+    "muscles": {
+      "title": "Muscle groups",
+      "subtitle": "Sets per muscle · {vs}",
+      "sets": "sets",
+      "same": "Same",
+      "empty": "No sets logged in this period yet."
+    },
+    "strength": {
+      "title": "Strength trend",
+      "subtitle": "Weight of the heaviest set by date",
+      "exercise": "Exercise",
+      "sinceFirst": "since the first log",
+      "chartAria": "Weight of the best {exercise} set by date, from {from} kg on {fromDate} to {to} kg on {toDate}",
+      "empty": "Log sets with weight to see your progress."
+    },
+    "recent": {
+      "title": "Recent logs",
+      "session": "Workout",
+      "completed": "Completed",
+      "notCompleted": "Not completed",
+      "viewDay": "View day",
+      "viewDayAria": "View day: {day}, {date}",
+      "empty": "You haven't logged any workouts yet. Complete a routine day to start measuring progress."
+    },
     "states": {
       "loading": "Loading progress...",
       "error": "We could not load your progress. Try refreshing the page.",
-      "offlineFallback": "You are viewing progress saved on this device."
-    },
-    "stats": {
-      "completedDays": "Completed days",
-      "totalExercises": "Completed exercises",
-      "pendingSync": "Pending sync"
+      "offline": "You are viewing progress saved on this device"
     }
   },
   "Push": {
