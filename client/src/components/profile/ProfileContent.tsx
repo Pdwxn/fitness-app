@@ -15,6 +15,7 @@ import {
 import { useRoutineCache } from "@/hooks/useRoutineCache";
 import { routinePeriodLabel } from "@/types/routine";
 import { PushOptIn } from "@/components/notifications/PushOptIn";
+import { OfflineMediaStatus } from "@/components/profile/OfflineMediaStatus";
 import { ApiError, authenticatedClientFetch } from "@/lib/api/authenticated-client";
 import { db } from "@/lib/db";
 import { getFromStorage, setInStorage, STORAGE_KEYS } from "@/lib/storage";
@@ -249,6 +250,7 @@ export function ProfileContent({ locale }: { locale: string }) {
       </section>
 
       <PushOptIn />
+      <OfflineMediaStatus />
 
       <details className="apex-card rounded-[2rem] p-6">
         <summary className="cursor-pointer text-sm font-black uppercase tracking-[0.28em] text-[#a6ff00]">{t("personal.title")}</summary>

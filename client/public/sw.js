@@ -1,4 +1,9 @@
-const CACHE_NAME = "apex-fit-v1";
+const CACHE_NAME = "apex-fit-v2";
+// Exercise photos/gifs, filled on purpose by the app (lib/mediaCache.ts), not
+// opportunistically: cross-origin <img> requests are no-cors, and caching those
+// opaque responses inflates the storage quota far beyond their real size.
+const MEDIA_CACHE = "apex-fit-media-v1";
+const MEDIA_HOSTS = ["cdn.jsdelivr.net"];
 const STATIC_ASSETS = [
   "/_next/static",
   "/fonts",
@@ -8,16 +13,51 @@ const STATIC_ASSETS = [
   "/apple-icon-180x180.png",
 ];
 
+// Today this worker doubles as the offline fallback for API reads (the
+// routine, logs...): the app itself only writes those to Dexie, it doesn't
+// read them back when the network fails. Once every offline read goes through
+// Dexie, set this to false and the worker stops storing API responses at all
+// (they then go straight to the network). Until then: only successful GETs are
+// kept, and every cache is wiped on logout (see lib/mediaCache.ts).
+const CACHE_API_RESPONSES = true;
+
+function isApiRequest(url) {
+  return url.pathname.startsWith("/api/");
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME));
 });
 
+// Drop caches from older versions (v1 kept every response it ever saw).
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then((names) =>
+        Promise.all(
+          names
+            .filter((name) => name !== CACHE_NAME && name !== MEDIA_CACHE)
+            .map((name) => caches.delete(name)),
+        ),
+      ),
+  );
+});
+
 self.addEventListener("fetch", (event) => {
-  const url = new URL(event.request.url);
-  if (STATIC_ASSETS.some((path) => url.pathname.startsWith(path))) {
-    event.respondWith(cacheFirst(event.request));
+  const request = event.request;
+  // Writes (POST/PATCH/...) are never cached; let the browser handle them.
+  if (request.method !== "GET") return;
+
+  const url = new URL(request.url);
+  if (MEDIA_HOSTS.includes(url.hostname)) {
+    event.respondWith(mediaFirst(request));
+  } else if (STATIC_ASSETS.some((path) => url.pathname.startsWith(path))) {
+    event.respondWith(cacheFirst(request));
+  } else if (isApiRequest(url) && !CACHE_API_RESPONSES) {
+    return;
   } else {
-    event.respondWith(networkFirst(event.request));
+    event.respondWith(networkFirst(event));
   }
 });
 
@@ -26,14 +66,28 @@ async function cacheFirst(request) {
   return cached ?? fetch(request);
 }
 
-async function networkFirst(request) {
+async function mediaFirst(request) {
+  const cached = await caches.match(request, { cacheName: MEDIA_CACHE });
+  return cached ?? fetch(request);
+}
+
+async function networkFirst(event) {
+  const request = event.request;
   try {
     const response = await fetch(request);
-    const cache = await caches.open(CACHE_NAME);
-    cache.put(request, response.clone());
+    if (response.ok) {
+      const copy = response.clone();
+      event.waitUntil(
+        caches
+          .open(CACHE_NAME)
+          .then((cache) => cache.put(request, copy))
+          .catch(() => {}),
+      );
+    }
     return response;
   } catch {
-    return caches.match(request);
+    const cached = await caches.match(request, { cacheName: CACHE_NAME });
+    return cached ?? Response.error();
   }
 }
 
