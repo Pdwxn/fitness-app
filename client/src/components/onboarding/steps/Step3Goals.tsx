@@ -5,6 +5,8 @@ import { INTENSITY_PREFERENCES, PHYSICAL_GOALS, PRIORITY_MUSCLES, TRAINING_STYLE
 import { useOnboardingStore } from "@/store/onboardingStore";
 import type { PhysicalGoal, PriorityMuscle, TrainingStyle } from "@/types/onboarding";
 
+import { OptionChip, StepSection, TextField } from "../OnboardingUi";
+
 const goals = [...PHYSICAL_GOALS];
 const muscles = [...PRIORITY_MUSCLES];
 const intensities = [...INTENSITY_PREFERENCES];
@@ -38,11 +40,11 @@ export function Step3Goals() {
 
   function toggleGoal(goal: PhysicalGoal) {
     const selected = health.physical_goals.includes(goal);
-    const updated = selected
-      ? health.physical_goals.filter((item) => item !== goal)
-      : [...health.physical_goals, goal];
-
-    updateHealth({ physical_goals: updated });
+    updateHealth({
+      physical_goals: selected
+        ? health.physical_goals.filter((item) => item !== goal)
+        : [...health.physical_goals, goal],
+    });
   }
 
   function toggleMuscle(muscle: PriorityMuscle) {
@@ -55,145 +57,78 @@ export function Step3Goals() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <p className="mb-3 text-sm font-bold text-white/80">{t("goalsLabel")}</p>
-        <div className="grid gap-2 md:grid-cols-2">
-            {goals.map((goal) => {
-            const selected = health.physical_goals.includes(goal);
-            return (
-              <button
-                key={goal}
-                type="button"
-                onClick={() => toggleGoal(goal)}
-                className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-bold transition ${
-                  selected
-                    ? "border-[#a6ff00] bg-[#a6ff00]/10 text-white"
-                    : "border-white/15 bg-white/5 text-white/70"
-                }`}
-              >
-                <span
-                  className={`flex size-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-black ${
-                    selected ? "border-[#a6ff00] bg-[#a6ff00] text-black" : "border-white/30 text-transparent"
-                  }`}
-                >
-                  {selected ? "∓" : ""}
-                </span>
-                {t(`options.${goal}`)}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="border-t border-white/10 pt-6">
-        <p className="mb-3 text-sm font-bold text-white/80">{t("styleLabel")}</p>
-        <div className="grid gap-2">
-          {styles.map((style) => {
-            const isSuggested = suggestedStyle === style;
-            return (
-              <button
-                key={style}
-                type="button"
-                onClick={() => updateHealth({ training_style: style })}
-                className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-bold transition ${
-                  health.training_style === style
-                    ? "border-[#a6ff00] bg-[#a6ff00]/10 text-white"
-                    : "border-white/15 bg-white/5 text-white/70"
-                }`}
-              >
-                <span
-                  className={`flex size-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-black ${
-                    health.training_style === style
-                      ? "border-[#a6ff00] bg-[#a6ff00] text-black"
-                      : "border-white/30 text-transparent"
-                  }`}
-                >
-                  {health.training_style === style ? "∓" : ""}
-                </span>
-                <div>
-                  <span className="block">{t(`styles.${style}.label`)}</span>
-                  <span className="mt-0.5 block text-xs opacity-70">{t(`styles.${style}.description`)}</span>
-                </div>
-                {isSuggested ? (
-                  <span className="ml-auto shrink-0 text-xs font-black text-[#a6ff00]">
-                    {t("suggested")}
-                  </span>
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="border-t border-white/10 pt-6">
-        <p className="mb-3 text-sm font-bold text-white/80">{t("musclesLabel")}</p>
-        <p className="mb-3 text-xs text-white/50">{t("musclesHint")}</p>
-        <div className="grid gap-2 md:grid-cols-2">
-          {muscles.map((muscle) => {
-            const selected = health.priority_muscles.includes(muscle);
-            return (
-              <button
-                key={muscle}
-                type="button"
-                onClick={() => toggleMuscle(muscle)}
-                className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-bold transition ${selected
-                  ? "border-[#a6ff00] bg-[#a6ff00]/10 text-white"
-                  : "border-white/15 bg-white/5 text-white/70"
-                }`}
-              >
-                <span
-                  className={`flex size-5 shrink-0 items-center justify-center rounded border text-[10px] font-black ${selected ? "border-[#a6ff00] bg-[#a6ff00] text-black" : "border-white/30 text-transparent"}`}
-                >
-                  {selected ? "✓" : ""}
-                </span>
-                {t(`muscles.${muscle}`)}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="border-t border-white/10 pt-6">
-        <p className="mb-3 text-sm font-bold text-white/80">{t("intensityLabel")}</p>
-        <div className="grid gap-2">
-          {intensities.map((intensity) => (
-            <button
-              key={intensity}
-              type="button"
-              onClick={() => updateHealth({ intensity_preference: intensity })}
-              className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-bold transition ${
-                health.intensity_preference === intensity
-                  ? "border-[#a6ff00] bg-[#a6ff00]/10 text-white"
-                  : "border-white/15 bg-white/5 text-white/70"
-              }`}
+    <div className="flex flex-col gap-7">
+      <StepSection title={t("goalsLabel")}>
+        <div className="flex flex-wrap gap-2.5">
+          {goals.map((goal) => (
+            <OptionChip
+              key={goal}
+              showCheck
+              selected={health.physical_goals.includes(goal)}
+              onClick={() => toggleGoal(goal)}
             >
-              <span
-                className={`flex size-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-black ${
-                  health.intensity_preference === intensity
-                    ? "border-[#a6ff00] bg-[#a6ff00] text-black"
-                    : "border-white/30 text-transparent"
-                }`}
-              >
-                {health.intensity_preference === intensity ? "⊓" : ""}
-              </span>
-              {t(`intensity.${intensity}`)}
-            </button>
+              {t(`options.${goal}`)}
+            </OptionChip>
           ))}
         </div>
-      </div>
+      </StepSection>
 
-      <div className="border-t border-white/10 pt-6">
-        <label className="flex flex-col gap-2 text-sm font-semibold text-white">
-          {t("specificGoal")}
-          <textarea
-            value={health.specific_goal}
-            onChange={(event) => updateHealth({ specific_goal: event.target.value })}
-            className="min-h-28 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white outline-none placeholder:text-white/40 focus:border-[#a6ff00]"
-            placeholder={t("specificGoalPlaceholder")}
-          />
-        </label>
-      </div>
+      <StepSection title={t("styleLabel")}>
+        <div className="flex flex-wrap gap-2.5">
+          {styles.map((style) => (
+            <OptionChip
+              key={style}
+              selected={health.training_style === style}
+              onClick={() => updateHealth({ training_style: style })}
+            >
+              {t(`styles.${style}.label`)}
+              {suggestedStyle === style ? ` · ${t("suggested")}` : ""}
+            </OptionChip>
+          ))}
+        </div>
+      </StepSection>
+
+      <StepSection title={t("musclesLabel")} hint={t("musclesHint")}>
+        <div className="flex flex-wrap gap-2.5">
+          {muscles.map((muscle) => (
+            <OptionChip
+              key={muscle}
+              showCheck
+              selected={health.priority_muscles.includes(muscle)}
+              onClick={() => toggleMuscle(muscle)}
+            >
+              {t(`muscles.${muscle}`)}
+            </OptionChip>
+          ))}
+        </div>
+      </StepSection>
+
+      <StepSection title={t("intensityLabel")}>
+        <div className="grid grid-cols-3 gap-2">
+          {intensities.map((intensity) => (
+            <OptionChip
+              key={intensity}
+              tall
+              selected={health.intensity_preference === intensity}
+              onClick={() => updateHealth({ intensity_preference: intensity })}
+            >
+              {t(`intensity.${intensity}`)}
+            </OptionChip>
+          ))}
+        </div>
+      </StepSection>
+
+      <StepSection title={t("specificGoal")}>
+        <TextField
+          id="specific-goal"
+          label={t("specificGoal")}
+          hideLabel
+          multiline
+          value={health.specific_goal}
+          onChange={(value) => updateHealth({ specific_goal: value })}
+          placeholder={t("specificGoalPlaceholder")}
+        />
+      </StepSection>
     </div>
   );
 }

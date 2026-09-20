@@ -76,7 +76,17 @@
   "Onboarding": {
     "title": "Let's build your routine",
     "description": "Complete six quick steps so the app can prepare a routine around your body, goals, and equipment.",
-    "draftLoaded": "Your draft is saved locally as you progress.",
+    "draftLoaded": "Your draft is saved on this device",
+    "stepOf": "Step {current} of {total}",
+    "progressLabel": "Onboarding progress",
+    "stepTitles": {
+      "personal": "Personal details",
+      "fitness": "Your fitness level",
+      "goals": "Your goals",
+      "health": "Your health",
+      "equipment": "Your equipment",
+      "schedule": "Your schedule"
+    },
     "validationError": "Complete the required fields before continuing.",
     "submitError": "Could not complete onboarding. Try again.",
     "loadingStatus": "Checking onboarding status...",
@@ -111,10 +121,23 @@
         "fullNamePlaceholder": "Example: Ana Perez",
         "gender": "Gender",
         "age": "Age",
-        "weightKg": "Weight (kg)",
-        "weightLb": "Weight (lb)",
-        "heightCm": "Height (cm)",
-        "heightFt": "Height (ft/in)",
+        "agePlaceholder": "E.g. 28",
+        "ageUnit": "years",
+        "units": "Measurement system",
+        "unitOptions": { "metric": "Metric", "imperial": "Imperial" },
+        "weight": "Weight",
+        "weightPlaceholder": "E.g. 78",
+        "height": "Height",
+        "heightFeet": "Height (ft)",
+        "heightInches": "Height (in)",
+        "heightPlaceholder": "E.g. 178",
+        "errors": {
+          "name": "Enter your name.",
+          "gender": "Pick an option.",
+          "age": "Enter a valid age.",
+          "weight": "Enter your weight.",
+          "height": "Enter your height."
+        },
         "genderOptions": {
           "male": "Male",
           "female": "Female",
@@ -173,9 +196,9 @@
           "forearms": "Forearms"
         },
         "intensity": {
-          "always_failure": "Always to failure 💀",
-          "near_failure": "1-2 reps from failure 🎯",
-          "comfortable": "3+ reps from failure 🧘"
+          "always_failure": "Always to failure",
+          "near_failure": "1-2 reps from failure",
+          "comfortable": "3+ reps from failure"
         }
       },
       "health": {
@@ -183,10 +206,14 @@
         "conditionsHint": "Optional, helps adjust your routine to avoid risks",
         "injuriesLabel": "Additional injuries or discomfort",
         "injuriesHint": "Add discomfort or injuries. You can leave this empty.",
-        "areaPlaceholder": "Area: left knee",
-        "descriptionPlaceholder": "Description",
+        "injuryNumber": "Injury {number}",
+        "removeAria": "Remove injury {number}",
+        "area": "Area",
+        "areaPlaceholder": "E.g. left knee",
+        "description": "Description",
+        "descriptionPlaceholder": "Describe the injury",
         "remove": "Remove",
-        "add": "Add injury or discomfort",
+        "add": "Add injury",
         "conditions": {
           "knee_pain": { "label": "Knee pain / Arthritis", "description": "Pain in squats, lunges, impact" },
           "lower_back_pain": { "label": "Lower back pain", "description": "Pain in deadlift, row, squat" },
@@ -201,6 +228,8 @@
         }
       },
       "equipment": {
+        "typeLabel": "Where do you train?",
+        "availableLabel": "Available equipment",
         "types": {
           "gym": { "label": "Gym", "description": "Machines, barbells, dumbbells, and cables" },
           "home": { "label": "Home", "description": "Limited equipment or home training" },
@@ -217,15 +246,16 @@
         }
       },
       "schedule": {
+        "minutes": "{count} min",
         "daysLabel": "How many days per week can you train?",
         "durationLabel": "How long per session?",
         "routineLabel": "Routine type",
         "recommended": "RECOMMENDED",
         "routines": {
-          "push_pull_legs": { "label": "Push / Pull / Legs", "description": "Upper push, upper pull, and legs on separate days. The most popular split for volume.", "days": "⭐ 3-4 days/week" },
-          "upper_lower": { "label": "Upper / Lower", "description": "Alternate full upper body with legs. Ideal for 2x frequency per muscle group.", "days": "⭐ 4 days/week" },
-          "hybrid": { "label": "Hybrid", "description": "Combines compound and accessory exercises each session. Flexible and adaptable.", "days": "⭐ 1-3 days/week" },
-          "5_days": { "label": "5 days / Weider", "description": "One large muscle group per day (chest, back, shoulders, legs, arms). Higher volume.", "days": "⭐ 5-6 days/week" }
+          "push_pull_legs": { "label": "Push / Pull / Legs", "description": "Upper push, upper pull, and legs on separate days. The most popular split for volume.", "days": "3-4 days/week" },
+          "upper_lower": { "label": "Upper / Lower", "description": "Alternate full upper body with legs. Ideal for 2x frequency per muscle group.", "days": "4 days/week" },
+          "hybrid": { "label": "Hybrid", "description": "Combines compound and accessory exercises each session. Flexible and adaptable.", "days": "1-3 days/week" },
+          "5_days": { "label": "5 days / Weider", "description": "One large muscle group per day (chest, back, shoulders, legs, arms). Higher volume.", "days": "5-6 days/week" }
         }
       }
     }

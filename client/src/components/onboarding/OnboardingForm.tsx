@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { AlertCircle, AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2, Loader2, Save } from "lucide-react";
 
 import { StepIndicator } from "./StepIndicator";
-import { Step1Personal } from "./steps/Step1Personal";
+import { Step1Personal, validateStep1 } from "./steps/Step1Personal";
 import { Step2Fitness } from "./steps/Step2Fitness";
 import { Step3Goals } from "./steps/Step3Goals";
 import { Step4Health } from "./steps/Step4Health";
@@ -16,34 +19,12 @@ import { TOTAL_STEPS, useOnboardingStore } from "@/store/onboardingStore";
 import type { Routine } from "@/types/routine";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 
-type OnboardingFormProps = {
-  locale: string;
-  labels: {
-    title: string;
-    description: string;
-    next: string;
-    previous: string;
-    finish: string;
-    draftLoaded: string;
-    validationError: string;
-    submitError: string;
-    completedTitle: string;
-    completedDescription: string;
-    backHome: string;
-    loadingStatus: string;
-    submitting: string;
-    generating: string;
-    generationFailedTitle: string;
-    generationFailedDescription: string;
-    goToDashboard: string;
-    steps: string[];
-  };
-};
+const STEP_KEYS = ["personal", "fitness", "goals", "health", "equipment", "schedule"] as const;
 
-function StepContent({ currentStep }: { currentStep: number }) {
+function StepContent({ currentStep, showErrors }: { currentStep: number; showErrors: boolean }) {
   switch (currentStep) {
     case 1:
-      return <Step1Personal />;
+      return <Step1Personal showErrors={showErrors} />;
     case 2:
       return <Step2Fitness />;
     case 3:
@@ -71,7 +52,24 @@ type OnboardingCompleteResponse = OnboardingStatusResponse & {
 
 type SubmitState = "idle" | "saving" | "generating";
 
-export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
+function Logo({ className }: { className: string }) {
+  return (
+    <p className={`apex-logo ${className}`}>
+      <span>APEX</span> <span className="apex-lime">FIT</span>
+    </p>
+  );
+}
+
+function CenteredMessage({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="apex-bg flex min-h-screen items-center justify-center px-5 py-8 text-white">
+      <div className="flex w-full max-w-md flex-col items-start gap-6">{children}</div>
+    </main>
+  );
+}
+
+export function OnboardingForm({ locale }: { locale: string }) {
+  const t = useTranslations("Onboarding");
   const router = useRouter();
   const currentStep = useOnboardingStore((state) => state.currentStep);
   const nextStep = useOnboardingStore((state) => state.nextStep);
@@ -80,8 +78,8 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
   const reset = useOnboardingStore((state) => state.reset);
   const clearStorage = useOnboardingStore((state) => state.clearStorage);
   const hydrateFromStorage = useOnboardingStore((state) => state.hydrateFromStorage);
-  const [hasHydrated, setHasHydrated] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showStepErrors, setShowStepErrors] = useState(false);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
@@ -89,7 +87,6 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
 
   useEffect(() => {
     hydrateFromStorage();
-    setHasHydrated(true);
   }, [hydrateFromStorage]);
 
   useEffect(() => {
@@ -127,19 +124,7 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
     const { profile, health } = data;
 
     if (currentStep === 1) {
-      return Boolean(
-        profile.full_name &&
-          profile.gender &&
-          profile.age &&
-          profile.age >= 13 &&
-          profile.age <= 100 &&
-          profile.weight_kg &&
-          profile.weight_kg >= 20 &&
-          profile.weight_kg <= 400 &&
-          profile.height_cm &&
-          profile.height_cm >= 80 &&
-          profile.height_cm <= 250,
-      );
+      return !Object.values(validateStep1(profile)).some(Boolean);
     }
 
     if (currentStep === 2) return Boolean(health.experience_level && health.activity_level);
@@ -159,19 +144,30 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
     return true;
   }
 
+  function reportInvalid() {
+    if (currentStep === 1) {
+      // Step 1 flags each offending field inline instead.
+      setShowStepErrors(true);
+      setError(null);
+    } else {
+      setError(t("validationError"));
+    }
+  }
+
   function handleNext() {
     if (!canContinue()) {
-      setError(labels.validationError);
+      reportInvalid();
       return;
     }
 
     setError(null);
+    setShowStepErrors(false);
     nextStep();
   }
 
   async function handleSubmit() {
     if (!canContinue()) {
-      setError(labels.validationError);
+      reportInvalid();
       return;
     }
 
@@ -198,7 +194,7 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
         clearStorage();
         reset();
         if (response.routine) {
-          router.push('/dashboard');
+          router.push(`/${locale}/dashboard`);
           router.refresh();
           return;
         }
@@ -209,9 +205,9 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
         return;
       }
 
-      setError(labels.submitError);
+      setError(t("submitError"));
     } catch {
-      setError(labels.submitError);
+      setError(t("submitError"));
     } finally {
       setSubmitState("idle");
     }
@@ -219,96 +215,110 @@ export function OnboardingForm({ locale, labels }: OnboardingFormProps) {
 
   const isGenerating = submitState === "generating";
   const isSubmitting = submitState !== "idle";
+  const stepLabels = STEP_KEYS.map((key) => t(`steps.${key}`));
 
   if (isLoadingStatus) {
     return (
-      <main className="apex-bg mx-auto flex min-h-screen w-full max-w-md items-center justify-center px-5 py-8 text-white">
-        <p className="apex-card rounded-3xl px-5 py-4 text-sm font-bold text-white/70">
-          {labels.loadingStatus}
+      <CenteredMessage>
+        <p role="status" className="flex items-center gap-3 text-base font-bold text-white/70">
+          <Loader2 aria-hidden="true" size={22} className="animate-spin" />
+          {t("loadingStatus")}
         </p>
-      </main>
+      </CenteredMessage>
     );
   }
 
   if (isCompleted) {
+    const Icon = generationFailed ? AlertTriangle : CheckCircle2;
     return (
-      <main className="apex-bg mx-auto flex min-h-screen w-full max-w-md items-center justify-center px-5 py-8 text-white">
-        <section className="apex-card rounded-[2rem] p-6 text-center">
-          <p className="apex-logo text-2xl">
-            <span>APEX</span> <span className="apex-lime">FIT</span>
-          </p>
-          <h1 className="mt-4 text-4xl font-black tracking-tight">
-            {generationFailed ? labels.generationFailedTitle : labels.completedTitle}
+      <CenteredMessage>
+        <Logo className="text-2xl" />
+        <span className="grid size-16 place-items-center rounded-full border-[1.5px] border-[#a6ff00]/55 bg-[#a6ff00]/[0.12] text-[#a6ff00]">
+          <Icon aria-hidden="true" size={32} strokeWidth={1.6} />
+        </span>
+        <div className="flex flex-col gap-3">
+          <h1 className="text-4xl font-black leading-tight tracking-tight">
+            {generationFailed ? t("generationFailed.title") : t("completed.title")}
           </h1>
-          <p className="mt-3 text-base leading-7 text-white/65">
-            {generationFailed ? labels.generationFailedDescription : labels.completedDescription}
+          <p className="text-lg leading-snug text-white/60">
+            {generationFailed ? t("generationFailed.description") : t("completed.description")}
           </p>
-          <button
-            type="button"
-            onClick={() => router.push('/dashboard')}
-            className="apex-button mt-6 rounded-2xl px-5 py-3 text-sm font-black"
-          >
-            {generationFailed ? labels.goToDashboard : labels.backHome}
-          </button>
-        </section>
-      </main>
+        </div>
+        <Link
+          href={`/${locale}/dashboard`}
+          className="apex-button flex h-[60px] w-full items-center justify-center gap-2.5 rounded-[1.875rem] text-lg font-extrabold"
+        >
+          {generationFailed ? t("generationFailed.goToDashboard") : t("completed.backHome")}
+          <ArrowRight aria-hidden="true" size={22} strokeWidth={2.2} />
+        </Link>
+      </CenteredMessage>
     );
   }
 
   return (
     <>
-      {isGenerating ? <LoadingOverlay label={labels.generating} /> : null}
-      <main className="apex-bg mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-5 py-8 text-white md:max-w-3xl md:px-10 lg:max-w-5xl">
-      <header className="apex-card relative overflow-hidden rounded-[2rem] p-6 text-white">
-        <div className="pointer-events-none absolute -right-8 -top-10 size-48 rounded-full bg-[#a6ff00]/20 blur-3xl" />
-        <p className="apex-logo relative text-2xl">
-          <span>APEX</span> <span className="apex-lime">FIT</span>
-        </p>
-        <h1 className="relative mt-4 text-4xl font-black tracking-tight md:text-5xl">
-          {labels.title}
-        </h1>
-        <p className="relative mt-3 text-base leading-7 text-white/70 md:text-lg">
-          {labels.description}
-        </p>
-      </header>
+      {isGenerating ? <LoadingOverlay label={t("actions.generating")} /> : null}
+      <main className="apex-bg relative min-h-screen overflow-hidden text-white">
+        <div className="pointer-events-none absolute -top-40 left-[90px] size-[420px] rounded-full bg-[radial-gradient(circle,rgba(166,255,0,0.26)_0%,transparent_68%)] blur-[50px] md:left-1/2" />
 
-      <StepIndicator currentStep={currentStep} labels={labels.steps} />
-
-      <section className="apex-card flex min-h-[18rem] flex-col justify-between rounded-[2rem] p-6">
-        <div>
-          <p className="text-sm font-black uppercase tracking-[0.28em] text-[#a6ff00]">
-            {labels.steps[currentStep - 1]}
-          </p>
-          <div className="apex-onboarding mt-6 rounded-3xl border border-white/10 bg-black/25 p-4 text-white md:p-6">
-            <StepContent currentStep={currentStep} />
+        <div className="relative mx-auto flex w-full max-w-[720px] flex-col gap-5 px-4 pb-44 pt-6 md:px-8">
+          <div className="flex min-h-11 items-center px-1">
+            <Logo className="text-[22px]" />
           </div>
-          {error ? (
-            <p className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-200">
-              {error}
+
+          <StepIndicator currentStep={currentStep} labels={stepLabels} ariaLabel={t("progressLabel")} />
+
+          <header className="flex flex-col gap-3 px-1 pt-2">
+            <div className="flex flex-col gap-2">
+              <p className="text-[13px] font-bold uppercase tracking-[0.22em] text-[#a6ff00]">
+                {t("stepOf", { current: currentStep, total: TOTAL_STEPS })}
+              </p>
+              <h1 className="text-4xl font-black leading-[1.04] tracking-tight">
+                {t(`stepTitles.${STEP_KEYS[currentStep - 1]}`)}
+              </h1>
+            </div>
+            <p className="flex items-center gap-2 text-sm font-medium text-white/60">
+              <Save aria-hidden="true" size={18} strokeWidth={1.5} />
+              {t("draftLoaded")}
             </p>
-          ) : null}
+          </header>
+
+          <div className="px-1 pt-1">
+            <StepContent currentStep={currentStep} showErrors={showStepErrors} />
+            {error ? (
+              <p role="alert" className="mt-6 flex items-center gap-2 text-[15px] font-semibold leading-snug text-red-300">
+                <AlertCircle aria-hidden="true" size={20} strokeWidth={1.8} className="shrink-0" />
+                {error}
+              </p>
+            ) : null}
+          </div>
         </div>
 
-        <div className="mt-8 flex gap-3">
-          <button
-            type="button"
-            onClick={previousStep}
-            disabled={isFirstStep}
-            className="w-1/2 rounded-2xl border border-white/20 px-5 py-3 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {labels.previous}
-          </button>
-          <button
-            type="button"
-            onClick={isLastStep ? handleSubmit : handleNext}
-            disabled={isSubmitting}
-            className="apex-button w-1/2 rounded-2xl px-5 py-3 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {isSubmitting ? labels.submitting : isLastStep ? labels.finish : labels.next}
-          </button>
+        <div className="fixed inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[#020303] via-[#020303]/90 to-transparent px-4 pb-6 pt-10">
+          <div className={`mx-auto grid max-w-[720px] gap-3 ${isFirstStep ? "grid-cols-1" : "grid-cols-[1fr_1.5fr]"}`}>
+            {isFirstStep ? null : (
+              <button
+                type="button"
+                onClick={previousStep}
+                disabled={isSubmitting}
+                className="flex h-[60px] items-center justify-center gap-2.5 rounded-[1.875rem] border-[1.5px] border-white/30 px-6 text-lg font-bold disabled:opacity-40"
+              >
+                <ArrowLeft aria-hidden="true" size={22} strokeWidth={2} />
+                {t("actions.previous")}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={isLastStep ? handleSubmit : handleNext}
+              disabled={isSubmitting}
+              className="apex-button flex h-[60px] items-center justify-center gap-2.5 rounded-[1.875rem] px-7 text-lg font-extrabold disabled:opacity-40"
+            >
+              {isSubmitting ? t("actions.submitting") : isLastStep ? t("actions.finish") : t("actions.next")}
+              {isLastStep ? null : <ArrowRight aria-hidden="true" size={22} strokeWidth={2.2} />}
+            </button>
+          </div>
         </div>
-      </section>
-    </main>
+      </main>
     </>
   );
 }
