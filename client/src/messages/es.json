@@ -391,16 +391,17 @@
     "rejectHint": "Si la mantienes, tu rutina sigue igual y continúa como la de este mes.",
     "approved": "Listo, tu rutina fue actualizada.",
     "rejected": "Tu rutina sigue igual.",
-    "backToDashboard": "Volver al inicio",
+    "backToRoutine": "Volver a Rutina activa",
     "errors": {
       "generic": "No pudimos completar la acción. Intenta de nuevo.",
       "offline": "Necesitas conexión para decidir sobre esta propuesta.",
-      "conflict": "Tu rutina cambió desde que se hizo esta propuesta. Mantén tu rutina y vuelve a intentarlo."
+      "conflict": "Tu rutina cambió desde que se hizo esta propuesta, así que no se pudieron aplicar los cambios."
     },
     "states": {
-      "loading": "Buscando ajustes propuestos...",
+      "loading": "Cargando propuestas...",
       "error": "No pudimos cargar la propuesta. Intenta recargar la página.",
-      "empty": "No tienes ajustes pendientes por revisar."
+      "emptyTitle": "Sin propuestas pendientes",
+      "empty": "Tu rutina está al día."
     },
     "banner": {
       "title": "Tu coach preparó ajustes para tu rutina",

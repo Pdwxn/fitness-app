@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 import { usePendingProposal } from "@/hooks/usePendingProposal";
 
@@ -13,16 +14,22 @@ export function CoachProposalBanner({ locale }: { locale: string }) {
   if (!proposal) return null;
 
   return (
-    <section className="flex flex-col gap-3 rounded-[2rem] border border-[#a6ff00]/30 bg-[#a6ff00]/10 p-5 text-white sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <p className="text-base font-black text-[#d7ff8a]">{t("title")}</p>
-        <p className="mt-1 text-sm text-white/70">{t("description")}</p>
+    <section className="flex flex-col gap-4 rounded-[2rem] border border-[#a6ff00]/40 bg-[#a6ff00]/[0.07] p-5 text-white sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-start gap-3.5">
+        <span className="grid size-11 shrink-0 place-items-center rounded-full border-[1.5px] border-[#a6ff00]/55 bg-[#a6ff00]/10 text-[#a6ff00]">
+          <Sparkles aria-hidden="true" size={22} strokeWidth={1.6} />
+        </span>
+        <div>
+          <p className="text-lg font-extrabold leading-tight">{t("title")}</p>
+          <p className="mt-1 text-[15px] leading-snug text-white/60">{t("description")}</p>
+        </div>
       </div>
       <Link
         href={`/${locale}/routine/review`}
-        className="apex-button shrink-0 rounded-xl px-5 py-2.5 text-center text-sm font-black"
+        className="apex-button flex h-12 shrink-0 items-center justify-center gap-2 rounded-3xl px-6 text-base font-extrabold"
       >
         {t("cta")}
+        <ArrowRight aria-hidden="true" size={20} strokeWidth={2.2} />
       </Link>
     </section>
   );

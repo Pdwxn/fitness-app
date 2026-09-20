@@ -391,16 +391,17 @@
     "rejectHint": "If you keep it, your routine stays the same and carries on as this month's.",
     "approved": "Done, your routine was updated.",
     "rejected": "Your routine stays the same.",
-    "backToDashboard": "Back to home",
+    "backToRoutine": "Back to active routine",
     "errors": {
       "generic": "We couldn't complete that. Please try again.",
       "offline": "You need a connection to decide on this proposal.",
-      "conflict": "Your routine changed since this proposal was made. Keep your routine and try again."
+      "conflict": "Your routine changed since this proposal was made, so the changes could not be applied."
     },
     "states": {
-      "loading": "Looking for proposed adjustments...",
+      "loading": "Loading proposals...",
       "error": "We couldn't load the proposal. Try refreshing the page.",
-      "empty": "You have no adjustments waiting for review."
+      "emptyTitle": "No pending proposals",
+      "empty": "Your routine is up to date."
     },
     "banner": {
       "title": "Your coach prepared adjustments for your routine",
