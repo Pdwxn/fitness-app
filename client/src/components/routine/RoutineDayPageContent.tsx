@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
@@ -11,6 +10,7 @@ import type { ProgressionKind } from "@/lib/progression";
 import type { RoutineExercise } from "@/types/routine";
 
 import { DailyLogForm } from "./DailyLogForm";
+import { ExerciseMedia } from "./ExerciseMedia";
 
 /** Kinds worth showing a badge for -- "no history yet" or "off" would just be noise. */
 const ACTIONABLE_KINDS: ProgressionKind[] = [
@@ -78,11 +78,7 @@ type RoutineDayPageContentProps = {
 
 export function RoutineDayPageContent({ dayId, locale, labels }: RoutineDayPageContentProps) {
   const { routine, isLoading, hasError } = useRoutineCache();
-  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
-  const handleImageError = (exerciseId: string) => {
-    setFailedImages((prev) => new Set(prev).add(exerciseId));
-  };
   const day = routine?.weeks.flatMap((week) => week.days).find((item) => item.id === dayId) ?? null;
   const estimateMinutes = day ? Math.max(30, day.exercises.length * 12) : 0;
 
@@ -124,26 +120,11 @@ export function RoutineDayPageContent({ dayId, locale, labels }: RoutineDayPageC
                 </p>
               </div>
 
-              {exercise.image_url && !failedImages.has(exercise.id) ? (
-                <img
-                  src={exercise.image_url}
-                  alt={exercise.name}
-                  loading="lazy"
-                  onError={() => handleImageError(exercise.id)}
-                  className="mt-4 w-full rounded-2xl object-cover"
-                  style={{ aspectRatio: "16 / 9", maxHeight: 280 }}
-                />
-              ) : null}
-              {exercise.video_url ? (
-                <a
-                  href={exercise.video_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/20"
-                >
-                  ▶ ver demo
-                </a>
-              ) : null}
+              <ExerciseMedia
+                name={exercise.name}
+                imageUrl={exercise.image_url}
+                demoUrl={exercise.video_url}
+              />
 
               <div className="mt-4 flex flex-wrap gap-2 text-sm font-bold text-white/60">
                 {exercise.rest_seconds ? (
