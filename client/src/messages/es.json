@@ -285,8 +285,11 @@
       "cta": "Ver rutina completa",
       "weeks": "Semanas",
       "activeDays": "Días activos",
-      "nextWorkout": "Primer entreno",
-      "restDay": "Descanso"
+      "nextWorkout": "Próximo entrenamiento",
+      "restDay": "Descanso",
+      "today": "Hoy",
+      "tomorrow": "Mañana",
+      "restToday": "Hoy es día de descanso. Tu próximo entrenamiento:"
     },
     "weeklyPreview": {
       "title": "Vista semanal",

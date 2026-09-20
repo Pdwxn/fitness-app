@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
+import { getScheduledDay } from "@/lib/schedule";
 import type { Routine, RoutineDay } from "@/types/routine";
 
 import { ExercisePreviewList } from "./ExercisePreviewList";
@@ -33,10 +35,18 @@ function getFirstTrainingDay(days: RoutineDay[]) {
 }
 
 export function WeeklyRoutinePreview({ routine, dayHref, labels }: WeeklyRoutinePreviewProps) {
-  const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
+  const tToday = useTranslations("Dashboard.activeRoutine");
+  // Open on the current calendar week and today's day; fall back to the first
+  // week / first training day when the routine has no usable start date.
+  const [today] = useState(() => getScheduledDay(routine, new Date()));
+  const todayDayId = today?.day?.id ?? null;
+  const todayWeekIndex = today ? routine.weeks.findIndex((week) => week.id === today.week.id) : -1;
+  const initialWeekIndex = todayWeekIndex >= 0 ? todayWeekIndex : 0;
+
+  const [selectedWeekIndex, setSelectedWeekIndex] = useState(initialWeekIndex);
   const selectedWeek = routine.weeks[selectedWeekIndex] ?? routine.weeks[0];
   const [selectedDayId, setSelectedDayId] = useState<string | null>(
-    getFirstTrainingDay(selectedWeek?.days ?? [])?.id ?? null,
+    todayDayId ?? getFirstTrainingDay(routine.weeks[initialWeekIndex]?.days ?? [])?.id ?? null,
   );
   const selectedDay = selectedWeek?.days.find((day) => day.id === selectedDayId) ?? null;
 
@@ -93,6 +103,11 @@ export function WeeklyRoutinePreview({ routine, dayHref, labels }: WeeklyRoutine
                           {labels.week} {selectedWeek.week_number} · {day.day_number}
                         </p>
                         <p className="mt-1 text-lg font-black">{day.day_name}</p>
+                        {day.id === todayDayId ? (
+                          <p className="mt-1 text-xs font-black uppercase tracking-[0.14em] text-[#a6ff00]">
+                            {tToday("today")}
+                          </p>
+                        ) : null}
                       </div>
                       <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-black text-white/70">
                         {day.is_rest_day

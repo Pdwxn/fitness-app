@@ -107,6 +107,7 @@ class RoutineSerializer(serializers.ModelSerializer):
             "year",
             "is_active",
             "generated_at",
+            "cycle_started_on",
             "gemini_prompt_hash",
             "weeks",
             "created_at",

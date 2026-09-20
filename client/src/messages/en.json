@@ -285,8 +285,11 @@
       "cta": "View full routine",
       "weeks": "Weeks",
       "activeDays": "Active days",
-      "nextWorkout": "First workout",
-      "restDay": "Rest"
+      "nextWorkout": "Next workout",
+      "restDay": "Rest",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "restToday": "Today is a rest day. Your next workout:"
     },
     "weeklyPreview": {
       "title": "Weekly view",

@@ -51,6 +51,8 @@ export type Routine = {
   year: number | null;
   is_active: boolean;
   generated_at: string | null;
+  /** Start of the current training cycle (`YYYY-MM-DD`); anchors the weekly schedule. */
+  cycle_started_on?: string | null;
   gemini_prompt_hash: string;
   weeks: RoutineWeek[];
   created_at: string;
