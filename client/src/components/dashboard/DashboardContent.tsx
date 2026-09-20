@@ -10,6 +10,7 @@ import { fetchProgressStats } from "@/hooks/useProgressStats";
 import { usePendingRoutine } from "@/hooks/usePendingRoutine";
 import { queryKeys } from "@/lib/query-keys";
 
+import { CoachProposalBanner } from "@/components/coach/CoachProposalBanner";
 import { ChangeRoutineButton } from "@/components/routine/ChangeRoutineButton";
 import { RoutineChoiceScreen } from "@/components/routine/RoutineChoiceScreen";
 import { ActiveRoutineCard } from "./ActiveRoutineCard";
@@ -180,6 +181,7 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
 
       {routine ? (
         <>
+          <CoachProposalBanner locale={locale} />
           <div className="flex items-center justify-end gap-3">
             {routine.source === "manual" ? (
               <Link
