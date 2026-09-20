@@ -490,6 +490,13 @@
       "error": "We could not load this day. Try refreshing the page.",
       "notFound": "We could not find this day in your active routine."
     },
+    "demo": {
+      "play": "▶ Watch demo",
+      "stop": "■ Stop demo",
+      "loading": "Loading demo...",
+      "error": "Couldn't load the demo. Check your connection.",
+      "alt": "{name} demonstration"
+    },
     "progression": {
       "label": "Suggestion",
       "nextWeight": "{weight} kg x {reps}",

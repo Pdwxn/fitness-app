@@ -490,6 +490,13 @@
       "error": "No pudimos cargar el día. Intenta recargar la página.",
       "notFound": "No encontramos este día en tu rutina activa."
     },
+    "demo": {
+      "play": "▶ Ver demo",
+      "stop": "■ Detener demo",
+      "loading": "Cargando demo...",
+      "error": "No se pudo cargar la demo. Revisa tu conexión.",
+      "alt": "Demostración de {name}"
+    },
     "progression": {
       "label": "Sugerencia",
       "nextWeight": "{weight} kg x {reps}",

@@ -241,6 +241,7 @@ def _result_from_stored(ex: StoredExercise) -> dict:
         "image_url": resolve_image_url(ex),
         "instructions": ex.instructions,
         "external_id": ex.external_id,
+        "gif_url": resolve_gif_url(ex),
     }
 
 
@@ -323,6 +324,7 @@ def enrich_exercise(exercise: RoutineExercise) -> bool:
 
     image_url = match["image_url"]
     external_id = match.get("external_id", "")
+    gif_url = match.get("gif_url", "")
 
     logger.info(
         ">>> enrich[%s] name='%s' | UPDATED image_url='%s' external_id='%s'",
@@ -334,6 +336,10 @@ def enrich_exercise(exercise: RoutineExercise) -> bool:
         updates["image_url"] = image_url
     if external_id and not already_identified:
         updates["source_external_id"] = external_id
+    # Name-matched exercises (AI routines) used to end up with no demo at all:
+    # only the catalog fast path above filled video_url.
+    if gif_url and not exercise.video_url:
+        updates["video_url"] = gif_url
     if updates:
         RoutineExercise.objects.filter(id=exercise.id).update(**updates)
 
