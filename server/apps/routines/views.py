@@ -15,15 +15,17 @@ from rest_framework.views import APIView
 
 logger = logging.getLogger(__name__)
 
-from .models import Routine, StoredExercise
+from .models import Routine, RoutineEditProposal, StoredExercise
 from .serializers import (
     ManualRoutineInputSerializer,
     RoutineDaySerializer,
+    RoutineEditProposalSerializer,
     RoutineSerializer,
     RoutineSummarySerializer,
     RoutineWeekSerializer,
     StoredExerciseSerializer,
 )
+from .services import coach_service
 from .services.dev_seed import seed_dev_routine
 from .services.generation_service import (
     RoutineNotEditableError,
@@ -138,6 +140,38 @@ class GenerateRoutineView(APIView):
     throttle_scope = "generate_routine"
 
     def post(self, request):
+        # With enough logged history, the AI coach proposes edits to the current
+        # routine instead of replacing it (see services/coach_service.py).
+        try:
+            outcome = coach_service.propose_edit_if_eligible(request.user)
+        except APIException as exc:
+            return Response(
+                {"detail": exc.detail, "code": exc.get_codes()},
+                status=exc.status_code,
+            )
+        if outcome.kind == "proposal":
+            return Response(
+                {
+                    "detail": "The AI coach prepared a proposal for your routine.",
+                    "mode": "proposal",
+                    "proposal": RoutineEditProposalSerializer(outcome.proposal).data,
+                },
+                status=status.HTTP_200_OK,
+            )
+        if outcome.kind == "unchanged":
+            return Response(
+                {
+                    "detail": "The AI coach found nothing to change; your routine continues.",
+                    "mode": "unchanged",
+                    "routine": RoutineSerializer(
+                        Routine.objects.prefetch_related("weeks__days__exercises").get(
+                            pk=outcome.routine.pk
+                        )
+                    ).data,
+                },
+                status=status.HTTP_200_OK,
+            )
+
         try:
             routine, _ = generate_monthly_routine_if_needed(request.user, return_existing=False)
         except APIException as exc:
@@ -156,6 +190,7 @@ class GenerateRoutineView(APIView):
         return Response(
             {
                 "detail": "Routine generated successfully.",
+                "mode": "routine",
                 "routine": serializer.data,
             },
             status=status.HTTP_201_CREATED,
@@ -285,3 +320,58 @@ class RoutineDeactivateView(APIView):
             routine.is_active = False
             routine.save(update_fields=["is_active", "updated_at"])
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+def _get_own_pending_proposal(user, proposal_id):
+    return (
+        RoutineEditProposal.objects.filter(
+            id=proposal_id, routine__user=user, routine__deleted_at__isnull=True
+        )
+        .select_related("routine")
+        .first()
+    )
+
+
+class PendingProposalView(APIView):
+    """The AI coach's pending proposal for the user's active routine, if any."""
+
+    def get(self, request):
+        proposal = (
+            RoutineEditProposal.objects.filter(
+                routine__user=request.user,
+                routine__is_active=True,
+                routine__deleted_at__isnull=True,
+                status=RoutineEditProposal.Status.PENDING,
+            )
+            .select_related("routine")
+            .first()
+        )
+        if proposal is None:
+            return Response({"detail": "No pending proposal."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(RoutineEditProposalSerializer(proposal).data)
+
+
+class _ProposalDecisionView(APIView):
+    decide = None  # set by subclasses
+
+    def post(self, request, proposal_id):
+        proposal = _get_own_pending_proposal(request.user, proposal_id)
+        if proposal is None:
+            return Response({"detail": "Proposal not found."}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            routine = type(self).decide(proposal)
+        except APIException as exc:
+            return Response(
+                {"detail": exc.detail, "code": exc.get_codes()},
+                status=exc.status_code,
+            )
+        return Response(RoutineSerializer(routine).data)
+
+
+class ApproveProposalView(_ProposalDecisionView):
+    decide = staticmethod(coach_service.approve_proposal)
+
+
+class RejectProposalView(_ProposalDecisionView):
+    decide = staticmethod(coach_service.reject_proposal)

@@ -44,9 +44,16 @@ def calculate_stats(user):
 
 
 def try_generate_next_routine(user):
+    """Called after logs are saved. Returns extra response keys, or ``None``.
+
+    - ``{"next_proposal": {...}}``: the AI coach prepared edits for the user to review.
+    - ``{"next_routine": {...}}``: a new routine was generated (or the coach found nothing to change).
+    """
     from datetime import date
 
     import logging
+
+    from apps.routines.services import coach_service
 
     logger = logging.getLogger(__name__)
 
@@ -62,16 +69,36 @@ def try_generate_next_routine(user):
 
         next_month = active_routine.month % 12 + 1
         next_year = active_routine.year + (1 if active_routine.month == 12 else 0)
-        notes = get_routine_daily_notes(user, active_routine)
+        target = date(next_year, next_month, 1)
 
+        outcome = coach_service.propose_edit_if_eligible(user, today=target)
+        if outcome.kind == "proposal":
+            return {
+                "next_proposal": {
+                    "id": str(outcome.proposal.id),
+                    "target_month": outcome.proposal.target_month,
+                    "target_year": outcome.proposal.target_year,
+                }
+            }
+        if outcome.kind == "unchanged":
+            routine = outcome.routine
+            return {"next_routine": {"id": str(routine.id), "month": routine.month, "year": routine.year}}
+
+        notes = get_routine_daily_notes(user, active_routine)
         new_routine, created = generate_monthly_routine_if_needed(
             user,
-            today=date(next_year, next_month, 1),
+            today=target,
             previous_month_notes=notes,
             return_existing=True,
         )
         if created:
-            return {"id": str(new_routine.id), "month": new_routine.month, "year": new_routine.year}
+            return {
+                "next_routine": {
+                    "id": str(new_routine.id),
+                    "month": new_routine.month,
+                    "year": new_routine.year,
+                }
+            }
         return None
     except Routine.DoesNotExist:
         return None
@@ -96,9 +123,7 @@ class DailyLogListCreateView(APIView):
         log = serializer.save()
 
         response_data = DailyLogSerializer(log).data
-        next_routine_data = try_generate_next_routine(request.user)
-        if next_routine_data:
-            response_data["next_routine"] = next_routine_data
+        response_data.update(try_generate_next_routine(request.user) or {})
 
         return Response(response_data, status=status.HTTP_201_CREATED)
 
@@ -180,9 +205,7 @@ class DailyLogBatchView(APIView):
             "updated": updated,
             "logs": DailyLogSerializer(logs, many=True).data,
         }
-        next_routine_data = try_generate_next_routine(request.user)
-        if next_routine_data:
-            response_data["next_routine"] = next_routine_data
+        response_data.update(try_generate_next_routine(request.user) or {})
 
         return Response(response_data)
 

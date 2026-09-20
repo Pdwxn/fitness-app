@@ -2,7 +2,14 @@ from rest_framework import serializers
 
 from apps.progress.models import DailyLog
 
-from .models import Routine, RoutineDay, RoutineExercise, RoutineWeek, StoredExercise
+from .models import (
+    Routine,
+    RoutineDay,
+    RoutineEditProposal,
+    RoutineExercise,
+    RoutineWeek,
+    StoredExercise,
+)
 from .services.exercisedb_service import resolve_gif_url, resolve_image_url
 
 
@@ -151,3 +158,20 @@ class ManualRoutineInputSerializer(serializers.Serializer):
         from .services.routine_validation import validate_manual_routine_payload
 
         return validate_manual_routine_payload(self.initial_data)
+
+
+class RoutineEditProposalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoutineEditProposal
+        fields = (
+            "id",
+            "routine",
+            "status",
+            "target_month",
+            "target_year",
+            "summary",
+            "changes",
+            "created_at",
+            "decided_at",
+        )
+        read_only_fields = fields
