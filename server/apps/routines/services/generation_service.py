@@ -330,13 +330,122 @@ def persist_manual_routine(user, routine_data):
     return persist_routine(user, normalized, source=Routine.Source.MANUAL)
 
 
-def update_manual_routine(routine, routine_data):
-    """Replace the full weeks/days/exercises tree of an existing manual routine.
+def _norm_name(name):
+    return " ".join(str(name).strip().lower().split())
 
-    Keeps ``id`` / ``is_active`` / ``created_at``. Old weeks are hard-deleted
-    (cascades to days/exercises) and rebuilt from ``routine_data``, which avoids
-    the `order`/`day_number` uniqueness traps a partial update would hit.
-    Only `source=manual` routines are editable — AI-generated ones are
+
+def _sync_exercises(day, exercises_data):
+    """Make ``day``'s exercises match ``exercises_data``, keeping matched rows.
+
+    A row is matched by catalog id (``source_external_id``) when the payload
+    has one, otherwise by name -- so the exercise ids that logged entries
+    point at survive edits, reorders and tweaks. Unmatched rows are deleted
+    (safe: logs reference exercises by id inside JSON, not by foreign key).
+    """
+    existing = list(RoutineExercise.objects.filter(day=day).order_by("order"))
+    available = list(existing)
+    pairs = []  # (payload item, matched row or None)
+    for item in exercises_data:
+        external_id = item.get("external_id", "")
+        match = None
+        if external_id:
+            match = next((r for r in available if r.source_external_id == external_id), None)
+        if match is None:
+            match = next((r for r in available if _norm_name(r.name) == _norm_name(item["name"])), None)
+        if match is not None:
+            available.remove(match)
+        pairs.append((item, match))
+
+    RoutineExercise.objects.filter(id__in=[r.id for r in available]).delete()
+    # unique (day, order): park kept rows out of the way before renumbering.
+    for offset, (_, row) in enumerate(pairs):
+        if row is not None:
+            RoutineExercise.objects.filter(id=row.id).update(order=10000 + offset)
+
+    for position, (item, row) in enumerate(pairs, start=1):
+        fields = {
+            "name": item["name"],
+            "muscle_group": item.get("muscle_group", ""),
+            "sets": item.get("sets"),
+            "reps": item.get("reps", ""),
+            "weight_kg": item.get("weight_kg"),
+            "rest_seconds": item.get("rest_seconds"),
+            "order": position,
+        }
+        if row is None:
+            RoutineExercise.objects.create(
+                day=day,
+                source_external_id=item.get("external_id", ""),
+                variants=item.get("variants", []),
+                instructions=item.get("instructions", ""),
+                search_term=item.get("search_term", ""),
+                **fields,
+            )
+            continue
+        for name, value in fields.items():
+            setattr(row, name, value)
+        if item.get("external_id"):
+            row.source_external_id = item["external_id"]
+        # The builder doesn't send these; don't wipe what enrichment filled in.
+        if item.get("instructions"):
+            row.instructions = item["instructions"]
+        if item.get("variants"):
+            row.variants = item["variants"]
+        row.save()
+
+
+def _sync_routine_tree(routine, routine_data):
+    """Update ``routine``'s weeks/days/exercises in place to match ``routine_data``.
+
+    ``DailyLog.routine_day`` is ON DELETE CASCADE, so deleting and rebuilding
+    days destroys the user's logged history. Weeks and days are therefore
+    matched by number and updated; ones missing from the payload are
+    soft-deleted (their logs stay in the database) and revived if a later
+    edit brings them back.
+    """
+    now = timezone.now()
+    week_numbers = {w["week_number"] for w in routine_data["weeks"]}
+
+    for week in RoutineWeek.all_objects.filter(routine=routine):
+        if week.week_number not in week_numbers and week.deleted_at is None:
+            week.deleted_at = now
+            week.save(update_fields=["deleted_at", "updated_at"])
+
+    for week_data in routine_data["weeks"]:
+        week = RoutineWeek.all_objects.filter(
+            routine=routine, week_number=week_data["week_number"]
+        ).first()
+        if week is None:
+            week = RoutineWeek(routine=routine, week_number=week_data["week_number"])
+        week.focus = week_data.get("focus", "")
+        week.notes = week_data.get("notes", "")
+        week.deleted_at = None
+        week.save()
+
+        day_numbers = {d["day_number"] for d in week_data["days"]}
+        for day in RoutineDay.all_objects.filter(week=week):
+            if day.day_number not in day_numbers and day.deleted_at is None:
+                day.deleted_at = now
+                day.save(update_fields=["deleted_at", "updated_at"])
+
+        for day_data in week_data["days"]:
+            day = RoutineDay.all_objects.filter(week=week, day_number=day_data["day_number"]).first()
+            if day is None:
+                day = RoutineDay(week=week, day_number=day_data["day_number"])
+            day.day_name = day_data["day_name"]
+            day.is_rest_day = day_data.get("is_rest_day", False)
+            day.deleted_at = None
+            day.save()
+            _sync_exercises(day, day_data.get("exercises", []))
+
+
+def update_manual_routine(routine, routine_data):
+    """Update a manual routine's weeks/days/exercises to match ``routine_data``.
+
+    Keeps ``id`` / ``is_active`` / ``created_at`` -- and, crucially, the
+    user's logged history: the tree is synced in place (see
+    :func:`_sync_routine_tree`) instead of being deleted and rebuilt.
+    Only `source=manual` routines are editable -- AI-generated ones are
     regenerated, not edited. Re-runs `enrich_routine` (best-effort).
     """
     from .routine_validation import validate_manual_routine_payload
@@ -347,8 +456,7 @@ def update_manual_routine(routine, routine_data):
     normalized = validate_manual_routine_payload(routine_data)
 
     with transaction.atomic():
-        routine.weeks.all().delete()
-        _build_routine_tree(routine, normalized)
+        _sync_routine_tree(routine, normalized)
         routine.save(update_fields=["updated_at"])
 
     try:
