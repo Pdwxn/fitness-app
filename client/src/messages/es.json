@@ -310,6 +310,57 @@
       "offlineFallback": "Estás viendo la última rutina guardada en este dispositivo."
     }
   },
+  "Coach": {
+    "eyebrow": "Tu coach de IA",
+    "reviewTitle": "Ajustes propuestos",
+    "reviewDescription": "Revisa lo que la IA cambiaría en tu rutina según lo que registraste. No se aplica nada hasta que lo apruebes.",
+    "summaryLabel": "Resumen del coach",
+    "changeCount": "{count, plural, one {# cambio propuesto} other {# cambios propuestos}}",
+    "day": "Día {day}",
+    "why": "Por qué",
+    "allWeeks": "Se aplica en todas las semanas de la rutina.",
+    "types": {
+      "adjust_load": "Ajuste de carga",
+      "substitute_exercise": "Sustitución",
+      "add_exercise": "Ejercicio nuevo",
+      "remove_exercise": "Quitar ejercicio"
+    },
+    "adjust": {
+      "weight": "Peso {percent}",
+      "sets": "Series {delta}",
+      "reps": "Repeticiones: {reps}",
+      "rest": "Descanso: {seconds} s"
+    },
+    "substituteLine": "{from} → {to}",
+    "addLine": "{sets} series x {reps} reps",
+    "approve": "Aplicar cambios",
+    "approving": "Aplicando...",
+    "reject": "Mantener mi rutina",
+    "rejecting": "Guardando...",
+    "rejectHint": "Si la mantienes, tu rutina sigue igual y continúa como la de este mes.",
+    "approved": "Listo, tu rutina fue actualizada.",
+    "rejected": "Tu rutina sigue igual.",
+    "backToDashboard": "Volver al inicio",
+    "errors": {
+      "generic": "No pudimos completar la acción. Intenta de nuevo.",
+      "offline": "Necesitas conexión para decidir sobre esta propuesta.",
+      "conflict": "Tu rutina cambió desde que se hizo esta propuesta. Mantén tu rutina y vuelve a intentarlo."
+    },
+    "states": {
+      "loading": "Buscando ajustes propuestos...",
+      "error": "No pudimos cargar la propuesta. Intenta recargar la página.",
+      "empty": "No tienes ajustes pendientes por revisar."
+    },
+    "banner": {
+      "title": "Tu coach preparó ajustes para tu rutina",
+      "description": "Revisa los cambios que propone según tu progreso. Tú decides si se aplican.",
+      "cta": "Revisar"
+    },
+    "toast": {
+      "ready": "Tu coach preparó ajustes para tu rutina de {month}.",
+      "review": "Revisar"
+    }
+  },
   "Routine": {
     "title": "Rutina activa",
     "description": "Consulta tu plan mensual completo, semana por semana.",

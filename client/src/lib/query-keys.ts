@@ -4,6 +4,9 @@ export const queryKeys = {
     active: () => [...queryKeys.routine.all, "active"] as const,
     day: (dayId: string) => [...queryKeys.routine.all, "day", dayId] as const,
   },
+  proposal: {
+    pending: () => ["proposal", "pending"] as const,
+  },
   progress: {
     all: ["progress"] as const,
     logs: (routineDayId?: string) =>

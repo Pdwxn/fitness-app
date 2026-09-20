@@ -123,6 +123,10 @@ export async function syncPendingLogs(): Promise<boolean> {
     if (response.next_routine) {
       useNextRoutineStore.getState().setNextRoutine(response.next_routine);
     }
+    if (response.next_proposal) {
+      useNextRoutineStore.getState().setNextProposal(response.next_proposal);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.proposal.pending() });
+    }
 
     return true;
   } catch {

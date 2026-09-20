@@ -310,6 +310,57 @@
       "offlineFallback": "You are viewing the latest routine saved on this device."
     }
   },
+  "Coach": {
+    "eyebrow": "Your AI coach",
+    "reviewTitle": "Proposed adjustments",
+    "reviewDescription": "Review what the AI would change in your routine based on what you logged. Nothing is applied until you approve it.",
+    "summaryLabel": "Coach summary",
+    "changeCount": "{count, plural, one {# proposed change} other {# proposed changes}}",
+    "day": "Day {day}",
+    "why": "Why",
+    "allWeeks": "Applies to every week of the routine.",
+    "types": {
+      "adjust_load": "Load adjustment",
+      "substitute_exercise": "Substitution",
+      "add_exercise": "New exercise",
+      "remove_exercise": "Remove exercise"
+    },
+    "adjust": {
+      "weight": "Weight {percent}",
+      "sets": "Sets {delta}",
+      "reps": "Reps: {reps}",
+      "rest": "Rest: {seconds} s"
+    },
+    "substituteLine": "{from} → {to}",
+    "addLine": "{sets} sets x {reps} reps",
+    "approve": "Apply changes",
+    "approving": "Applying...",
+    "reject": "Keep my routine",
+    "rejecting": "Saving...",
+    "rejectHint": "If you keep it, your routine stays the same and carries on as this month's.",
+    "approved": "Done, your routine was updated.",
+    "rejected": "Your routine stays the same.",
+    "backToDashboard": "Back to home",
+    "errors": {
+      "generic": "We couldn't complete that. Please try again.",
+      "offline": "You need a connection to decide on this proposal.",
+      "conflict": "Your routine changed since this proposal was made. Keep your routine and try again."
+    },
+    "states": {
+      "loading": "Looking for proposed adjustments...",
+      "error": "We couldn't load the proposal. Try refreshing the page.",
+      "empty": "You have no adjustments waiting for review."
+    },
+    "banner": {
+      "title": "Your coach prepared adjustments for your routine",
+      "description": "Review the changes it proposes based on your progress. You decide whether they apply.",
+      "cta": "Review"
+    },
+    "toast": {
+      "ready": "Your coach prepared adjustments for your {month} routine.",
+      "review": "Review"
+    }
+  },
   "Routine": {
     "title": "Active routine",
     "description": "Review your full monthly plan, week by week.",
