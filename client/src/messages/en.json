@@ -1,39 +1,50 @@
 {
   "Home": {
-    "badge": "v1.5",
-    "eyebrow": "AI Fitness App",
-    "title": "Train smarter. Progress every day.",
-    "description": "Personalized routines, real progress, powered by AI.",
+    "eyebrow": "AI fitness app",
+    "title": "Train smarter. <accent>Progress</accent> every day.",
+    "description": "Personalized routines, real progress, with AI.",
     "primaryCta": "Start your journey",
-    "secondaryCta": "View demo",
-    "frontendLabel": "AI Adaptive",
-    "backendLabel": "Real Progress",
-    "apiStatusLabel": "API status",
-    "online": "Online",
-    "offline": "Offline",
-    "healthcheck": "Healthcheck",
     "sessionTitle": "Session",
     "sessionActive": "Active session",
-    "sessionInactive": "You are not logged in",
-    "sessionHint": "Log in to prepare your onboarding and personalized routine.",
     "login": "Log in",
-    "register": "Create account",
     "logout": "Log out",
     "logoutLoading": "Logging out...",
-    "offlineSync": "Offline Sync",
-    "adaptiveDescription": "Plans that adapt to you",
-    "progressDescription": "Track every rep, see results",
-    "offlineDescription": "Train anywhere, anytime"
+    "features": {
+      "ai": { "title": "Adaptive AI", "description": "Plans that adapt to you" },
+      "progress": { "title": "Real progress", "description": "Log every set, see your results" },
+      "offline": { "title": "Works offline", "description": "Train anywhere, anytime" }
+    },
+    "app": {
+      "eyebrow": "The app",
+      "title": "Everything you need. Nothing you don't.",
+      "mock": {
+        "upNext": "Next workout",
+        "day": "Push: chest and shoulders",
+        "meta": "6 exercises · 55 min",
+        "start": "Start workout",
+        "firstExercises": "First exercises",
+        "viewRoutine": "View routine",
+        "exercise1": "Barbell bench press",
+        "exercise1Detail": "4 × 6 · 80 kg",
+        "exercise2": "Dumbbell shoulder press",
+        "exercise2Detail": "3 × 10 · 24 kg"
+      }
+    }
   },
   "Auth": {
     "login": {
       "title": "Welcome back",
-      "description": "Access your routine, progress, and saved preferences.",
+      "description": "Access your routine, progress and preferences.",
       "email": "Email",
+      "emailPlaceholder": "you@email.com",
       "password": "Password",
+      "passwordPlaceholder": "Your password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
       "submit": "Log in",
       "loading": "Logging in...",
       "error": "Could not log in.",
+      "or": "OR",
       "google": "Continue with Google",
       "googleLoading": "Opening Google...",
       "googleError": "Could not log in with Google.",
@@ -41,15 +52,21 @@
     },
     "register": {
       "title": "Create account",
-      "description": "Start your Apex Fit journey with personalized AI routines.",
       "email": "Email",
+      "emailPlaceholder": "you@email.com",
       "password": "Password",
+      "passwordPlaceholder": "Create a password",
       "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Repeat your password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
       "submit": "Create account",
       "loading": "Creating account...",
       "passwordMismatch": "Passwords do not match.",
-      "success": "Account created. Check your email to confirm registration.",
+      "success": "Account created. Check your email to confirm your registration.",
+      "successCta": "Log in",
       "error": "Could not create the account.",
+      "or": "OR",
       "google": "Sign up with Google",
       "googleLoading": "Opening Google...",
       "googleError": "Could not sign up with Google.",
@@ -59,7 +76,17 @@
   "Onboarding": {
     "title": "Let's build your routine",
     "description": "Complete six quick steps so the app can prepare a routine around your body, goals, and equipment.",
-    "draftLoaded": "Your draft is saved locally as you progress.",
+    "draftLoaded": "Your draft is saved on this device",
+    "stepOf": "Step {current} of {total}",
+    "progressLabel": "Onboarding progress",
+    "stepTitles": {
+      "personal": "Personal details",
+      "fitness": "Your fitness level",
+      "goals": "Your goals",
+      "health": "Your health",
+      "equipment": "Your equipment",
+      "schedule": "Your schedule"
+    },
     "validationError": "Complete the required fields before continuing.",
     "submitError": "Could not complete onboarding. Try again.",
     "loadingStatus": "Checking onboarding status...",
@@ -94,10 +121,23 @@
         "fullNamePlaceholder": "Example: Ana Perez",
         "gender": "Gender",
         "age": "Age",
-        "weightKg": "Weight (kg)",
-        "weightLb": "Weight (lb)",
-        "heightCm": "Height (cm)",
-        "heightFt": "Height (ft/in)",
+        "agePlaceholder": "E.g. 28",
+        "ageUnit": "years",
+        "units": "Measurement system",
+        "unitOptions": { "metric": "Metric", "imperial": "Imperial" },
+        "weight": "Weight",
+        "weightPlaceholder": "E.g. 78",
+        "height": "Height",
+        "heightFeet": "Height (ft)",
+        "heightInches": "Height (in)",
+        "heightPlaceholder": "E.g. 178",
+        "errors": {
+          "name": "Enter your name.",
+          "gender": "Pick an option.",
+          "age": "Enter a valid age.",
+          "weight": "Enter your weight.",
+          "height": "Enter your height."
+        },
         "genderOptions": {
           "male": "Male",
           "female": "Female",
@@ -156,9 +196,9 @@
           "forearms": "Forearms"
         },
         "intensity": {
-          "always_failure": "Always to failure 💀",
-          "near_failure": "1-2 reps from failure 🎯",
-          "comfortable": "3+ reps from failure 🧘"
+          "always_failure": "Always to failure",
+          "near_failure": "1-2 reps from failure",
+          "comfortable": "3+ reps from failure"
         }
       },
       "health": {
@@ -166,10 +206,14 @@
         "conditionsHint": "Optional, helps adjust your routine to avoid risks",
         "injuriesLabel": "Additional injuries or discomfort",
         "injuriesHint": "Add discomfort or injuries. You can leave this empty.",
-        "areaPlaceholder": "Area: left knee",
-        "descriptionPlaceholder": "Description",
+        "injuryNumber": "Injury {number}",
+        "removeAria": "Remove injury {number}",
+        "area": "Area",
+        "areaPlaceholder": "E.g. left knee",
+        "description": "Description",
+        "descriptionPlaceholder": "Describe the injury",
         "remove": "Remove",
-        "add": "Add injury or discomfort",
+        "add": "Add injury",
         "conditions": {
           "knee_pain": { "label": "Knee pain / Arthritis", "description": "Pain in squats, lunges, impact" },
           "lower_back_pain": { "label": "Lower back pain", "description": "Pain in deadlift, row, squat" },
@@ -184,6 +228,8 @@
         }
       },
       "equipment": {
+        "typeLabel": "Where do you train?",
+        "availableLabel": "Available equipment",
         "types": {
           "gym": { "label": "Gym", "description": "Machines, barbells, dumbbells, and cables" },
           "home": { "label": "Home", "description": "Limited equipment or home training" },
@@ -200,15 +246,16 @@
         }
       },
       "schedule": {
+        "minutes": "{count} min",
         "daysLabel": "How many days per week can you train?",
         "durationLabel": "How long per session?",
         "routineLabel": "Routine type",
         "recommended": "RECOMMENDED",
         "routines": {
-          "push_pull_legs": { "label": "Push / Pull / Legs", "description": "Upper push, upper pull, and legs on separate days. The most popular split for volume.", "days": "⭐ 3-4 days/week" },
-          "upper_lower": { "label": "Upper / Lower", "description": "Alternate full upper body with legs. Ideal for 2x frequency per muscle group.", "days": "⭐ 4 days/week" },
-          "hybrid": { "label": "Hybrid", "description": "Combines compound and accessory exercises each session. Flexible and adaptable.", "days": "⭐ 1-3 days/week" },
-          "5_days": { "label": "5 days / Weider", "description": "One large muscle group per day (chest, back, shoulders, legs, arms). Higher volume.", "days": "⭐ 5-6 days/week" }
+          "push_pull_legs": { "label": "Push / Pull / Legs", "description": "Upper push, upper pull, and legs on separate days. The most popular split for volume.", "days": "3-4 days/week" },
+          "upper_lower": { "label": "Upper / Lower", "description": "Alternate full upper body with legs. Ideal for 2x frequency per muscle group.", "days": "4 days/week" },
+          "hybrid": { "label": "Hybrid", "description": "Combines compound and accessory exercises each session. Flexible and adaptable.", "days": "1-3 days/week" },
+          "5_days": { "label": "5 days / Weider", "description": "One large muscle group per day (chest, back, shoulders, legs, arms). Higher volume.", "days": "5-6 days/week" }
         }
       }
     }
@@ -281,36 +328,23 @@
       "startWorkout": "Start workout →",
       "exercises": "exercises",
       "title": "Monthly plan",
-      "description": "Your personalized routine is saved. Review the week, pick a day, and prepare your next workout.",
-      "cta": "View full routine",
-      "weeks": "Weeks",
-      "activeDays": "Active days",
-      "nextWorkout": "Next workout",
-      "restDay": "Rest",
       "today": "Today",
       "tomorrow": "Tomorrow",
       "restToday": "Today is a rest day. Your next workout:"
     },
-    "weeklyPreview": {
-      "title": "Weekly view",
-      "week": "Week",
-      "restDay": "Rest",
-      "exercises": "exercises",
-      "selectedDay": {
-        "title": "Exercises",
-        "restDay": "Rest day. Focus on recovery, light mobility, and sleep.",
-        "sets": "sets",
-        "reps": "reps",
-        "rest": "Rest",
-        "weight": "Weight",
-        "seconds": "sec",
-        "empty": "Select a training day to see its exercises."
-      }
+    "todayPreview": {
+      "title": "First exercises",
+      "viewRoutine": "View routine"
     },
     "routineStates": {
       "loading": "Looking for your active routine...",
       "error": "We could not load your routine. Try refreshing the page.",
       "offlineFallback": "You are viewing the latest routine saved on this device."
+    },
+    "noRoutine": {
+      "title": "You don't have an active routine yet",
+      "description": "Build your own routine or generate a monthly plan with AI.",
+      "cta": "See options"
     }
   },
   "OfflineMedia": {
@@ -376,20 +410,25 @@
       "ready": "Your coach prepared adjustments for your {month} routine.",
       "review": "Review"
     }
-  },
+  },
   "Routine": {
     "title": "Active routine",
     "description": "Review your full monthly plan, week by week.",
+    "eyebrow": "Your routine",
+    "activeTitle": "Active routine",
+    "monthlyBadge": "Monthly plan {period}",
+    "manualBadge": "Manual routine",
+    "editRoutine": "Edit routine",
     "week": "Week",
     "restDay": "Rest",
     "exercises": "exercises",
-    "viewDay": "View day details",
+    "today": "TODAY",
+    "completedAria": "Completed",
     "nextRoutineReady": "🎯 Your new routine for {month} is ready!",
     "viewRoutine": "View routine",
     "states": {
       "loading": "Loading your routine...",
       "error": "We could not load your routine. Try refreshing the page.",
-      "empty": "No active routine yet. Apex Fit will generate it automatically after onboarding.",
       "offlineFallback": "You are viewing the latest routine saved on this device."
     }
   },
@@ -399,13 +438,12 @@
     "description": "Build your own routine choosing exercises, or let AI design a personalized monthly plan.",
     "manual": {
       "title": "Build my routine",
-      "description": "Pick exercises, set your weeks and days. Works fully offline.",
-      "cta": "Build my routine"
+      "description": "Pick exercises, set weeks and days.",
+      "offline": "Works fully offline"
     },
     "ai": {
       "title": "Generate with AI",
-      "description": "Answer a few questions and get a science-based monthly plan.",
-      "cta": "Generate with AI"
+      "description": "Answer a few questions and get a science-based monthly plan."
     },
     "pendingBanner": "Your routine was saved on this device and will upload when you are online.",
     "change": {
@@ -423,6 +461,10 @@
     "editEntryCta": "Edit routine",
     "editTitle": "Edit your routine",
     "editDescription": "Change your weeks, days and exercises.",
+    "eyebrow": "Manual routine",
+    "back": "Back",
+    "offlineNotice": "Offline: this will be saved on this device",
+    "reviewBeforeSave": "Review before saving",
     "week": "Week",
     "addWeek": "Add week",
     "removeWeek": "Remove week",
@@ -432,15 +474,16 @@
     "addDay": "Add day",
     "removeDay": "Remove day",
     "dayNamePlaceholder": "Day name (e.g. Push, Legs)",
+    "dayNameAria": "{weekday} name",
     "restDay": "Rest day",
     "addExercise": "Add exercise",
-    "removeExercise": "Remove",
-    "moveUp": "Move up",
-    "moveDown": "Move down",
+    "removeExercise": "Remove {name}",
+    "moveUp": "Move {name} up",
+    "moveDown": "Move {name} down",
     "sets": "Sets",
     "reps": "Reps",
     "rest": "Rest (s)",
-    "weight": "Kg",
+    "weight": "Weight (kg)",
     "save": "Save routine",
     "saveEdit": "Save changes",
     "saving": "Saving...",
@@ -450,17 +493,19 @@
     "saveError": "We could not save your routine. Try again.",
     "editOfflineError": "You need a connection to save changes to your routine.",
     "picker": {
-      "title": "Choose an exercise",
-      "search": "Search exercises",
+      "title": "Add exercise",
+      "close": "Close",
+      "search": "Search exercise",
       "muscle": "Muscle",
       "equipment": "Equipment",
       "category": "Category",
       "all": "All",
+      "addAria": "Add {name}, {muscle} · {equipment}",
       "empty": "No exercises match your filters.",
       "syncing": "Updating exercise catalog...",
-      "neverSynced": "The exercise catalog has not been downloaded yet. Connect once to sync it.",
-      "custom": "Add custom exercise",
-      "close": "Close"
+      "noCatalogTitle": "Catalog not downloaded",
+      "noCatalogDescription": "Connect to download it. In the meantime you can create a custom exercise.",
+      "custom": "Custom exercise"
     },
     "validation": {
       "noTrainingDay": "Week {week} needs at least one training day.",
@@ -477,16 +522,12 @@
     "title": "Day details",
     "description": "Review exercises, sets, reps, suggested weights, and instructions.",
     "back": "Back to routine",
+    "weekAndDay": "Week {week} · {weekday}",
+    "durationAndCount": "{count} exercises · ~{minutes} min",
+    "focus": "Focus: {muscles}",
+    "progress": "Progress: {done} / {total} exercises",
     "restDay": "Rest day",
-    "sets": "sets",
-    "reps": "reps",
-    "rest": "Rest",
-    "weight": "Weight",
-    "seconds": "sec",
-    "variants": "Variants",
     "tracker": {
-      "title": "Log progress",
-      "description": "Mark what you completed today. It saves on this device first and syncs when online.",
       "completedDay": "Day completed",
       "dayNote": "Day note",
       "dayNotePlaceholder": "Example: Felt strong, reduced intensity due to shoulder discomfort...",
@@ -494,12 +535,9 @@
       "actualSets": "Sets",
       "actualReps": "Reps",
       "actualWeight": "Kg",
-      "exerciseNote": "Note",
-      "exerciseNotePlaceholder": "Optional",
       "save": "Save progress",
       "saving": "Saving...",
       "savedLocal": "Saved locally. It will sync when connection is available.",
-      "synced": "Progress saved and sync attempted.",
       "setNumber": "Set",
       "reps": "Reps",
       "kg": "Kg",
@@ -508,8 +546,23 @@
       "kgAria": "Weight for set {number} of {exercise}",
       "doneAria": "Set {number} of {exercise} completed",
       "addSet": "+ Set",
-      "removeSet": "− Set",
-      "exerciseDone": "Exercise complete"
+      "removeSet": "− Set"
+    },
+    "restDayCard": {
+      "title": "Rest day",
+      "subtitle": "No exercises scheduled.",
+      "notePlaceholder": "How did you feel today?"
+    },
+    "sheet": {
+      "close": "Close",
+      "closeBackdrop": "Close sheet",
+      "exerciseDone": "Exercise complete",
+      "noteLabel": "Exercise note",
+      "notePlaceholder": "Add a note for this exercise",
+      "variants": "Variants",
+      "nextExercise": "Next exercise",
+      "backToList": "Back to list",
+      "rowAriaLabel": "{name}, {done} of {total} sets"
     },
     "states": {
       "loading": "Loading routine day...",

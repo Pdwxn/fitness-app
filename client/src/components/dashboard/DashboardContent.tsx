@@ -2,20 +2,17 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { ClipboardList } from "lucide-react";
 import { useQueries } from "@tanstack/react-query";
 
 import { fetchActiveRoutine } from "@/hooks/useRoutineCache";
 import { fetchProgressStats } from "@/hooks/useProgressStats";
-import { usePendingRoutine } from "@/hooks/usePendingRoutine";
 import { queryKeys } from "@/lib/query-keys";
 
 import { CoachProposalBanner } from "@/components/coach/CoachProposalBanner";
-import { ChangeRoutineButton } from "@/components/routine/ChangeRoutineButton";
-import { RoutineChoiceScreen } from "@/components/routine/RoutineChoiceScreen";
 import { ActiveRoutineCard } from "./ActiveRoutineCard";
 import { StatsPreview } from "./StatsPreview";
-import { WeeklyRoutinePreview } from "./WeeklyRoutinePreview";
+import { TodayExercisePreview } from "./TodayExercisePreview";
 
 function getGreeting(greeting: { morning: string; afternoon: string; evening: string }): string {
   const hour = new Date().getHours();
@@ -62,38 +59,25 @@ type DashboardContentProps = {
     athlete: string;
     dayStreak: string;
     activeRoutine: {
-      eyebrow: string;
       upNext: string;
       startWorkout: string;
       exercises: string;
       title: string;
-      description: string;
-      cta: string;
-      weeks: string;
-      activeDays: string;
-      nextWorkout: string;
-      restDay: string;
+      eyebrow: string;
     };
-    weeklyPreview: {
+    todayPreview: {
       title: string;
-      week: string;
-      restDay: string;
-      exercises: string;
-      selectedDay: {
-        title: string;
-        restDay: string;
-        sets: string;
-        reps: string;
-        rest: string;
-        weight: string;
-        seconds: string;
-        empty: string;
-      };
+      viewRoutine: string;
     };
     routineStates: {
       loading: string;
       error: string;
       offlineFallback: string;
+    };
+    noRoutine: {
+      title: string;
+      description: string;
+      cta: string;
     };
   };
 };
@@ -109,7 +93,6 @@ function formatLastSync(timestamp: number | null) {
 }
 
 export function DashboardContent({ locale, labels }: DashboardContentProps) {
-  const tBuilder = useTranslations("Builder");
   const [
     { data: routine, isLoading: rtLoading, isError: rtError, dataUpdatedAt: lastSync },
     { data: statsData },
@@ -128,9 +111,7 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
       },
     ],
   });
-  const { hasPending, isLoading: pendingLoading } = usePendingRoutine();
 
-  const isRoutineLoading = rtLoading || pendingLoading;
   const hasRoutineError = rtError && !routine;
   const isOfflineFallback = rtError && Boolean(routine);
   const stats = statsData ?? null;
@@ -144,18 +125,18 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
   }, [routine, labels.stats.pending, labels.activeRoutine.eyebrow]);
   const completedDays = stats?.completed_days ?? 0;
 
-  if (!isRoutineLoading && !routine && !hasPending) {
-    return <RoutineChoiceScreen locale={locale} />;
-  }
-
   return (
     <div className="flex flex-col gap-5">
-      <section className="relative overflow-hidden rounded-[2rem] p-1">
-        <div className="pointer-events-none absolute right-0 top-0 size-44 rounded-full bg-[#a6ff00]/20 blur-3xl" />
-        <p className="text-xl text-white/70">{getGreeting(labels.greeting)},</p>
-        <h2 className="mt-1 text-6xl font-black tracking-tight text-[#a6ff00]">{labels.athlete} 👋</h2>
-        <p className="mt-3 text-lg font-bold text-white/65">🔥 {Math.max(1, completedDays)} {labels.dayStreak}</p>
-      </section>
+      <div className="flex items-baseline justify-between gap-3">
+        <div>
+          <p className="text-base text-white/60">
+            {getGreeting(labels.greeting)}, <span className="font-black text-white">{labels.athlete}</span>
+          </p>
+          <p className="mt-1 text-sm font-bold text-white/50">
+            🔥 {Math.max(1, completedDays)} {labels.dayStreak}
+          </p>
+        </div>
+      </div>
 
       {isOfflineFallback ? (
         <section className="rounded-[2rem] border border-amber-300/30 bg-amber-400/10 p-4 shadow-sm">
@@ -169,40 +150,41 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
         </section>
       ) : null}
 
-      {isRoutineLoading ? (
+      {rtLoading ? (
         <section className="apex-card rounded-[2rem] p-6">
           <p className="text-sm font-bold text-white/65">{labels.routineStates.loading}</p>
         </section>
       ) : null}
 
-      {!isRoutineLoading && !routine && hasPending ? (
-        <RoutineChoiceScreen locale={locale} hasPending />
+      {!rtLoading && !routine && !hasRoutineError ? (
+        <section className="apex-card flex flex-col items-start gap-4 rounded-[2rem] p-6 text-white">
+          <span className="grid size-14 place-items-center rounded-full border-[1.5px] border-[#a6ff00]/55 bg-[#a6ff00]/10 text-[#a6ff00]">
+            <ClipboardList aria-hidden="true" size={26} strokeWidth={1.6} />
+          </span>
+          <div>
+            <p className="text-xl font-black tracking-tight">{labels.noRoutine.title}</p>
+            <p className="mt-1 text-sm leading-6 text-white/60">{labels.noRoutine.description}</p>
+          </div>
+          <Link href={`/${locale}/routine`} className="apex-button rounded-2xl px-5 py-3 text-sm font-black">
+            {labels.noRoutine.cta}
+          </Link>
+        </section>
       ) : null}
 
       {routine ? (
         <>
           <CoachProposalBanner locale={locale} />
-          <div className="flex items-center justify-end gap-3">
-            {routine.source === "manual" ? (
-              <Link
-                href={`/${locale}/routine/builder?mode=edit`}
-                className="apex-button-outline rounded-xl px-4 py-2 text-xs font-black"
-              >
-                {tBuilder("editEntryCta")}
-              </Link>
-            ) : null}
-            <ChangeRoutineButton routineId={routine.id} />
-          </div>
           <ActiveRoutineCard
             routine={routine}
             href={`/${locale}/routine`}
             dayHref={(dayId) => `/${locale}/routine/${dayId}`}
             labels={labels.activeRoutine}
           />
-          <WeeklyRoutinePreview
+          <TodayExercisePreview
             routine={routine}
             dayHref={(dayId) => `/${locale}/routine/${dayId}`}
-            labels={labels.weeklyPreview}
+            routineHref={`/${locale}/routine`}
+            labels={labels.todayPreview}
           />
         </>
       ) : null}

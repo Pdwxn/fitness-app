@@ -1,8 +1,11 @@
 import { useTranslations } from "next-intl";
+import { Plus, Trash2 } from "lucide-react";
 
 import { MEDICAL_CONDITIONS } from "@/lib/constants";
 import { useOnboardingStore } from "@/store/onboardingStore";
 import type { MedicalCondition } from "@/types/onboarding";
+
+import { OptionCard, StepSection, TextField } from "../OnboardingUi";
 
 const conditions = [...MEDICAL_CONDITIONS];
 
@@ -29,77 +32,66 @@ export function Step4Health() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <p className="mb-3 text-sm font-bold text-white/80">{t("conditionsLabel")}</p>
-        <p className="mb-3 text-xs text-white/50">{t("conditionsHint")}</p>
-        <div className="grid gap-2 md:grid-cols-2">
-          {conditions.map((condition) => {
-            const selected = health.medical_conditions.includes(condition);
-            return (
-              <button
-                key={condition}
-                type="button"
-                onClick={() => toggleCondition(condition)}
-                className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-bold transition ${
-                  selected
-                    ? "border-[#a6ff00] bg-[#a6ff00]/10 text-white"
-                    : "border-white/15 bg-white/5 text-white/70"
-                }`}
-              >
-                <span
-                  className={`flex size-5 shrink-0 items-center justify-center rounded border text-[10px] font-black ${
-                    selected ? "border-[#a6ff00] bg-[#a6ff00] text-black" : "border-white/30 text-transparent"
-                  }`}
-                >
-                  {selected ? "┓" : ""}
-                </span>
-                <div>
-                  <span className="block">{t(`conditions.${condition}.label`)}</span>
-                  <span className="mt-0.5 block text-xs opacity-70">{t(`conditions.${condition}.description`)}</span>
-                </div>
-              </button>
-            );
-          })}
+    <div className="flex flex-col gap-7">
+      <StepSection title={t("conditionsLabel")} hint={t("conditionsHint")}>
+        <div className="grid gap-2.5 sm:grid-cols-2">
+          {conditions.map((condition) => (
+            <OptionCard
+              key={condition}
+              compact
+              selected={health.medical_conditions.includes(condition)}
+              onClick={() => toggleCondition(condition)}
+              title={t(`conditions.${condition}.label`)}
+              description={t(`conditions.${condition}.description`)}
+            />
+          ))}
         </div>
-      </div>
+      </StepSection>
 
-      <div className="border-t border-white/10 pt-6">
-        <p className="mb-3 text-sm font-bold text-white/80">{t("injuriesLabel")}</p>
-        <p className="mb-3 text-xs text-white/50">{t("injuriesHint")}</p>
-        {health.injuries.map((injury, index) => (
-          <div key={index} className="mb-3 rounded-3xl border border-white/15 bg-white/5 p-4">
-            <div className="grid gap-3 md:grid-cols-2">
-              <input
+      <StepSection title={t("injuriesLabel")} hint={t("injuriesHint")}>
+        <div className="flex flex-col gap-3">
+          {health.injuries.map((injury, index) => (
+            <div key={index} className="flex flex-col gap-3.5 border-t border-white/[0.13] pt-4">
+              <div className="flex min-h-11 items-center justify-between">
+                <p className="text-base font-bold text-white/60">{t("injuryNumber", { number: index + 1 })}</p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateHealth({ injuries: health.injuries.filter((_, itemIndex) => itemIndex !== index) })
+                  }
+                  aria-label={t("removeAria", { number: index + 1 })}
+                  className="flex min-h-11 items-center gap-2 rounded-full border border-white/[0.22] px-3.5 text-[15px] font-semibold"
+                >
+                  <Trash2 aria-hidden="true" size={20} strokeWidth={1.5} />
+                  {t("remove")}
+                </button>
+              </div>
+              <TextField
+                id={`injury-area-${index}`}
+                label={t("area")}
                 value={injury.area}
-                onChange={(event) => updateInjury(index, "area", event.target.value)}
-                className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-white/40 focus:border-[#a6ff00]"
+                onChange={(value) => updateInjury(index, "area", value)}
                 placeholder={t("areaPlaceholder")}
               />
-              <input
+              <TextField
+                id={`injury-description-${index}`}
+                label={t("description")}
                 value={injury.description}
-                onChange={(event) => updateInjury(index, "description", event.target.value)}
-                className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-white/40 focus:border-[#a6ff00]"
+                onChange={(value) => updateInjury(index, "description", value)}
                 placeholder={t("descriptionPlaceholder")}
               />
             </div>
-            <button
-              type="button"
-              onClick={() => updateHealth({ injuries: health.injuries.filter((_, itemIndex) => itemIndex !== index) })}
-              className="mt-3 text-sm font-bold text-[#a6ff00]"
-            >
-              {t("remove")}
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          onClick={() => updateHealth({ injuries: [...health.injuries, { area: "", description: "" }] })}
-          className="rounded-full border border-white/20 px-5 py-3 text-sm font-bold text-white"
-        >
-          {t("add")}
-        </button>
-      </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => updateHealth({ injuries: [...health.injuries, { area: "", description: "" }] })}
+            className="flex min-h-14 w-full items-center justify-center gap-2.5 rounded-[28px] border-[1.5px] border-white/30 text-[17px] font-bold"
+          >
+            <Plus aria-hidden="true" size={22} strokeWidth={1.8} />
+            {t("add")}
+          </button>
+        </div>
+      </StepSection>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AlertCircle } from "lucide-react";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -10,6 +11,7 @@ type GoogleOAuthButtonProps = {
   label: string;
   loadingLabel: string;
   errorLabel: string;
+  disabled?: boolean;
 };
 
 export function GoogleOAuthButton({
@@ -18,6 +20,7 @@ export function GoogleOAuthButton({
   label,
   loadingLabel,
   errorLabel,
+  disabled = false,
 }: GoogleOAuthButtonProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,17 +44,24 @@ export function GoogleOAuthButton({
   }
 
   return (
-    <div className="mt-4 flex flex-col gap-3">
+    <div className="flex flex-col gap-3">
       <button
         type="button"
         onClick={handleGoogleLogin}
-        disabled={isLoading}
-        className="rounded-2xl border border-white/20 bg-white/[0.03] px-5 py-4 text-sm font-black text-white transition hover:border-[#a6ff00]/70 disabled:cursor-not-allowed disabled:opacity-60"
+        disabled={isLoading || disabled}
+        className="flex h-[58px] w-full items-center justify-center gap-3 rounded-full border-[1.5px] border-white/30 text-[17px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isLoading ? loadingLabel : `G  ${label}`}
+        <span
+          aria-hidden="true"
+          className="grid size-7 place-items-center rounded-full border-[1.5px] border-white/40 text-[15px] font-extrabold"
+        >
+          G
+        </span>
+        {isLoading ? loadingLabel : label}
       </button>
       {error ? (
-        <p className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-200">
+        <p role="alert" className="flex items-center gap-2 text-[15px] font-semibold leading-snug text-red-300">
+          <AlertCircle aria-hidden="true" size={20} strokeWidth={1.8} className="shrink-0" />
           {error}
         </p>
       ) : null}

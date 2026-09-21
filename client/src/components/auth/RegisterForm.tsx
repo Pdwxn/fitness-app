@@ -1,40 +1,35 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { AlertCircle, CheckCircle2, Loader2, Lock, Mail } from "lucide-react";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
-type RegisterFormProps = {
-  locale: string;
-  labels: {
-    email: string;
-    password: string;
-    confirmPassword: string;
-    submit: string;
-    loading: string;
-    passwordMismatch: string;
-    success: string;
-    error: string;
-  };
-};
+import { AuthDivider } from "./AuthDivider";
+import { AuthField } from "./AuthField";
+import { GoogleOAuthButton } from "./GoogleOAuthButton";
 
-export function RegisterForm({ locale, labels }: RegisterFormProps) {
+export function RegisterForm({ locale }: { locale: string }) {
+  const t = useTranslations("Auth.register");
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
+  const [mismatch, setMismatch] = useState(false);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    setMessage(null);
+    setMismatch(false);
 
     if (password !== confirmPassword) {
-      setError(labels.passwordMismatch);
+      setMismatch(true);
       return;
     }
 
@@ -51,83 +46,129 @@ export function RegisterForm({ locale, labels }: RegisterFormProps) {
     setIsLoading(false);
 
     if (authError) {
-      setError(authError.message || labels.error);
+      setError(authError.message || t("error"));
       return;
     }
 
     if (data.session) {
-      // New users land on the dashboard, which shows the routine choice screen
-      // (build manually / generate with AI) when there is no active routine.
+      // New users land on the dashboard, which points them at /routine to pick
+      // a routine (build manually / generate with AI) when there is none.
       router.push(`/${locale}/dashboard`);
       router.refresh();
       return;
     }
 
-    setMessage(labels.success);
+    setNeedsConfirmation(true);
   }
 
+  if (needsConfirmation) {
+    return (
+      <>
+        <div role="status" className="flex flex-col items-start gap-5 border-t border-white/[0.13] pt-7">
+          <span className="grid size-16 place-items-center rounded-full border-[1.5px] border-[#a6ff00]/55 bg-[#a6ff00]/[0.12] text-[#a6ff00]">
+            <CheckCircle2 aria-hidden="true" size={32} strokeWidth={1.6} />
+          </span>
+          <p className="text-[22px] font-extrabold leading-snug">{t("success")}</p>
+        </div>
+        <Link
+          href={`/${locale}/auth/login`}
+          className="apex-button flex h-[60px] items-center justify-center rounded-[1.875rem] text-lg font-extrabold"
+        >
+          {t("successCta")} <span aria-hidden="true">→</span>
+        </Link>
+      </>
+    );
+  }
+
+  const revealLabels = { show: t("showPassword"), hide: t("hidePassword") };
+
   return (
-    <form className="mt-8 flex flex-col gap-5" onSubmit={handleSubmit}>
-      <label className="flex flex-col gap-3 text-xs font-black uppercase tracking-[0.22em] text-white/65">
-        {labels.email}
-        <input
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          required
-          autoComplete="email"
-          placeholder="you@email.com"
-          className="apex-input rounded-2xl px-4 py-4 text-base normal-case tracking-normal placeholder:text-white/35"
-        />
-      </label>
+    <>
+      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+        <div className="flex flex-col gap-4">
+          <AuthField
+            id="email"
+            label={t("email")}
+            icon={Mail}
+            type="email"
+            value={email}
+            onChange={setEmail}
+            placeholder={t("emailPlaceholder")}
+            autoComplete="email"
+            disabled={isLoading}
+          />
+          <AuthField
+            id="password"
+            label={t("password")}
+            icon={Lock}
+            type="password"
+            value={password}
+            onChange={setPassword}
+            placeholder={t("passwordPlaceholder")}
+            autoComplete="new-password"
+            minLength={6}
+            disabled={isLoading}
+            revealLabels={revealLabels}
+          />
+          <AuthField
+            id="confirm-password"
+            label={t("confirmPassword")}
+            icon={Lock}
+            type="password"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            placeholder={t("confirmPasswordPlaceholder")}
+            autoComplete="new-password"
+            minLength={6}
+            disabled={isLoading}
+            error={mismatch ? t("passwordMismatch") : null}
+            revealLabels={revealLabels}
+          />
+        </div>
 
-      <label className="flex flex-col gap-3 text-xs font-black uppercase tracking-[0.22em] text-white/65">
-        {labels.password}
-        <input
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          required
-          minLength={6}
-          autoComplete="new-password"
-          placeholder="••••••••••"
-          className="apex-input rounded-2xl px-4 py-4 text-base normal-case tracking-normal placeholder:text-white/35"
-        />
-      </label>
+        {error ? (
+          <p role="alert" className="flex items-center gap-2 text-[15px] font-semibold leading-snug text-red-300">
+            <AlertCircle aria-hidden="true" size={20} strokeWidth={1.8} className="shrink-0" />
+            {error}
+          </p>
+        ) : null}
 
-      <label className="flex flex-col gap-3 text-xs font-black uppercase tracking-[0.22em] text-white/65">
-        {labels.confirmPassword}
-        <input
-          type="password"
-          value={confirmPassword}
-          onChange={(event) => setConfirmPassword(event.target.value)}
-          required
-          minLength={6}
-          autoComplete="new-password"
-          placeholder="••••••••••"
-          className="apex-input rounded-2xl px-4 py-4 text-base normal-case tracking-normal placeholder:text-white/35"
-        />
-      </label>
+        <button
+          type="submit"
+          disabled={isLoading}
+          aria-busy={isLoading}
+          className="apex-button flex h-[60px] items-center justify-center gap-3 rounded-[1.875rem] text-lg font-extrabold disabled:opacity-85"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 aria-hidden="true" size={22} strokeWidth={2.4} className="animate-spin" />
+              {t("loading")}
+            </>
+          ) : (
+            <>
+              {t("submit")} <span aria-hidden="true">→</span>
+            </>
+          )}
+        </button>
+      </form>
 
-      {error ? (
-        <p className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-200">
-          {error}
-        </p>
-      ) : null}
+      <AuthDivider label={t("or")} />
 
-      {message ? (
-        <p className="rounded-2xl border border-[#a6ff00]/30 bg-[#a6ff00]/10 px-4 py-3 text-sm font-medium text-[#d7ff8a]">
-          {message}
-        </p>
-      ) : null}
-
-      <button
-        type="submit"
+      <GoogleOAuthButton
+        locale={locale}
+        intent="register"
+        label={t("google")}
+        loadingLabel={t("googleLoading")}
+        errorLabel={t("googleError")}
         disabled={isLoading}
-        className="apex-button mt-2 rounded-2xl px-5 py-4 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-60"
+      />
+
+      <Link
+        href={`/${locale}/auth/login`}
+        className="flex min-h-12 items-center justify-center text-[17px] font-bold text-[#a6ff00]"
       >
-        {isLoading ? labels.loading : labels.submit}
-      </button>
-    </form>
+        {t("loginLink")}
+      </Link>
+    </>
   );
 }

@@ -13,7 +13,7 @@ export default async function RoutineDayPage({
   const t = await getTranslations("RoutineDay");
 
   return (
-    <AppShell locale={locale} title={t("title")} description={t("description")}>
+    <AppShell locale={locale} title={t("title")} description={t("description")} hideHeader>
       <RoutineDayPageContent
         dayId={dayId}
         locale={locale}
@@ -21,27 +21,6 @@ export default async function RoutineDayPage({
           loading: t("states.loading"),
           error: t("states.error"),
           notFound: t("states.notFound"),
-          back: t("back"),
-          restDay: t("restDay"),
-          sets: t("sets"),
-          reps: t("reps"),
-          rest: t("rest"),
-          weight: t("weight"),
-          seconds: t("seconds"),
-          variants: t("variants"),
-          tracker: {
-            title: t("tracker.title"),
-            description: t("tracker.description"),
-            completedDay: t("tracker.completedDay"),
-            dayNote: t("tracker.dayNote"),
-            dayNotePlaceholder: t("tracker.dayNotePlaceholder"),
-            exerciseNote: t("tracker.exerciseNote"),
-            exerciseNotePlaceholder: t("tracker.exerciseNotePlaceholder"),
-            save: t("tracker.save"),
-            saving: t("tracker.saving"),
-            savedLocal: t("tracker.savedLocal"),
-            synced: t("tracker.synced"),
-          },
         }}
       />
     </AppShell>

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { AlertCircle, ArrowLeft, Minus, Plus, Save, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { queryKeys } from "@/lib/query-keys";
@@ -15,33 +17,33 @@ import {
   queuePendingRoutine,
   useRoutineBuilderStore,
   validateDraft,
-  type DraftValidationError,
 } from "@/store/routineBuilderStore";
 
 import { RoutineWeekEditor } from "./RoutineWeekEditor";
+import { describeValidationError } from "./validationMessage";
 
 type RoutineBuilderWizardProps = { locale: string; mode?: "create" | "edit" };
 
-type ValidationTranslator = (key: string, values?: Record<string, string | number>) => string;
-
-function messageFor(tv: ValidationTranslator, error: DraftValidationError): string {
-  switch (error.code) {
-    case "no_training_day":
-      return tv("noTrainingDay", { week: error.weekNumber });
-    case "empty_training_day":
-      return tv("emptyTrainingDay", { week: error.weekNumber, day: error.dayNumber });
-    case "unnamed_day":
-      return tv("unnamedDay", { week: error.weekNumber, day: error.dayNumber });
-    case "unnamed_exercise":
-      return tv("unnamedExercise", { week: error.weekNumber, day: error.dayNumber });
-  }
+function useOnlineStatus(): boolean {
+  const [isOnline, setIsOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine);
+  useEffect(() => {
+    const goOnline = () => setIsOnline(true);
+    const goOffline = () => setIsOnline(false);
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, []);
+  return isOnline;
 }
 
 export function RoutineBuilderWizard({ locale, mode = "create" }: RoutineBuilderWizardProps) {
   const t = useTranslations("Builder");
-  const tvRaw = useTranslations("Builder.validation");
-  const tv: ValidationTranslator = (key, values) => tvRaw(key, values);
+  const tv = useTranslations("Builder.validation");
   const router = useRouter();
+  const isOnline = useOnlineStatus();
 
   // Edit mode loads the current active routine; create mode never fetches it.
   const { routine, isLoading: routineLoading } = useRoutineCache();
@@ -52,11 +54,13 @@ export function RoutineBuilderWizard({ locale, mode = "create" }: RoutineBuilder
   const startEditing = useRoutineBuilderStore((state) => state.startEditing);
   const editingRoutineId = useRoutineBuilderStore((state) => state.editingRoutineId);
   const addWeek = useRoutineBuilderStore((state) => state.addWeek);
+  const removeWeek = useRoutineBuilderStore((state) => state.removeWeek);
   const reset = useRoutineBuilderStore((state) => state.reset);
 
   const [saving, setSaving] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const [editUnavailable, setEditUnavailable] = useState(false);
+  const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
 
   useEffect(() => {
     if (mode !== "edit") {
@@ -81,6 +85,10 @@ export function RoutineBuilderWizard({ locale, mode = "create" }: RoutineBuilder
   const errors = useMemo(() => validateDraft(draft), [draft]);
   const isEditing = mode === "edit" && Boolean(editingRoutineId);
   const isLoadingState = editUnavailable || !hydrated || (mode === "edit" && routineLoading);
+
+  const weekIndex = Math.min(selectedWeekIndex, draft.weeks.length - 1);
+  const week = draft.weeks[weekIndex];
+  const weekErrors = errors.filter((error) => error.weekNumber === week?.week_number);
 
   if (isLoadingState) {
     return <p className="p-4 text-sm text-white/60">{t("states.loading")}</p>;
@@ -149,6 +157,10 @@ export function RoutineBuilderWizard({ locale, mode = "create" }: RoutineBuilder
   const handleSave = async () => {
     if (errors.length > 0) {
       setShowErrors(true);
+      const firstErrorWeekIdx = draft.weeks.findIndex((w) =>
+        errors.some((error) => error.weekNumber === w.week_number),
+      );
+      if (firstErrorWeekIdx >= 0) setSelectedWeekIndex(firstErrorWeekIdx);
       return;
     }
     if (isEditing) {
@@ -159,40 +171,117 @@ export function RoutineBuilderWizard({ locale, mode = "create" }: RoutineBuilder
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      {draft.weeks.map((week, weekIdx) => (
-        <RoutineWeekEditor
-          key={weekIdx}
-          weekIdx={weekIdx}
-          week={week}
-          canRemove={draft.weeks.length > 1}
-        />
-      ))}
+    <div className="flex flex-col gap-5">
+      <Link
+        href={`/${locale}/routine`}
+        className="flex h-12 w-fit items-center gap-1.5 rounded-full border border-white/[0.22] px-4 text-base font-semibold"
+      >
+        <ArrowLeft aria-hidden="true" size={22} strokeWidth={1.6} />
+        {t("back")}
+      </Link>
 
-      {draft.weeks.length < 4 ? (
-        <button
-          type="button"
-          onClick={addWeek}
-          className="apex-button-outline w-full rounded-xl py-2.5 text-sm font-black"
+      <div className="flex flex-col gap-3">
+        <p className="text-sm font-black uppercase tracking-[0.22em] text-[#a6ff00]">{t("eyebrow")}</p>
+        <h1 className="text-[42px] font-black leading-none tracking-tight md:text-6xl">
+          {isEditing ? t("editTitle") : t("title")}
+        </h1>
+      </div>
+
+      {mode === "create" && !isOnline ? (
+        <div
+          role="status"
+          className="flex items-center gap-2.5 rounded-[1.25rem] border border-[#a6ff00]/40 bg-[#a6ff00]/[0.07] px-4 py-3 text-[15px] font-semibold leading-snug text-[#a6ff00]"
         >
-          {t("addWeek")}
-        </button>
+          <WifiOff aria-hidden="true" size={20} strokeWidth={1.5} className="shrink-0" />
+          {t("offlineNotice")}
+        </div>
       ) : null}
 
+      <div className="flex flex-col gap-3">
+        <div role="group" aria-label={t("week")} className="grid grid-cols-4 gap-1.5">
+          {draft.weeks.map((w, index) => {
+            const weekHasError = errors.some((error) => error.weekNumber === w.week_number);
+            const isSelected = index === weekIndex;
+            return (
+              <button
+                key={index}
+                type="button"
+                aria-pressed={isSelected}
+                onClick={() => setSelectedWeekIndex(index)}
+                className={`flex h-[52px] items-center justify-center gap-1.5 rounded-[26px] px-1 text-[15px] font-bold ${
+                  isSelected
+                    ? "bg-[#a6ff00] text-black"
+                    : showErrors && weekHasError
+                      ? "border-[1.5px] border-red-400"
+                      : "border border-white/[0.22] text-white"
+                }`}
+              >
+                {showErrors && weekHasError ? (
+                  <AlertCircle aria-hidden="true" size={16} strokeWidth={2} className="text-red-400" />
+                ) : null}
+                <span>
+                  {t("week")} {w.week_number}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="grid grid-cols-2 gap-2.5">
+          <button
+            type="button"
+            onClick={addWeek}
+            disabled={draft.weeks.length >= 4}
+            className="flex h-12 items-center justify-center gap-2 rounded-3xl border-[1.5px] border-white/30 text-base font-bold disabled:opacity-40"
+          >
+            <Plus aria-hidden="true" size={20} strokeWidth={2} />
+            {t("addWeek")}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              removeWeek(weekIndex);
+              setSelectedWeekIndex((index) => Math.max(0, index - 1));
+            }}
+            disabled={draft.weeks.length <= 1}
+            className="flex h-12 items-center justify-center gap-2 rounded-3xl border-[1.5px] border-white/30 text-base font-bold disabled:opacity-40"
+          >
+            <Minus aria-hidden="true" size={20} strokeWidth={2} />
+            {t("removeWeek")}
+          </button>
+        </div>
+      </div>
+
       {showErrors && errors.length > 0 ? (
-        <ul className="rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm font-bold text-red-200">
-          {errors.map((error, index) => (
-            <li key={index}>{messageFor(tv, error)}</li>
-          ))}
-        </ul>
+        <div role="alert" className="flex flex-col gap-3 rounded-3xl border border-red-400/50 bg-red-400/[0.07] p-4">
+          <p className="text-sm font-extrabold uppercase tracking-[0.08em] text-red-400">{t("reviewBeforeSave")}</p>
+          <ul className="flex flex-col gap-2">
+            {errors.map((error, index) => (
+              <li key={index} className="flex items-start gap-2 text-[15px] font-semibold leading-snug text-red-300">
+                <AlertCircle aria-hidden="true" size={20} strokeWidth={1.8} className="mt-0.5 shrink-0" />
+                <span>{describeValidationError(tv, error)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {week ? (
+        <RoutineWeekEditor
+          weekIdx={weekIndex}
+          week={week}
+          locale={locale}
+          errors={showErrors ? weekErrors : []}
+        />
       ) : null}
 
       <button
         type="button"
-        onClick={handleSave}
+        onClick={() => void handleSave()}
         disabled={saving}
-        className="apex-button w-full rounded-2xl py-3 text-base font-black"
+        className="apex-button flex h-[62px] items-center justify-center gap-2.5 rounded-[1.9375rem] text-lg font-extrabold disabled:opacity-60"
       >
+        <Save aria-hidden="true" size={22} strokeWidth={2} />
         {saving ? t("saving") : isEditing ? t("saveEdit") : t("save")}
       </button>
     </div>

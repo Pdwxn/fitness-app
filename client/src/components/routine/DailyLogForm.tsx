@@ -1,38 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
+import { Save, WifiOff } from "lucide-react";
 
 import { useDailyLogs } from "@/hooks/useDailyLogs";
-import {
-  addSet,
-  buildExerciseLog,
-  ensureSets,
-  removeLastSet,
-  sanitizeExerciseLog,
-  updateSet,
-} from "@/lib/setLog";
+import { buildExerciseLog, ensureSets, sanitizeExerciseLog } from "@/lib/setLog";
 import { saveLogLocally } from "@/lib/sync";
-import type { DailyLog, ExerciseLog, ExerciseSet } from "@/types/progress";
+import type { DailyLog, ExerciseLog } from "@/types/progress";
 import type { RoutineDay } from "@/types/routine";
 
-import { ExerciseSetLog } from "./ExerciseSetLog";
+import { ExerciseListRow } from "./ExerciseListRow";
+import { ExerciseSheetContent } from "./ExerciseSheetContent";
 
 type DailyLogFormProps = {
   day: RoutineDay;
-  labels: {
-    title: string;
-    description: string;
-    completedDay: string;
-    dayNote: string;
-    dayNotePlaceholder: string;
-    exerciseNote: string;
-    exerciseNotePlaceholder: string;
-    save: string;
-    saving: string;
-    savedLocal: string;
-    synced: string;
-  };
 };
 
 function todayDate() {
@@ -44,7 +27,6 @@ function createId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
   }
-
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
@@ -66,22 +48,53 @@ function buildExerciseLogs(day: RoutineDay, saved: ExerciseLog[] = []): Exercise
   return [...current, ...orphaned];
 }
 
-export function DailyLogForm({ day, labels }: DailyLogFormProps) {
-  const tSets = useTranslations("RoutineDay.tracker");
+/** Fixed backdrop + slide-up panel, portaled to escape any blurred/positioned ancestor, and body-scroll-locked while open. */
+function MobileSheet({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+  const t = useTranslations("RoutineDay.sheet");
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 md:hidden">
+      <button
+        type="button"
+        aria-label={t("closeBackdrop")}
+        onClick={onClose}
+        className="absolute inset-0 size-full border-0 bg-black/70 p-0"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-y-auto rounded-t-[2rem] border-t border-white/20 bg-[#111411] p-5 pb-7 shadow-[0_-20px_50px_rgba(0,0,0,0.6)]"
+      >
+        <div aria-hidden="true" className="mx-auto mb-3 h-1.5 w-11 rounded-full bg-white/30" />
+        {children}
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+export function DailyLogForm({ day }: DailyLogFormProps) {
+  const t = useTranslations("RoutineDay");
+  const tSheet = useTranslations("RoutineDay.sheet");
   const date = todayDate();
   const { logs, refreshLogs } = useDailyLogs({ routineDayId: day.id });
   const existingLog = logs.find((log) => log.date === date) ?? null;
   const [logId, setLogId] = useState(existingLog?.id ?? createId());
-  const [failedThumbnails, setFailedThumbnails] = useState<Set<string>>(new Set());
-
-  const handleThumbError = (exerciseId: string) => {
-    setFailedThumbnails((prev) => new Set(prev).add(exerciseId));
-  };
   const [completed, setCompleted] = useState(existingLog?.completed ?? false);
   const [dayNote, setDayNote] = useState(existingLog?.day_note ?? "");
   const [exerciseLogs, setExerciseLogs] = useState<ExerciseLog[]>(
     buildExerciseLogs(day, existingLog?.exercises_done),
   );
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
 
@@ -98,9 +111,7 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
 
   function updateExerciseLog(exerciseId: string, update: (entry: ExerciseLog) => ExerciseLog) {
     setExerciseLogs((current) =>
-      current.map((exerciseLog) =>
-        exerciseLog.exercise_id === exerciseId ? update(exerciseLog) : exerciseLog,
-      ),
+      current.map((exerciseLog) => (exerciseLog.exercise_id === exerciseId ? update(exerciseLog) : exerciseLog)),
     );
   }
 
@@ -117,112 +128,146 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
       };
 
       await saveLogLocally(log);
-      setSaveStatus(labels.savedLocal);
+      setSaveStatus(t("tracker.savedLocal"));
       refreshLogs();
     } finally {
       setIsSaving(false);
     }
   }
 
-  if (day.is_rest_day) return null;
+  const trainingExercises = day.exercises;
+  const trainingLogs = exerciseLogs.slice(0, trainingExercises.length);
+  const doneCount = trainingLogs.filter((log) => log.completed).length;
+  const total = trainingExercises.length;
+  const percent = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+
+  const selectedExercise = trainingExercises[selectedIndex] ?? null;
+  const selectedLog = selectedExercise ? trainingLogs[selectedIndex] : null;
+  const isLast = selectedIndex >= total - 1;
+
+  function selectExercise(index: number) {
+    setSelectedIndex(index);
+    setSheetOpen(true);
+  }
+
+  function advance() {
+    if (!isLast) {
+      setSelectedIndex((index) => index + 1);
+    } else {
+      setSheetOpen(false);
+    }
+  }
+
+  function renderSheet(onClose?: () => void) {
+    if (!selectedExercise || !selectedLog) return null;
+    return (
+      <ExerciseSheetContent
+        exercise={selectedExercise}
+        log={selectedLog}
+        onChange={(update) => updateExerciseLog(selectedExercise.id, update)}
+        onClose={onClose}
+        onAdvance={advance}
+        isLast={isLast}
+      />
+    );
+  }
 
   return (
-    <section aria-label={labels.title} className="apex-card rounded-[2rem] p-6 text-white">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#a6ff00]">
-            {labels.title}
-          </p>
-          <p className="mt-2 text-sm leading-6 text-white/60">{labels.description}</p>
+    <div className="flex flex-col gap-5">
+      {total > 0 ? (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-baseline justify-between">
+            <p className="text-base font-bold">{t("progress", { done: doneCount, total })}</p>
+            <p className="text-2xl font-black text-[#a6ff00]">{percent}%</p>
+          </div>
+          <div
+            role="progressbar"
+            aria-label={t("progress", { done: doneCount, total })}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={percent}
+            className="h-2.5 overflow-hidden rounded-full bg-white/[0.14]"
+          >
+            <div className="h-full rounded-full bg-[#a6ff00] transition-[width]" style={{ width: `${percent}%` }} />
+          </div>
         </div>
-        <label className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm font-black text-white">
-          <input
-            type="checkbox"
-            checked={completed}
-            onChange={(event) => setCompleted(event.target.checked)}
-            aria-label={labels.completedDay}
-            className="size-4 accent-[#a6ff00]"
-          />
-          {labels.completedDay}
-        </label>
-      </div>
+      ) : null}
 
-      <label className="mt-5 block">
-        <span className="text-sm font-black text-white">{labels.dayNote}</span>
-        <textarea
-          value={dayNote}
-          onChange={(event) => setDayNote(event.target.value)}
-          placeholder={labels.dayNotePlaceholder}
-          aria-label={labels.dayNote}
-          className="apex-input mt-2 min-h-24 w-full rounded-3xl px-4 py-3 text-sm"
-        />
-      </label>
-
-      <div className="mt-5 grid gap-4">
-        {exerciseLogs.map((exerciseLog) => {
-          const exercise = day.exercises.find((e) => e.id === exerciseLog.exercise_id);
-          return (
-          <article key={exerciseLog.exercise_id} className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">
-            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <div className="flex items-start gap-3">
-                {exercise?.image_url && !failedThumbnails.has(exercise.id) ? (
-                  <img
-                    src={exercise.image_url}
-                    alt={exerciseLog.exercise_name}
-                    loading="lazy"
-                    onError={() => handleThumbError(exercise.id)}
-                    className="size-14 shrink-0 rounded-xl object-cover"
-                  />
-                ) : null}
-                <div>
-                  <h3 className="font-black tracking-tight">{exerciseLog.exercise_name}</h3>
-                  {exerciseLog.completed ? (
-                    <p className="mt-1 text-xs font-black uppercase tracking-[0.14em] text-[#a6ff00]">
-                      {tSets("exerciseDone")}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-            <ExerciseSetLog
-              exerciseName={exerciseLog.exercise_name}
-              sets={exerciseLog.sets ?? []}
-              plannedReps={exercise?.reps ?? ""}
-              onChange={(index: number, patch: Partial<ExerciseSet>) =>
-                updateExerciseLog(exerciseLog.exercise_id, (entry) => updateSet(entry, index, patch, exercise))
-              }
-              onAdd={() => updateExerciseLog(exerciseLog.exercise_id, addSet)}
-              onRemove={() => updateExerciseLog(exerciseLog.exercise_id, removeLastSet)}
+      <div className="grid gap-6 md:grid-cols-[400px_minmax(0,1fr)] md:items-start">
+        <div className="flex flex-col border-t border-white/[0.13] md:border-t-0">
+          {trainingExercises.map((exercise, index) => (
+            <ExerciseListRow
+              key={exercise.id}
+              exercise={exercise}
+              log={trainingLogs[index]}
+              isSelected={index === selectedIndex}
+              onSelect={() => selectExercise(index)}
+              ariaLabel={tSheet("rowAriaLabel", {
+                name: exercise.name,
+                done: trainingLogs[index].sets?.filter((set) => set.completed).length ?? 0,
+                total: trainingLogs[index].sets?.length ?? exercise.sets ?? 0,
+              })}
             />
-            <label className="mt-3 block">
-                <span className="text-xs font-black uppercase tracking-[0.14em] text-[#a6ff00]">
-                {labels.exerciseNote}
-              </span>
-              <input
-                value={exerciseLog.note}
-                onChange={(event) =>
-                  updateExerciseLog(exerciseLog.exercise_id, (entry) => ({ ...entry, note: event.target.value }))
-                }
-                placeholder={labels.exerciseNotePlaceholder}
-                className="apex-input mt-2 w-full rounded-2xl px-4 py-2 text-sm"
-              />
-            </label>
-          </article>
-        );
-      })}
+          ))}
+        </div>
+
+        <div className="apex-card hidden rounded-[2rem] p-6 md:block">{renderSheet()}</div>
       </div>
 
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {sheetOpen && selectedExercise ? (
+        <MobileSheet onClose={() => setSheetOpen(false)}>{renderSheet(() => setSheetOpen(false))}</MobileSheet>
+      ) : null}
+
+      <div className="flex flex-col gap-3.5 border-t border-white/[0.13] pt-4">
+        <label className="block">
+          <span className="text-sm font-black text-white/80">{t("tracker.dayNote")}</span>
+          <input
+            value={dayNote}
+            onChange={(event) => setDayNote(event.target.value)}
+            placeholder={t("tracker.dayNotePlaceholder")}
+            className="apex-input mt-2 w-full rounded-2xl px-4 py-3 text-base"
+          />
+        </label>
+
+        <div className="flex items-center justify-between gap-3">
+          <span id="daily-log-completed-label" className="text-lg font-bold">
+            {t("tracker.completedDay")}
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={completed}
+            aria-labelledby="daily-log-completed-label"
+            onClick={() => setCompleted((value) => !value)}
+            className={`relative h-[38px] w-16 shrink-0 rounded-full border-[1.5px] transition-colors ${
+              completed ? "border-[#a6ff00] bg-[#a6ff00]/20" : "border-white/30 bg-transparent"
+            }`}
+          >
+            <span
+              aria-hidden="true"
+              className={`absolute top-1/2 size-7 -translate-y-1/2 rounded-full transition-[left] ${
+                completed ? "left-[calc(100%-1.75rem-3px)] bg-[#a6ff00]" : "left-1 bg-white/60"
+              }`}
+            />
+          </button>
+        </div>
+
         <button
           type="button"
           onClick={handleSave}
           disabled={isSaving}
-          className="apex-button rounded-2xl px-5 py-3 text-sm font-black transition disabled:opacity-60"
+          className="apex-button flex h-[62px] items-center justify-center gap-2.5 rounded-[1.9375rem] text-lg font-extrabold disabled:opacity-60"
         >
-          {isSaving ? labels.saving : labels.save}
+          <Save aria-hidden="true" size={22} strokeWidth={2} />
+          {isSaving ? t("tracker.saving") : t("tracker.save")}
         </button>
-        {saveStatus ? <p aria-live="polite" className="text-sm font-bold text-white/60">{saveStatus}</p> : null}
+        {saveStatus ? (
+          <p aria-live="polite" className="flex items-center justify-center gap-2 text-center text-sm font-medium text-white/60">
+            <WifiOff aria-hidden="true" size={18} strokeWidth={1.5} />
+            {saveStatus}
+          </p>
+        ) : null}
       </div>
-    </section>
+    </div>
   );
 }

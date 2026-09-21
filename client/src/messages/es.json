@@ -1,39 +1,50 @@
 {
   "Home": {
-    "badge": "v1.5",
-    "eyebrow": "AI Fitness App",
-    "title": "Entrena mejor. Progresa cada día.",
-    "description": "Rutinas personalizadas, progreso real, impulsado por IA.",
+    "eyebrow": "App de fitness con IA",
+    "title": "Entrena más inteligente. <accent>Progresa</accent> cada día.",
+    "description": "Rutinas personalizadas, progreso real, con IA.",
     "primaryCta": "Empieza tu camino",
-    "secondaryCta": "Ver demo",
-    "frontendLabel": "IA Adaptativa",
-    "backendLabel": "Progreso Real",
-    "apiStatusLabel": "Estado API",
-    "online": "Online",
-    "offline": "Offline",
-    "healthcheck": "Healthcheck",
     "sessionTitle": "Sesión",
     "sessionActive": "Sesión activa",
-    "sessionInactive": "No has iniciado sesión",
-    "sessionHint": "Inicia sesión para preparar tu onboarding y rutina personalizada.",
     "login": "Iniciar sesión",
-    "register": "Crear cuenta",
     "logout": "Cerrar sesión",
     "logoutLoading": "Cerrando...",
-    "offlineSync": "Sync Offline",
-    "adaptiveDescription": "Planes que se adaptan a ti",
-    "progressDescription": "Registra cada rep y ve resultados",
-    "offlineDescription": "Entrena donde sea, cuando sea"
+    "features": {
+      "ai": { "title": "IA adaptativa", "description": "Planes que se adaptan a ti" },
+      "progress": { "title": "Progreso real", "description": "Registra cada serie, mira resultados" },
+      "offline": { "title": "Funciona sin conexión", "description": "Entrena donde sea, cuando sea" }
+    },
+    "app": {
+      "eyebrow": "La app",
+      "title": "Todo lo que necesitas. Nada que no.",
+      "mock": {
+        "upNext": "Siguiente entrenamiento",
+        "day": "Empuje: pecho y hombros",
+        "meta": "6 ejercicios · 55 min",
+        "start": "Empezar entrenamiento",
+        "firstExercises": "Primeros ejercicios",
+        "viewRoutine": "Ver rutina",
+        "exercise1": "Press de banca con barra",
+        "exercise1Detail": "4 × 6 · 80 kg",
+        "exercise2": "Press militar con mancuernas",
+        "exercise2Detail": "3 × 10 · 24 kg"
+      }
+    }
   },
   "Auth": {
     "login": {
-      "title": "Bienvenido de vuelta",
-      "description": "Accede a tu rutina, progreso y preferencias guardadas.",
-      "email": "Email",
+      "title": "Bienvenido de nuevo",
+      "description": "Accede a tu rutina, progreso y preferencias.",
+      "email": "Correo",
+      "emailPlaceholder": "tu@correo.com",
       "password": "Contraseña",
-      "submit": "Entrar",
-      "loading": "Entrando...",
+      "passwordPlaceholder": "Tu contraseña",
+      "showPassword": "Mostrar contraseña",
+      "hidePassword": "Ocultar contraseña",
+      "submit": "Iniciar sesión",
+      "loading": "Ingresando...",
       "error": "No se pudo iniciar sesión.",
+      "or": "O",
       "google": "Continuar con Google",
       "googleLoading": "Abriendo Google...",
       "googleError": "No se pudo iniciar sesión con Google.",
@@ -41,25 +52,41 @@
     },
     "register": {
       "title": "Crear cuenta",
-      "description": "Empieza tu camino en Apex Fit con rutinas personalizadas por IA.",
-      "email": "Email",
+      "email": "Correo",
+      "emailPlaceholder": "tu@correo.com",
       "password": "Contraseña",
+      "passwordPlaceholder": "Crea una contraseña",
       "confirmPassword": "Confirmar contraseña",
+      "confirmPasswordPlaceholder": "Repite tu contraseña",
+      "showPassword": "Mostrar contraseña",
+      "hidePassword": "Ocultar contraseña",
       "submit": "Crear cuenta",
       "loading": "Creando cuenta...",
       "passwordMismatch": "Las contraseñas no coinciden.",
-      "success": "Cuenta creada. Revisa tu email para confirmar el registro.",
+      "success": "Cuenta creada. Revisa tu correo para confirmar el registro.",
+      "successCta": "Iniciar sesión",
       "error": "No se pudo crear la cuenta.",
+      "or": "O",
       "google": "Registrarme con Google",
       "googleLoading": "Abriendo Google...",
       "googleError": "No se pudo registrar con Google.",
-      "loginLink": "Ya tengo cuenta"
+      "loginLink": "Ya tengo una cuenta"
     }
   },
   "Onboarding": {
     "title": "Construyamos tu rutina",
     "description": "Completa seis pasos rápidos para que la app prepare una rutina ajustada a tu cuerpo, objetivos y equipo.",
-    "draftLoaded": "El borrador se guarda localmente mientras avanzas.",
+    "draftLoaded": "Tu borrador se guarda en este dispositivo",
+    "stepOf": "Paso {current} de {total}",
+    "progressLabel": "Progreso del onboarding",
+    "stepTitles": {
+      "personal": "Datos personales",
+      "fitness": "Tu nivel de fitness",
+      "goals": "Tus objetivos",
+      "health": "Tu salud",
+      "equipment": "Tu equipo",
+      "schedule": "Tu horario"
+    },
     "validationError": "Completa los campos requeridos antes de continuar.",
     "submitError": "No se pudo completar el onboarding. Inténtalo nuevamente.",
     "loadingStatus": "Revisando estado del onboarding...",
@@ -81,9 +108,9 @@
       "goToDashboard": "Ir al dashboard"
     },
     "steps": {
-      "personal": "Datos personales",
+      "personal": "Personal",
       "fitness": "Fitness",
-      "goals": "Metas",
+      "goals": "Objetivos",
       "health": "Salud",
       "equipment": "Equipo",
       "schedule": "Horario"
@@ -94,14 +121,27 @@
         "fullNamePlaceholder": "Ej: Ana Pérez",
         "gender": "Género",
         "age": "Edad",
-        "weightKg": "Peso (kg)",
-        "weightLb": "Peso (lb)",
-        "heightCm": "Altura (cm)",
-        "heightFt": "Altura (ft/in)",
+        "agePlaceholder": "Ej. 28",
+        "ageUnit": "años",
+        "units": "Sistema de medidas",
+        "unitOptions": { "metric": "Métrico", "imperial": "Imperial" },
+        "weight": "Peso",
+        "weightPlaceholder": "Ej. 78",
+        "height": "Altura",
+        "heightFeet": "Altura (ft)",
+        "heightInches": "Altura (in)",
+        "heightPlaceholder": "Ej. 178",
+        "errors": {
+          "name": "Escribe tu nombre.",
+          "gender": "Elige una opción.",
+          "age": "Ingresa una edad válida.",
+          "weight": "Ingresa tu peso.",
+          "height": "Ingresa tu altura."
+        },
         "genderOptions": {
           "male": "Hombre",
           "female": "Mujer",
-          "prefer_not_to_say": "Prefiero no decir"
+          "prefer_not_to_say": "Prefiero no decirlo"
         }
       },
       "fitness": {
@@ -156,9 +196,9 @@
           "forearms": "Antebrazos"
         },
         "intensity": {
-          "always_failure": "Siempre al fallo 💀",
-          "near_failure": "A 1-2 reps del fallo 🎯",
-          "comfortable": "A 3+ reps del fallo 🧘"
+          "always_failure": "Siempre al fallo",
+          "near_failure": "A 1-2 reps del fallo",
+          "comfortable": "A 3+ reps del fallo"
         }
       },
       "health": {
@@ -166,10 +206,14 @@
         "conditionsHint": "Opcional, ayuda a ajustar tu rutina para evitar riesgos",
         "injuriesLabel": "Lesiones o molestias adicionales",
         "injuriesHint": "Agrega molestias o lesiones. Puedes dejarlo vacío.",
-        "areaPlaceholder": "Área: rodilla izquierda",
-        "descriptionPlaceholder": "Descripción",
-        "remove": "Eliminar",
-        "add": "Agregar lesión o molestia",
+        "injuryNumber": "Lesión {number}",
+        "removeAria": "Quitar lesión {number}",
+        "area": "Área",
+        "areaPlaceholder": "Ej. rodilla izquierda",
+        "description": "Descripción",
+        "descriptionPlaceholder": "Describe la lesión",
+        "remove": "Quitar",
+        "add": "Agregar lesión",
         "conditions": {
           "knee_pain": { "label": "Dolor de rodillas / Artrosis", "description": "Dolor en sentadillas, zancadas, impacto" },
           "lower_back_pain": { "label": "Lumbalgia / Dolor lumbar", "description": "Dolor en peso muerto, remo, sentadilla" },
@@ -184,6 +228,8 @@
         }
       },
       "equipment": {
+        "typeLabel": "¿Dónde entrenas?",
+        "availableLabel": "Equipo disponible",
         "types": {
           "gym": { "label": "Gimnasio", "description": "Máquinas, barras, mancuernas y cables" },
           "home": { "label": "Casa", "description": "Equipo limitado o entrenamiento en casa" },
@@ -200,15 +246,16 @@
         }
       },
       "schedule": {
+        "minutes": "{count} min",
         "daysLabel": "¿Cuántos días por semana puedes entrenar?",
         "durationLabel": "¿Cuánto tiempo por sesión?",
         "routineLabel": "Tipo de rutina",
         "recommended": "RECOMENDADO",
         "routines": {
-          "push_pull_legs": { "label": "Push / Pull / Legs", "description": "Tren superior empuje, jalón y piernas en días separados. La división más popular para volumen.", "days": "⭐ 3-4 días/semana" },
-          "upper_lower": { "label": "Torso / Pierna", "description": "Alterna tren superior completo con piernas. Ideal para frecuencia 2x por grupo muscular.", "days": "⭐ 4 días/semana" },
-          "hybrid": { "label": "Híbrido", "description": "Combina ejercicios compuestos y accesorios cada sesión. Flexible y adaptable.", "days": "⭐ 1-3 días/semana" },
-          "5_days": { "label": "5 días / Weider", "description": "Un grupo muscular grande por día (pecho, espalda, hombros, piernas, brazos). Mayor volumen.", "days": "⭐ 5-6 días/semana" }
+          "push_pull_legs": { "label": "Push / Pull / Legs", "description": "Tren superior empuje, jalón y piernas en días separados. La división más popular para volumen.", "days": "3-4 días/semana" },
+          "upper_lower": { "label": "Torso / Pierna", "description": "Alterna tren superior completo con piernas. Ideal para frecuencia 2x por grupo muscular.", "days": "4 días/semana" },
+          "hybrid": { "label": "Híbrido", "description": "Combina ejercicios compuestos y accesorios cada sesión. Flexible y adaptable.", "days": "1-3 días/semana" },
+          "5_days": { "label": "5 días / Weider", "description": "Un grupo muscular grande por día (pecho, espalda, hombros, piernas, brazos). Mayor volumen.", "days": "5-6 días/semana" }
         }
       }
     }
@@ -281,36 +328,23 @@
       "startWorkout": "Comenzar entrenamiento →",
       "exercises": "ejercicios",
       "title": "Plan mensual",
-      "description": "Tu rutina personalizada ya está guardada. Revisa la semana, elige un día y prepara tu siguiente entrenamiento.",
-      "cta": "Ver rutina completa",
-      "weeks": "Semanas",
-      "activeDays": "Días activos",
-      "nextWorkout": "Próximo entrenamiento",
-      "restDay": "Descanso",
       "today": "Hoy",
       "tomorrow": "Mañana",
       "restToday": "Hoy es día de descanso. Tu próximo entrenamiento:"
     },
-    "weeklyPreview": {
-      "title": "Vista semanal",
-      "week": "Semana",
-      "restDay": "Descanso",
-      "exercises": "ejercicios",
-      "selectedDay": {
-        "title": "Ejercicios",
-        "restDay": "Día de descanso. Enfócate en recuperación, movilidad ligera y sueño.",
-        "sets": "series",
-        "reps": "reps",
-        "rest": "Descanso",
-        "weight": "Peso",
-        "seconds": "seg",
-        "empty": "Selecciona un día de entrenamiento para ver sus ejercicios."
-      }
+    "todayPreview": {
+      "title": "Primeros ejercicios",
+      "viewRoutine": "Ver rutina"
     },
     "routineStates": {
       "loading": "Buscando tu rutina activa...",
       "error": "No pudimos cargar tu rutina. Intenta recargar la página.",
       "offlineFallback": "Estás viendo la última rutina guardada en este dispositivo."
+    },
+    "noRoutine": {
+      "title": "Aún no tienes una rutina activa",
+      "description": "Crea tu propia rutina o genera un plan mensual con IA.",
+      "cta": "Ver opciones"
     }
   },
   "OfflineMedia": {
@@ -376,20 +410,25 @@
       "ready": "Tu coach preparó ajustes para tu rutina de {month}.",
       "review": "Revisar"
     }
-  },
+  },
   "Routine": {
     "title": "Rutina activa",
     "description": "Consulta tu plan mensual completo, semana por semana.",
+    "eyebrow": "Tu rutina",
+    "activeTitle": "Rutina activa",
+    "monthlyBadge": "Plan mensual {period}",
+    "manualBadge": "Rutina manual",
+    "editRoutine": "Editar rutina",
     "week": "Semana",
     "restDay": "Descanso",
     "exercises": "ejercicios",
-    "viewDay": "Ver detalle del día",
+    "today": "HOY",
+    "completedAria": "Completado",
     "nextRoutineReady": "🎯 ¡Tu nueva rutina para {month} está lista!",
     "viewRoutine": "Ver rutina",
     "states": {
       "loading": "Cargando tu rutina...",
       "error": "No pudimos cargar tu rutina. Intenta recargar la página.",
-      "empty": "Aún no tienes rutina activa. Apex Fit la generará automáticamente después del onboarding.",
       "offlineFallback": "Estás viendo la última rutina guardada en este dispositivo."
     }
   },
@@ -399,13 +438,12 @@
     "description": "Arma tu propia rutina eligiendo ejercicios, o deja que la IA diseñe un plan mensual personalizado.",
     "manual": {
       "title": "Crear mi rutina",
-      "description": "Elige ejercicios, define tus semanas y días. Funciona sin conexión.",
-      "cta": "Crear mi rutina"
+      "description": "Elige ejercicios, define semanas y días.",
+      "offline": "Funciona sin conexión"
     },
     "ai": {
       "title": "Generar con IA",
-      "description": "Responde unas preguntas y obtén un plan mensual basado en ciencia.",
-      "cta": "Generar con IA"
+      "description": "Responde unas preguntas y obtén un plan mensual basado en ciencia."
     },
     "pendingBanner": "Tu rutina se guardó en este dispositivo y se subirá cuando tengas conexión.",
     "change": {
@@ -423,6 +461,10 @@
     "editEntryCta": "Editar rutina",
     "editTitle": "Editar tu rutina",
     "editDescription": "Cambia tus semanas, días y ejercicios.",
+    "eyebrow": "Rutina manual",
+    "back": "Volver",
+    "offlineNotice": "Sin conexión: se guardará en este dispositivo",
+    "reviewBeforeSave": "Revisa antes de guardar",
     "week": "Semana",
     "addWeek": "Agregar semana",
     "removeWeek": "Quitar semana",
@@ -432,15 +474,16 @@
     "addDay": "Agregar día",
     "removeDay": "Quitar día",
     "dayNamePlaceholder": "Nombre del día (ej. Empuje, Piernas)",
+    "dayNameAria": "Nombre del {weekday}",
     "restDay": "Día de descanso",
     "addExercise": "Agregar ejercicio",
-    "removeExercise": "Quitar",
-    "moveUp": "Subir",
-    "moveDown": "Bajar",
+    "removeExercise": "Quitar {name}",
+    "moveUp": "Subir {name}",
+    "moveDown": "Bajar {name}",
     "sets": "Series",
     "reps": "Reps",
     "rest": "Descanso (s)",
-    "weight": "Kg",
+    "weight": "Peso (kg)",
     "save": "Guardar rutina",
     "saveEdit": "Guardar cambios",
     "saving": "Guardando...",
@@ -450,17 +493,19 @@
     "saveError": "No pudimos guardar tu rutina. Inténtalo de nuevo.",
     "editOfflineError": "Necesitás conexión para guardar los cambios de tu rutina.",
     "picker": {
-      "title": "Elige un ejercicio",
-      "search": "Buscar ejercicios",
+      "title": "Agregar ejercicio",
+      "close": "Cerrar",
+      "search": "Buscar ejercicio",
       "muscle": "Músculo",
       "equipment": "Equipo",
       "category": "Categoría",
       "all": "Todos",
+      "addAria": "Agregar {name}, {muscle} · {equipment}",
       "empty": "Ningún ejercicio coincide con tus filtros.",
       "syncing": "Actualizando catálogo de ejercicios...",
-      "neverSynced": "El catálogo de ejercicios aún no se ha descargado. Conéctate una vez para sincronizarlo.",
-      "custom": "Agregar ejercicio personalizado",
-      "close": "Cerrar"
+      "noCatalogTitle": "Catálogo sin descargar",
+      "noCatalogDescription": "Conéctate para descargarlo. Mientras tanto puedes crear un ejercicio personalizado.",
+      "custom": "Ejercicio personalizado"
     },
     "validation": {
       "noTrainingDay": "La semana {week} necesita al menos un día de entrenamiento.",
@@ -477,16 +522,12 @@
     "title": "Detalle del día",
     "description": "Revisa ejercicios, series, repeticiones, pesos sugeridos e instrucciones.",
     "back": "Volver a rutina",
+    "weekAndDay": "Semana {week} · {weekday}",
+    "durationAndCount": "{count} ejercicios · ~{minutes} min",
+    "focus": "Enfoque: {muscles}",
+    "progress": "Progreso: {done} / {total} ejercicios",
     "restDay": "Día de descanso",
-    "sets": "series",
-    "reps": "reps",
-    "rest": "Descanso",
-    "weight": "Peso",
-    "seconds": "seg",
-    "variants": "Variantes",
     "tracker": {
-      "title": "Registrar progreso",
-      "description": "Marca lo que completaste hoy. Se guarda primero en este dispositivo y se sincroniza cuando haya conexión.",
       "completedDay": "Día completado",
       "dayNote": "Nota del día",
       "dayNotePlaceholder": "Ej: Me sentí fuerte, bajé intensidad por molestia en hombro...",
@@ -494,12 +535,9 @@
       "actualSets": "Series",
       "actualReps": "Reps",
       "actualWeight": "Kg",
-      "exerciseNote": "Nota",
-      "exerciseNotePlaceholder": "Opcional",
       "save": "Guardar progreso",
       "saving": "Guardando...",
       "savedLocal": "Guardado localmente. Se sincronizará cuando haya conexión.",
-      "synced": "Progreso guardado y sincronización intentada.",
       "setNumber": "Serie",
       "reps": "Reps",
       "kg": "Kg",
@@ -508,8 +546,23 @@
       "kgAria": "Peso de la serie {number} de {exercise}",
       "doneAria": "Serie {number} de {exercise} completada",
       "addSet": "+ Serie",
-      "removeSet": "− Serie",
-      "exerciseDone": "Ejercicio completo"
+      "removeSet": "− Serie"
+    },
+    "restDayCard": {
+      "title": "Día de descanso",
+      "subtitle": "Sin ejercicios programados.",
+      "notePlaceholder": "¿Cómo te sentiste hoy?"
+    },
+    "sheet": {
+      "close": "Cerrar",
+      "closeBackdrop": "Cerrar hoja",
+      "exerciseDone": "Ejercicio completo",
+      "noteLabel": "Nota del ejercicio",
+      "notePlaceholder": "Agregar nota del ejercicio",
+      "variants": "Variantes",
+      "nextExercise": "Siguiente ejercicio",
+      "backToList": "Volver a la lista",
+      "rowAriaLabel": "{name}, {done} de {total} series"
     },
     "states": {
       "loading": "Cargando día de rutina...",

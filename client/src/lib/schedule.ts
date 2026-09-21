@@ -41,6 +41,17 @@ function isoWeekday(date: Date): number {
   return ((date.getDay() + 6) % 7) + 1;
 }
 
+// A known Monday, used only to turn a day_number (1-7) into a weekday name --
+// never compared against real dates.
+const REFERENCE_MONDAY = new Date(2024, 0, 1);
+
+/** The weekday name for a `day_number` (1-7, Monday-Sunday), independent of any real date. */
+export function weekdayNameForDayNumber(dayNumber: number, locale: string): string {
+  const date = addDays(REFERENCE_MONDAY, dayNumber - 1);
+  const name = new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date);
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
 function mondayNumber(date: Date): number {
   return dayNumber(date) - (isoWeekday(date) - 1);
 }
@@ -54,6 +65,22 @@ function parseDateOnly(value: string): Date | null {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (!match) return null;
   return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
+function formatDateOnly(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+/**
+ * The calendar date (`YYYY-MM-DD`) a week/day falls on the first time the
+ * routine runs through it -- doesn't account for later cycles of a routine
+ * shorter than the time the user has been training, which is enough to tell
+ * whether *this* pass through the plan was logged.
+ */
+export function calendarDateForRoutineDay(routine: Routine, week: RoutineWeek, day: RoutineDay): string | null {
+  const start = routineStartDate(routine);
+  if (!start) return null;
+  return formatDateOnly(addDays(start, (week.week_number - 1) * 7 + (day.day_number - 1)));
 }
 
 function startOfLocalDay(date: Date): Date {

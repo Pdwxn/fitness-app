@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Repeat } from "lucide-react";
 import { toast } from "sonner";
 
 import { deactivateRoutine } from "@/lib/api/routines";
@@ -41,8 +42,9 @@ export function ChangeRoutineButton({ routineId }: ChangeRoutineButtonProps) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="apex-button-outline rounded-xl px-4 py-2 text-xs font-black"
+        className="apex-button-outline flex h-12 flex-1 items-center justify-center gap-2 rounded-3xl px-5 text-base font-bold sm:flex-none"
       >
+        <Repeat aria-hidden="true" size={20} strokeWidth={1.6} />
         {t("cta")}
       </button>
 

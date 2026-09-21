@@ -14,20 +14,6 @@ vi.mock("@/lib/sync", () => ({ saveLogLocally: (log: DailyLog) => saveLogLocally
 
 const { DailyLogForm } = await import("../DailyLogForm");
 
-const labels = {
-  title: "Registrar progreso",
-  description: "desc",
-  completedDay: "Día completado",
-  dayNote: "Nota del día",
-  dayNotePlaceholder: "",
-  exerciseNote: "Nota",
-  exerciseNotePlaceholder: "",
-  save: "Guardar progreso",
-  saving: "Guardando...",
-  savedLocal: "Guardado localmente",
-  synced: "",
-};
-
 function makeDay(exercises: Partial<RoutineDay["exercises"][number]>[] = [{}]): RoutineDay {
   return {
     id: "day1",
@@ -42,6 +28,8 @@ function makeDay(exercises: Partial<RoutineDay["exercises"][number]>[] = [{}]): 
       reps: "8-10",
       weight_kg: "60.00",
       image_url: "",
+      order: i + 1,
+      variants: [],
       ...e,
     })),
   } as unknown as RoutineDay;
@@ -55,17 +43,28 @@ const today = () => {
 function renderForm(day: RoutineDay) {
   const ui = (d: RoutineDay) => (
     <NextIntlClientProvider locale="es" messages={es}>
-      <DailyLogForm day={d} labels={labels} />
+      <DailyLogForm day={d} />
     </NextIntlClientProvider>
   );
   const view = render(ui(day));
   return { ...view, rerenderDay: (d: RoutineDay) => view.rerender(ui(d)) };
 }
 
+// The desktop panel (always mounted, showing whichever exercise is selected)
+// and the mobile sheet (only mounted once a row is tapped, portaled to
+// document.body) both render the same `ExerciseSheetContent`. As long as no
+// row has been tapped, only the panel exists, so bare `screen` queries are
+// unambiguous -- these helpers assume that for the single-exercise tests.
 const setRow = (n: number) => screen.getAllByRole("listitem")[n - 1];
 const reps = (n: number) => within(setRow(n)).getByRole("textbox", { name: /Repeticiones/ });
 const kg = (n: number) => within(setRow(n)).getByRole("textbox", { name: /Peso/ });
 const tick = (n: number) => within(setRow(n)).getByRole("checkbox");
+
+/** Tap an exercise's list row (by name), opening the mobile sheet, and return queries scoped to it. */
+async function openExercise(name: string) {
+  await userEvent.click(screen.getByRole("button", { name: new RegExp(`^${name},`) }));
+  return within(screen.getByRole("dialog"));
+}
 
 beforeEach(() => {
   saveLogLocally.mockClear();
@@ -82,17 +81,19 @@ describe("DailyLogForm per-set logging", () => {
     expect(tick(1)).toHaveAttribute("aria-checked", "false");
   });
 
-  it("one tap marks a set done and fills the reps as prescribed; all sets done completes the exercise", async () => {
+  it("one tap marks a set done and fills the reps as prescribed; all sets done completes the exercise and updates the list row", async () => {
     renderForm(makeDay());
 
     await userEvent.click(tick(1));
     expect(reps(1)).toHaveValue("10");
     expect(tick(1)).toHaveAttribute("aria-checked", "true");
     expect(screen.queryByText("Ejercicio completo")).toBeNull();
+    expect(screen.getByRole("button", { name: /^Press de banca,/ })).toHaveTextContent("1/3");
 
     await userEvent.click(tick(2));
     await userEvent.click(tick(3));
     expect(screen.getByText("Ejercicio completo")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Press de banca,/ })).toHaveTextContent("3/3");
   });
 
   it("saves the sets AND the derived totals, cleaned of typos", async () => {
@@ -166,7 +167,65 @@ describe("DailyLogForm per-set logging", () => {
     expect(tick(4)).toHaveAttribute("aria-checked", "true");
   });
 
-  it("restores a per-set log exactly, and appends exercises added to the routine since", () => {
+  it("does not throw away what the user is typing when the routine refetches in the background", async () => {
+    const day = makeDay();
+    const { rerenderDay } = renderForm(day);
+
+    await userEvent.type(reps(1), "7");
+    await userEvent.click(tick(2));
+
+    rerenderDay(makeDay()); // same routine, new object identity, like a react-query refetch
+
+    expect(reps(1)).toHaveValue("7");
+    expect(tick(2)).toHaveAttribute("aria-checked", "true");
+  });
+});
+
+describe("DailyLogForm exercise list and sheet", () => {
+  it("shows the day's progress and one list row per exercise", () => {
+    renderForm(makeDay([{}, { sets: 2 }]));
+
+    expect(screen.getByText("Progreso: 0 / 2 ejercicios")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Press de banca,/ })).toHaveTextContent("0/3");
+    expect(screen.getByRole("button", { name: /^Ejercicio 2,/ })).toHaveTextContent("0/2");
+  });
+
+  it("tapping a list row opens the mobile sheet for that exercise", async () => {
+    renderForm(makeDay([{}, { sets: 2 }]));
+
+    const dialog = await openExercise("Ejercicio 2");
+    expect(dialog.getByRole("heading", { name: "Ejercicio 2" })).toBeInTheDocument();
+    expect(dialog.getAllByRole("listitem")).toHaveLength(2);
+  });
+
+  it("advances through exercises from the sheet, and offers to go back to the list on the last one", async () => {
+    renderForm(makeDay([{}, { sets: 2 }]));
+
+    let dialog = await openExercise("Press de banca");
+    expect(dialog.getByRole("heading", { name: "Press de banca" })).toBeInTheDocument();
+    expect(dialog.getByRole("button", { name: "Siguiente ejercicio" })).toBeInTheDocument();
+
+    await userEvent.click(dialog.getByRole("button", { name: "Siguiente ejercicio" }));
+    dialog = within(screen.getByRole("dialog"));
+    expect(dialog.getByRole("heading", { name: "Ejercicio 2" })).toBeInTheDocument();
+    expect(dialog.getByRole("button", { name: "Volver a la lista" })).toBeInTheDocument();
+
+    await userEvent.click(dialog.getByRole("button", { name: "Volver a la lista" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("closing the mobile sheet keeps the logged progress", async () => {
+    renderForm(makeDay([{}, { sets: 2 }]));
+
+    const dialog = await openExercise("Ejercicio 2");
+    await userEvent.click(dialog.getAllByRole("checkbox")[0]);
+    await userEvent.click(screen.getByRole("button", { name: "Cerrar" }));
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("button", { name: /^Ejercicio 2,/ })).toHaveTextContent("1/2");
+  });
+
+  it("restores a per-set log exactly across exercises, and appends exercises added to the routine since", () => {
     useDailyLogs.mockReturnValue({
       logs: [
         {
@@ -197,28 +256,8 @@ describe("DailyLogForm per-set logging", () => {
 
     renderForm(makeDay([{}, { sets: 2 }])); // e2 was added after the log was saved
 
-    // e1: 2 restored rows; e2: 2 fresh rows
-    expect(screen.getAllByRole("listitem")).toHaveLength(4);
-    expect(tick(1)).toHaveAttribute("aria-checked", "true");
-    expect(tick(2)).toHaveAttribute("aria-checked", "false");
-    expect(screen.getByRole("heading", { name: "Ejercicio 2" })).toBeInTheDocument();
-  });
-
-  it("does not throw away what the user is typing when the routine refetches in the background", async () => {
-    const day = makeDay();
-    const { rerenderDay } = renderForm(day);
-
-    await userEvent.type(reps(1), "7");
-    await userEvent.click(tick(2));
-
-    rerenderDay(makeDay()); // same routine, new object identity, like a react-query refetch
-
-    expect(reps(1)).toHaveValue("7");
-    expect(tick(2)).toHaveAttribute("aria-checked", "true");
-  });
-
-  it("renders nothing on a rest day", () => {
-    const { container } = renderForm({ ...makeDay(), is_rest_day: true });
-    expect(container).toBeEmptyDOMElement();
+    // e1: 1 of 2 restored sets done; e2: fresh, 0 of 2 done.
+    expect(screen.getByRole("button", { name: /^Press de banca,/ })).toHaveTextContent("1/2");
+    expect(screen.getByRole("button", { name: /^Ejercicio 2,/ })).toHaveTextContent("0/2");
   });
 });

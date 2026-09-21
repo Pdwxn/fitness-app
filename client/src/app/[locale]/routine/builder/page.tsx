@@ -21,6 +21,7 @@ export default async function RoutineBuilderPage({
       locale={locale}
       title={mode === "edit" ? t("editTitle") : t("title")}
       description={mode === "edit" ? t("editDescription") : t("description")}
+      hideHeader
     >
       <RoutineBuilderWizard locale={locale} mode={mode} />
     </AppShell>

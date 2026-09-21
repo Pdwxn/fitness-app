@@ -91,7 +91,9 @@ type BuilderState = {
   addDay: (weekIdx: number) => void;
   removeDay: (weekIdx: number, dayIdx: number) => void;
   setDayName: (weekIdx: number, dayIdx: number, name: string) => void;
-  toggleRestDay: (weekIdx: number, dayIdx: number) => void;
+  /** `restLabel` fills the day's name when it doesn't have one yet, so a rest
+   * day is never flagged by `validateDraft`'s "unnamed day" check. */
+  toggleRestDay: (weekIdx: number, dayIdx: number, restLabel: string) => void;
 
   addExercise: (weekIdx: number, dayIdx: number, exercise?: Exercise) => void;
   removeExercise: (weekIdx: number, dayIdx: number, exerciseIdx: number) => void;
@@ -223,10 +225,15 @@ export const useRoutineBuilderStore = create<BuilderState>((set, get) => {
     setDayName: (weekIdx, dayIdx, name) =>
       mutateDay(weekIdx, dayIdx, (day) => ({ ...day, day_name: name })),
 
-    toggleRestDay: (weekIdx, dayIdx) =>
+    toggleRestDay: (weekIdx, dayIdx, restLabel) =>
       mutateDay(weekIdx, dayIdx, (day) => {
         const isRest = !day.is_rest_day;
-        return { ...day, is_rest_day: isRest, exercises: isRest ? [] : day.exercises };
+        return {
+          ...day,
+          is_rest_day: isRest,
+          exercises: isRest ? [] : day.exercises,
+          day_name: isRest && !day.day_name.trim() ? restLabel : day.day_name,
+        };
       }),
 
     addExercise: (weekIdx, dayIdx, exercise) =>

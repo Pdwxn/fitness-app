@@ -5,122 +5,157 @@ import { cmToFeetInches, feetInchesToCm, kgToLb, lbToKg } from "@/lib/units";
 import { useOnboardingStore } from "@/store/onboardingStore";
 import type { UnitSystem } from "@/types/onboarding";
 
+import { OptionChip, StepSection, TextField } from "../OnboardingUi";
+
 const genderOptions = [...GENDER_OPTIONS];
 
-export function Step1Personal() {
+export type Step1Errors = { name: boolean; age: boolean; weight: boolean; height: boolean };
+
+/** The same ranges `OnboardingForm` requires before letting the user leave this step. */
+export function validateStep1(profile: {
+  full_name: string;
+  gender: string;
+  age: number | null;
+  weight_kg: number | null;
+  height_cm: number | null;
+}): Step1Errors & { gender: boolean } {
+  return {
+    name: !profile.full_name.trim(),
+    gender: !profile.gender,
+    age: !(profile.age && profile.age >= 13 && profile.age <= 100),
+    weight: !(profile.weight_kg && profile.weight_kg >= 20 && profile.weight_kg <= 400),
+    height: !(profile.height_cm && profile.height_cm >= 80 && profile.height_cm <= 250),
+  };
+}
+
+function numberOrNull(raw: string): number | null {
+  const value = Number(raw);
+  return raw.trim() === "" || !Number.isFinite(value) ? null : value;
+}
+
+export function Step1Personal({ showErrors = false }: { showErrors?: boolean }) {
   const t = useTranslations("Onboarding.form.personal");
   const profile = useOnboardingStore((state) => state.data.profile);
   const updateProfile = useOnboardingStore((state) => state.updateProfile);
   const units = profile.preferred_units;
-  const weightKg = profile.weight_kg ?? 70;
-  const heightCm = profile.height_cm ?? 170;
-  const height = cmToFeetInches(heightCm);
+  const errors = validateStep1(profile);
+  const height = profile.height_cm != null ? cmToFeetInches(profile.height_cm) : null;
 
-  function setUnits(nextUnits: UnitSystem) {
-    updateProfile({ preferred_units: nextUnits });
-  }
+  const shown = (flag: boolean, message: string) => (showErrors && flag ? message : null);
 
   return (
-    <div className="flex flex-col gap-5">
-      <label className="flex flex-col gap-2 text-sm font-semibold text-white">
-        {t("fullName")}
-        <input
-          value={profile.full_name}
-          onChange={(event) => updateProfile({ full_name: event.target.value })}
-          className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white outline-none placeholder:text-white/40 focus:border-[#a6ff00]"
-          placeholder={t("fullNamePlaceholder")}
-        />
-      </label>
+    <div className="flex flex-col gap-6">
+      <TextField
+        id="full-name"
+        label={t("fullName")}
+        value={profile.full_name}
+        onChange={(value) => updateProfile({ full_name: value })}
+        placeholder={t("fullNamePlaceholder")}
+        error={shown(errors.name, t("errors.name"))}
+      />
 
-      <div className="flex flex-col gap-2">
-        <p className="text-sm font-semibold text-white">{t("gender")}</p>
-        <div className="grid gap-2 md:grid-cols-3">
+      <StepSection title={t("gender")}>
+        <div className="grid grid-cols-3 gap-2">
           {genderOptions.map((option) => (
-            <button
+            <OptionChip
               key={option}
-              type="button"
+              tall
+              selected={profile.gender === option}
               onClick={() => updateProfile({ gender: option })}
-              className={`rounded-2xl border px-4 py-3 text-sm font-bold transition ${
-                profile.gender === option
-                  ? "border-[#a6ff00] bg-[#a6ff00]/10 text-white"
-                  : "border-white/15 bg-white/5 text-white/70"
-              }`}
             >
               {t(`genderOptions.${option}`)}
-            </button>
+            </OptionChip>
           ))}
         </div>
-      </div>
+        {showErrors && errors.gender ? (
+          <p role="alert" className="text-[15px] font-semibold text-red-300">
+            {t("errors.gender")}
+          </p>
+        ) : null}
+      </StepSection>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <label className="flex flex-col gap-2 text-sm font-semibold text-white">
-          {t("age")}
-          <input
-            type="number"
-            value={profile.age ?? ""}
-            onChange={(event) => updateProfile({ age: Number(event.target.value) || null })}
-            className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white outline-none focus:border-[#a6ff00]"
-          />
-        </label>
+      <TextField
+        id="age"
+        label={t("age")}
+        type="number"
+        inputMode="numeric"
+        value={profile.age ?? ""}
+        onChange={(value) => updateProfile({ age: numberOrNull(value) })}
+        placeholder={t("agePlaceholder")}
+        suffix={t("ageUnit")}
+        error={shown(errors.age, t("errors.age"))}
+      />
 
-        <label className="flex flex-col gap-2 text-sm font-semibold text-white">
-          {units === "metric" ? t("weightKg") : t("weightLb")}
-          <input
-            type="number"
-            value={units === "metric" ? weightKg : kgToLb(weightKg)}
-            onChange={(event) => {
-              const value = Number(event.target.value);
-              updateProfile({ weight_kg: units === "metric" ? value : lbToKg(value) });
-            }}
-            className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white outline-none focus:border-[#a6ff00]"
-          />
-        </label>
-
-        <div className="flex flex-col gap-2 text-sm font-semibold text-white">
-          <span>{units === "metric" ? t("heightCm") : t("heightFt")}</span>
-          {units === "metric" ? (
-            <input
-              type="number"
-              value={heightCm}
-              onChange={(event) => updateProfile({ height_cm: Number(event.target.value) || null })}
-              className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white outline-none focus:border-[#a6ff00]"
-            />
-          ) : (
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="number"
-                value={height.feet}
-                onChange={(event) =>
-                  updateProfile({ height_cm: feetInchesToCm(Number(event.target.value), height.inches) })
-                }
-                className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white outline-none focus:border-[#a6ff00]"
-              />
-              <input
-                type="number"
-                value={height.inches}
-                onChange={(event) =>
-                  updateProfile({ height_cm: feetInchesToCm(height.feet, Number(event.target.value)) })
-                }
-                className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white outline-none focus:border-[#a6ff00]"
-              />
-            </div>
-          )}
+      <StepSection title={t("units")}>
+        <div className="grid grid-cols-2 gap-2">
+          {(["metric", "imperial"] as UnitSystem[]).map((option) => (
+            <OptionChip
+              key={option}
+              tall
+              selected={units === option}
+              onClick={() => updateProfile({ preferred_units: option })}
+            >
+              {t(`unitOptions.${option}`)}
+            </OptionChip>
+          ))}
         </div>
-      </div>
+      </StepSection>
 
-      <div className="flex rounded-full border border-white/15 bg-white/5 p-1">
-        {(["metric", "imperial"] as UnitSystem[]).map((option) => (
-          <button
-            key={option}
-            type="button"
-            onClick={() => setUnits(option)}
-            className={`w-1/2 rounded-full px-4 py-2 text-sm font-bold ${
-              units === option ? "bg-[#a6ff00] text-black" : "text-white/60"
-            }`}
-          >
-            {option === "metric" ? "kg / cm" : "lb / ft"}
-          </button>
-        ))}
+      <div className="grid gap-4 md:grid-cols-2">
+        <TextField
+          id="weight"
+          label={t("weight")}
+          type="number"
+          inputMode="decimal"
+          value={profile.weight_kg == null ? "" : units === "metric" ? profile.weight_kg : kgToLb(profile.weight_kg)}
+          onChange={(value) => {
+            const parsed = numberOrNull(value);
+            updateProfile({ weight_kg: parsed == null ? null : units === "metric" ? parsed : lbToKg(parsed) });
+          }}
+          placeholder={t("weightPlaceholder")}
+          suffix={units === "metric" ? "kg" : "lb"}
+          error={shown(errors.weight, t("errors.weight"))}
+        />
+
+        {units === "metric" ? (
+          <TextField
+            id="height"
+            label={t("height")}
+            type="number"
+            inputMode="numeric"
+            value={profile.height_cm ?? ""}
+            onChange={(value) => updateProfile({ height_cm: numberOrNull(value) })}
+            placeholder={t("heightPlaceholder")}
+            suffix="cm"
+            error={shown(errors.height, t("errors.height"))}
+          />
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <TextField
+              id="height-ft"
+              label={t("heightFeet")}
+              type="number"
+              inputMode="numeric"
+              value={height?.feet ?? ""}
+              onChange={(value) =>
+                updateProfile({ height_cm: feetInchesToCm(Number(value) || 0, height?.inches ?? 0) })
+              }
+              suffix="ft"
+              error={shown(errors.height, t("errors.height"))}
+            />
+            <TextField
+              id="height-in"
+              label={t("heightInches")}
+              type="number"
+              inputMode="numeric"
+              value={height?.inches ?? ""}
+              onChange={(value) =>
+                updateProfile({ height_cm: feetInchesToCm(height?.feet ?? 0, Number(value) || 0) })
+              }
+              suffix="in"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

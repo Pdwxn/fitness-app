@@ -1,22 +1,19 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Loader2, Lock, Mail } from "lucide-react";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
-type LoginFormProps = {
-  locale: string;
-  labels: {
-    email: string;
-    password: string;
-    submit: string;
-    loading: string;
-    error: string;
-  };
-};
+import { AuthDivider } from "./AuthDivider";
+import { AuthField } from "./AuthField";
+import { GoogleOAuthButton } from "./GoogleOAuthButton";
 
-export function LoginForm({ locale, labels }: LoginFormProps) {
+export function LoginForm({ locale }: { locale: string }) {
+  const t = useTranslations("Auth.login");
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,7 +34,7 @@ export function LoginForm({ locale, labels }: LoginFormProps) {
     setIsLoading(false);
 
     if (authError) {
-      setError(authError.message || labels.error);
+      setError(authError.message || t("error"));
       return;
     }
 
@@ -46,46 +43,71 @@ export function LoginForm({ locale, labels }: LoginFormProps) {
   }
 
   return (
-    <form className="mt-8 flex flex-col gap-5" onSubmit={handleSubmit}>
-      <label className="flex flex-col gap-3 text-xs font-black uppercase tracking-[0.22em] text-white/65">
-        {labels.email}
-        <input
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          required
-          autoComplete="email"
-          placeholder="you@email.com"
-          className="apex-input rounded-2xl px-4 py-4 text-base normal-case tracking-normal placeholder:text-white/35"
-        />
-      </label>
+    <>
+      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+        <div className="flex flex-col gap-4">
+          <AuthField
+            id="email"
+            label={t("email")}
+            icon={Mail}
+            type="email"
+            value={email}
+            onChange={setEmail}
+            placeholder={t("emailPlaceholder")}
+            autoComplete="email"
+            disabled={isLoading}
+          />
+          <AuthField
+            id="password"
+            label={t("password")}
+            icon={Lock}
+            type="password"
+            value={password}
+            onChange={setPassword}
+            placeholder={t("passwordPlaceholder")}
+            autoComplete="current-password"
+            disabled={isLoading}
+            error={error}
+            revealLabels={{ show: t("showPassword"), hide: t("hidePassword") }}
+          />
+        </div>
 
-      <label className="flex flex-col gap-3 text-xs font-black uppercase tracking-[0.22em] text-white/65">
-        {labels.password}
-        <input
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          required
-          autoComplete="current-password"
-          placeholder="••••••••••"
-          className="apex-input rounded-2xl px-4 py-4 text-base normal-case tracking-normal placeholder:text-white/35"
-        />
-      </label>
+        <button
+          type="submit"
+          disabled={isLoading}
+          aria-busy={isLoading}
+          className="apex-button flex h-[60px] items-center justify-center gap-3 rounded-[1.875rem] text-lg font-extrabold disabled:opacity-85"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 aria-hidden="true" size={22} strokeWidth={2.4} className="animate-spin" />
+              {t("loading")}
+            </>
+          ) : (
+            <>
+              {t("submit")} <span aria-hidden="true">→</span>
+            </>
+          )}
+        </button>
+      </form>
 
-      {error ? (
-        <p className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-200">
-          {error}
-        </p>
-      ) : null}
+      <AuthDivider label={t("or")} />
 
-      <button
-        type="submit"
+      <GoogleOAuthButton
+        locale={locale}
+        intent="login"
+        label={t("google")}
+        loadingLabel={t("googleLoading")}
+        errorLabel={t("googleError")}
         disabled={isLoading}
-        className="apex-button mt-2 rounded-2xl px-5 py-4 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-60"
+      />
+
+      <Link
+        href={`/${locale}/auth/register`}
+        className="flex min-h-12 items-center justify-center text-[17px] font-bold text-[#a6ff00]"
       >
-        {isLoading ? labels.loading : labels.submit}
-      </button>
-    </form>
+        {t("registerLink")}
+      </Link>
+    </>
   );
 }

@@ -2,18 +2,24 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { AlertCircle, ChevronDown, ChevronUp, Plus, Trash2, X } from "lucide-react";
 
-import { useRoutineBuilderStore } from "@/store/routineBuilderStore";
+import { weekdayNameForDayNumber } from "@/lib/schedule";
+import { useRoutineBuilderStore, type DraftValidationError } from "@/store/routineBuilderStore";
 import type { DraftDay, DraftExercise } from "@/types/routine";
 import type { Exercise } from "@/types/exercise";
 
 import { ExercisePicker } from "./ExercisePicker";
+import { describeValidationError } from "./validationMessage";
 
 type RoutineDayEditorProps = {
   weekIdx: number;
   dayIdx: number;
   day: DraftDay;
+  locale: string;
   canRemove: boolean;
+  /** This day's own validation errors (already filtered by the caller), shown inline. */
+  errors: DraftValidationError[];
 };
 
 function numberOrNull(value: string): number | null {
@@ -22,134 +28,156 @@ function numberOrNull(value: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-export function RoutineDayEditor({ weekIdx, dayIdx, day, canRemove }: RoutineDayEditorProps) {
+export function RoutineDayEditor({ weekIdx, dayIdx, day, locale, canRemove, errors }: RoutineDayEditorProps) {
   const t = useTranslations("Builder");
+  const tv = useTranslations("Builder.validation");
   const [pickerOpen, setPickerOpen] = useState(false);
-  const {
-    setDayName,
-    toggleRestDay,
-    removeDay,
-    addExercise,
-    removeExercise,
-    setExerciseField,
-    moveExercise,
-  } = useRoutineBuilderStore();
+  const { setDayName, toggleRestDay, removeDay, addExercise, removeExercise, setExerciseField, moveExercise } =
+    useRoutineBuilderStore();
+
+  const weekdayName = weekdayNameForDayNumber(day.day_number, locale);
+  const hasError = errors.length > 0;
 
   const handlePick = (exercise: Exercise) => {
     addExercise(weekIdx, dayIdx, exercise);
     setPickerOpen(false);
   };
 
-  const handleField = (
-    exerciseIdx: number,
-    field: keyof DraftExercise,
-    raw: string,
-  ) => {
+  const handleField = (exerciseIdx: number, field: keyof DraftExercise, raw: string) => {
     const patch: Partial<DraftExercise> =
-      field === "sets" || field === "rest_seconds"
-        ? { [field]: numberOrNull(raw) }
-        : { [field]: raw };
+      field === "sets" || field === "rest_seconds" ? { [field]: numberOrNull(raw) } : { [field]: raw };
     setExerciseField(weekIdx, dayIdx, exerciseIdx, patch);
   };
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-black text-white/40">{t("day")} {day.day_number}</span>
+    <section
+      aria-label={weekdayName}
+      className={`flex flex-col gap-2.5 ${
+        hasError
+          ? "rounded-[1.75rem] border border-red-400/60 bg-white/[0.065] p-4"
+          : "border-t border-white/[0.13] pt-4"
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        <span
+          className={`grid size-12 shrink-0 place-items-center rounded-full text-lg font-extrabold ${
+            day.is_rest_day ? "border border-white/15 text-white/60" : "border border-white/30 text-white"
+          }`}
+        >
+          {day.day_number}
+        </span>
         <input
+          type="text"
           value={day.day_name}
           onChange={(event) => setDayName(weekIdx, dayIdx, event.target.value)}
           placeholder={t("dayNamePlaceholder")}
-          className="flex-1 rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 text-sm font-bold text-white"
+          disabled={day.is_rest_day}
+          aria-label={t("dayNameAria", { weekday: weekdayName })}
+          className="apex-input h-12 min-w-0 flex-1 rounded-2xl px-3.5 text-lg font-extrabold disabled:opacity-70"
         />
         {canRemove ? (
           <button
             type="button"
             onClick={() => removeDay(weekIdx, dayIdx)}
-            className="text-xs font-bold text-red-300"
+            aria-label={t("removeDay")}
+            className="grid size-11 shrink-0 place-items-center rounded-full border border-white/[0.22] text-white/60"
           >
-            {t("removeDay")}
+            <X aria-hidden="true" size={20} strokeWidth={1.8} />
           </button>
         ) : null}
       </div>
 
-      <label className="mt-2 flex items-center gap-2 text-xs font-bold text-white/60">
-        <input
-          type="checkbox"
-          checked={day.is_rest_day}
-          onChange={() => toggleRestDay(weekIdx, dayIdx)}
-        />
-        {t("restDay")}
-      </label>
+      <div className="flex min-h-[52px] items-center justify-between gap-3">
+        <span id={`rest-${weekIdx}-${dayIdx}`} className="text-base font-semibold">
+          {t("restDay")}
+        </span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={day.is_rest_day}
+          aria-labelledby={`rest-${weekIdx}-${dayIdx}`}
+          onClick={() => toggleRestDay(weekIdx, dayIdx, t("restDay"))}
+          className={`relative h-9 w-16 shrink-0 rounded-full border-[1.5px] transition-colors ${
+            day.is_rest_day ? "border-[#a6ff00] bg-[#a6ff00]" : "border-white/30 bg-transparent"
+          }`}
+        >
+          <span
+            aria-hidden="true"
+            className={`absolute top-1/2 size-[26px] -translate-y-1/2 rounded-full transition-[left] ${
+              day.is_rest_day ? "left-[calc(100%-26px-3px)] bg-black" : "left-1 bg-white/60"
+            }`}
+          />
+        </button>
+      </div>
+
+      {hasError
+        ? errors.map((error, index) => (
+            <p key={index} role="alert" className="flex items-start gap-2 text-[15px] font-semibold leading-snug text-red-300">
+              <AlertCircle aria-hidden="true" size={20} strokeWidth={1.8} className="mt-0.5 shrink-0" />
+              <span>{describeValidationError(tv, error)}</span>
+            </p>
+          ))
+        : null}
 
       {!day.is_rest_day ? (
-        <div className="mt-3 flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           {day.exercises.map((exercise, exerciseIdx) => (
-            <div
-              key={exerciseIdx}
-              className="rounded-xl border border-white/10 bg-black/30 p-2"
-            >
+            <div key={exerciseIdx} className="flex flex-col gap-3 rounded-2xl bg-white/[0.04] p-3.5">
               <div className="flex items-center gap-2">
                 <input
                   value={exercise.name}
                   onChange={(event) => handleField(exerciseIdx, "name", event.target.value)}
                   placeholder="—"
-                  className="flex-1 rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm font-bold text-white"
+                  className="min-w-0 flex-1 border-0 bg-transparent p-0 text-lg font-extrabold leading-tight text-white outline-none"
                 />
                 <button
                   type="button"
                   onClick={() => moveExercise(weekIdx, dayIdx, exerciseIdx, "up")}
                   disabled={exerciseIdx === 0}
-                  aria-label={t("moveUp")}
-                  className="px-1 text-white/50 disabled:opacity-30"
+                  aria-label={t("moveUp", { name: exercise.name || t("addExercise") })}
+                  className="grid size-11 shrink-0 place-items-center rounded-full border border-white/[0.22] text-white disabled:opacity-40"
                 >
-                  ↑
+                  <ChevronUp aria-hidden="true" size={22} strokeWidth={1.6} />
                 </button>
                 <button
                   type="button"
                   onClick={() => moveExercise(weekIdx, dayIdx, exerciseIdx, "down")}
                   disabled={exerciseIdx === day.exercises.length - 1}
-                  aria-label={t("moveDown")}
-                  className="px-1 text-white/50 disabled:opacity-30"
+                  aria-label={t("moveDown", { name: exercise.name || t("addExercise") })}
+                  className="grid size-11 shrink-0 place-items-center rounded-full border border-white/[0.22] text-white disabled:opacity-40"
                 >
-                  ↓
+                  <ChevronDown aria-hidden="true" size={22} strokeWidth={1.6} />
                 </button>
                 <button
                   type="button"
                   onClick={() => removeExercise(weekIdx, dayIdx, exerciseIdx)}
-                  className="text-xs font-bold text-red-300"
+                  aria-label={t("removeExercise", { name: exercise.name || t("addExercise") })}
+                  className="grid size-11 shrink-0 place-items-center rounded-full border border-white/[0.22] text-white"
                 >
-                  {t("removeExercise")}
+                  <Trash2 aria-hidden="true" size={20} strokeWidth={1.6} />
                 </button>
               </div>
-              <div className="mt-2 grid grid-cols-4 gap-2">
-                <input
-                  type="number"
-                  inputMode="numeric"
+
+              <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+                <NumberField
+                  label={t("sets")}
                   value={exercise.sets ?? ""}
-                  onChange={(event) => handleField(exerciseIdx, "sets", event.target.value)}
-                  placeholder={t("sets")}
-                  className="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-xs text-white"
+                  onChange={(value) => handleField(exerciseIdx, "sets", value)}
                 />
-                <input
+                <NumberField
+                  label={t("reps")}
                   value={exercise.reps}
-                  onChange={(event) => handleField(exerciseIdx, "reps", event.target.value)}
-                  placeholder={t("reps")}
-                  className="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-xs text-white"
+                  onChange={(value) => handleField(exerciseIdx, "reps", value)}
                 />
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  value={exercise.rest_seconds ?? ""}
-                  onChange={(event) => handleField(exerciseIdx, "rest_seconds", event.target.value)}
-                  placeholder={t("rest")}
-                  className="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-xs text-white"
-                />
-                <input
+                <NumberField
+                  label={t("weight")}
                   value={exercise.weight_kg ?? ""}
-                  onChange={(event) => handleField(exerciseIdx, "weight_kg", event.target.value)}
-                  placeholder={t("weight")}
-                  className="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-xs text-white"
+                  onChange={(value) => handleField(exerciseIdx, "weight_kg", value)}
+                />
+                <NumberField
+                  label={t("rest")}
+                  value={exercise.rest_seconds ?? ""}
+                  onChange={(value) => handleField(exerciseIdx, "rest_seconds", value)}
                 />
               </div>
             </div>
@@ -158,8 +186,9 @@ export function RoutineDayEditor({ weekIdx, dayIdx, day, canRemove }: RoutineDay
           <button
             type="button"
             onClick={() => setPickerOpen(true)}
-            className="apex-button-outline rounded-xl py-2 text-xs font-black"
+            className="flex h-[52px] items-center justify-center gap-2 rounded-[26px] border-[1.5px] border-white/30 text-base font-bold"
           >
+            <Plus aria-hidden="true" size={22} strokeWidth={1.8} />
             {t("addExercise")}
           </button>
         </div>
@@ -175,6 +204,29 @@ export function RoutineDayEditor({ weekIdx, dayIdx, day, canRemove }: RoutineDay
           onClose={() => setPickerOpen(false)}
         />
       ) : null}
-    </div>
+    </section>
+  );
+}
+
+function NumberField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string | number;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="flex min-w-0 flex-col gap-1.5">
+      <span className="text-sm font-semibold text-white/60">{label}</span>
+      <input
+        type="text"
+        inputMode="decimal"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="apex-input h-12 w-full min-w-0 rounded-2xl text-center text-lg font-bold"
+      />
+    </label>
   );
 }
