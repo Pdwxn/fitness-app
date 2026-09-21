@@ -48,3 +48,16 @@ CSRF_COOKIE_SECURE = env_bool("CSRF_COOKIE_SECURE", True)  # noqa: F405
 SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "31536000"))  # noqa: F405
 SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool("SECURE_HSTS_INCLUDE_SUBDOMAINS", True)  # noqa: F405
 SECURE_HSTS_PRELOAD = env_bool("SECURE_HSTS_PRELOAD", True)  # noqa: F405
+
+# --- Cache (shared between gunicorn workers) ---
+# The default LocMemCache is per process, so with N workers every throttle
+# limit (e.g. 3 AI generations per day) was really N times looser. The database
+# is already there and a few counters are cheap; the table is created by
+# apps/health migration 0001. Move to Redis if traffic ever makes this slow.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache",
+        "OPTIONS": {"MAX_ENTRIES": 10000, "CULL_FREQUENCY": 4},
+    },
+}
