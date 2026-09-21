@@ -499,7 +499,17 @@
       "save": "Guardar progreso",
       "saving": "Guardando...",
       "savedLocal": "Guardado localmente. Se sincronizará cuando haya conexión.",
-      "synced": "Progreso guardado y sincronización intentada."
+      "synced": "Progreso guardado y sincronización intentada.",
+      "setNumber": "Serie",
+      "reps": "Reps",
+      "kg": "Kg",
+      "done": "Hecha",
+      "repsAria": "Repeticiones de la serie {number} de {exercise}",
+      "kgAria": "Peso de la serie {number} de {exercise}",
+      "doneAria": "Serie {number} de {exercise} completada",
+      "addSet": "+ Serie",
+      "removeSet": "− Serie",
+      "exerciseDone": "Ejercicio completo"
     },
     "states": {
       "loading": "Cargando día de rutina...",

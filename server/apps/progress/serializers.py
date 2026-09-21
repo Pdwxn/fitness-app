@@ -8,6 +8,23 @@ from apps.routines.models import RoutineDay
 from .models import DailyLog
 
 
+MAX_SETS_PER_EXERCISE = 20
+
+
+class SetLogSerializer(serializers.Serializer):
+    """One set of a logged exercise. Only sets with ``completed`` true count as done."""
+
+    reps = serializers.CharField(max_length=20, required=False, allow_blank=True, allow_null=True)
+    weight_kg = serializers.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        min_value=Decimal("0"),
+        required=False,
+        allow_null=True,
+    )
+    completed = serializers.BooleanField(default=False)
+
+
 class ExerciseLogSerializer(serializers.Serializer):
     exercise_id = serializers.UUIDField()
     exercise_name = serializers.CharField(max_length=120)
@@ -19,9 +36,16 @@ class ExerciseLogSerializer(serializers.Serializer):
     source_external_id = serializers.CharField(
         max_length=100, required=False, allow_blank=True, default=""
     )
+    # Per-set detail. The client derives completed/actual_* from it, so those
+    # stay meaningful for everything that only knows the aggregate (stats,
+    # progression, the AI coach, older app versions). Optional: logs made
+    # before per-set logging simply don't have it.
+    sets = SetLogSerializer(many=True, required=False, max_length=MAX_SETS_PER_EXERCISE)
     completed = serializers.BooleanField(default=False)
     actual_sets = serializers.IntegerField(min_value=0, required=False, allow_null=True)
-    actual_reps = serializers.CharField(max_length=40, required=False, allow_blank=True, allow_null=True)
+    # comma-separated reps of the done sets ("10,10,9"), so it has to hold a
+    # whole workout's worth, not one number.
+    actual_reps = serializers.CharField(max_length=120, required=False, allow_blank=True, allow_null=True)
     actual_weight_kg = serializers.DecimalField(
         max_digits=6,
         decimal_places=2,
@@ -101,12 +125,22 @@ class ProgressStatsSerializer(serializers.Serializer):
     pending_sync = serializers.IntegerField(default=0)
 
 
+def _normalize_set(item):
+    weight = item.get("weight_kg")
+    return {
+        "reps": item.get("reps"),
+        "weight_kg": str(weight) if weight is not None else None,
+        "completed": item.get("completed", False),
+    }
+
+
 def normalize_exercise_log(exercise):
     actual_weight_kg = exercise.get("actual_weight_kg")
     return {
         "exercise_id": str(exercise["exercise_id"]),
         "exercise_name": exercise["exercise_name"],
         "source_external_id": exercise.get("source_external_id", ""),
+        **({"sets": [_normalize_set(item) for item in exercise["sets"]]} if "sets" in exercise else {}),
         "completed": exercise.get("completed", False),
         "actual_sets": exercise.get("actual_sets"),
         "actual_reps": exercise.get("actual_reps"),

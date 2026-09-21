@@ -1,11 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { useDailyLogs } from "@/hooks/useDailyLogs";
+import {
+  addSet,
+  buildExerciseLog,
+  ensureSets,
+  removeLastSet,
+  sanitizeExerciseLog,
+  updateSet,
+} from "@/lib/setLog";
 import { saveLogLocally } from "@/lib/sync";
-import type { DailyLog, ExerciseLog } from "@/types/progress";
+import type { DailyLog, ExerciseLog, ExerciseSet } from "@/types/progress";
 import type { RoutineDay } from "@/types/routine";
+
+import { ExerciseSetLog } from "./ExerciseSetLog";
 
 type DailyLogFormProps = {
   day: RoutineDay;
@@ -15,10 +26,6 @@ type DailyLogFormProps = {
     completedDay: string;
     dayNote: string;
     dayNotePlaceholder: string;
-    exerciseCompleted: string;
-    actualSets: string;
-    actualReps: string;
-    actualWeight: string;
     exerciseNote: string;
     exerciseNotePlaceholder: string;
     save: string;
@@ -41,20 +48,26 @@ function createId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function buildExerciseLogs(day: RoutineDay): ExerciseLog[] {
-  return day.exercises.map((exercise) => ({
-    exercise_id: exercise.id,
-    exercise_name: exercise.name,
-    source_external_id: exercise.source_external_id || undefined,
-    completed: false,
-    actual_sets: exercise.sets,
-    actual_reps: exercise.reps || null,
-    actual_weight_kg: exercise.weight_kg,
-    note: "",
-  }));
+/**
+ * One entry per exercise of the day, in the day's order. Entries from an
+ * already saved log are kept (older logs get per-set rows built from their
+ * totals); exercises added to the routine since (e.g. by the AI coach) get a
+ * fresh entry; entries for exercises no longer in the routine stay at the end
+ * so nothing already logged disappears.
+ */
+function buildExerciseLogs(day: RoutineDay, saved: ExerciseLog[] = []): ExerciseLog[] {
+  const savedById = new Map(saved.map((entry) => [entry.exercise_id, entry]));
+  const current = day.exercises.map((exercise) => {
+    const entry = savedById.get(exercise.id);
+    return entry ? ensureSets(entry, exercise) : buildExerciseLog(exercise);
+  });
+  const known = new Set(day.exercises.map((exercise) => exercise.id));
+  const orphaned = saved.filter((entry) => !known.has(entry.exercise_id)).map((entry) => ensureSets(entry));
+  return [...current, ...orphaned];
 }
 
 export function DailyLogForm({ day, labels }: DailyLogFormProps) {
+  const tSets = useTranslations("RoutineDay.tracker");
   const date = todayDate();
   const { logs, refreshLogs } = useDailyLogs({ routineDayId: day.id });
   const existingLog = logs.find((log) => log.date === date) ?? null;
@@ -67,7 +80,7 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
   const [completed, setCompleted] = useState(existingLog?.completed ?? false);
   const [dayNote, setDayNote] = useState(existingLog?.day_note ?? "");
   const [exerciseLogs, setExerciseLogs] = useState<ExerciseLog[]>(
-    existingLog?.exercises_done ?? buildExerciseLogs(day),
+    buildExerciseLogs(day, existingLog?.exercises_done),
   );
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
@@ -77,13 +90,16 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
     setLogId(existingLog.id);
     setCompleted(existingLog.completed);
     setDayNote(existingLog.day_note);
-    setExerciseLogs(existingLog.exercises_done);
+    setExerciseLogs(buildExerciseLogs(day, existingLog.exercises_done));
+    // `day` is deliberately not a dependency: a background refetch of the routine
+    // must not throw away sets the user is in the middle of typing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingLog]);
 
-  function updateExerciseLog(exerciseId: string, update: Partial<ExerciseLog>) {
+  function updateExerciseLog(exerciseId: string, update: (entry: ExerciseLog) => ExerciseLog) {
     setExerciseLogs((current) =>
       current.map((exerciseLog) =>
-        exerciseLog.exercise_id === exerciseId ? { ...exerciseLog, ...update } : exerciseLog,
+        exerciseLog.exercise_id === exerciseId ? update(exerciseLog) : exerciseLog,
       ),
     );
   }
@@ -97,7 +113,7 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
         date,
         completed,
         day_note: dayNote,
-        exercises_done: exerciseLogs,
+        exercises_done: exerciseLogs.map(sanitizeExerciseLog),
       };
 
       await saveLogLocally(log);
@@ -160,44 +176,33 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
                 ) : null}
                 <div>
                   <h3 className="font-black tracking-tight">{exerciseLog.exercise_name}</h3>
-                  <label className="mt-2 flex items-center gap-2 text-sm font-bold text-white/60">
-                    <input
-                      type="checkbox"
-                      checked={exerciseLog.completed}
-                      onChange={(event) =>
-                        updateExerciseLog(exerciseLog.exercise_id, { completed: event.target.checked })
-                      }
-                      className="size-4 accent-[#a6ff00]"
-                    />
-                    {labels.exerciseCompleted}
-                  </label>
+                  {exerciseLog.completed ? (
+                    <p className="mt-1 text-xs font-black uppercase tracking-[0.14em] text-[#a6ff00]">
+                      {tSets("exerciseDone")}
+                    </p>
+                  ) : null}
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-2 md:w-[22rem]">
-                <NumberField
-                  label={labels.actualSets}
-                  value={exerciseLog.actual_sets}
-                  onChange={(value) => updateExerciseLog(exerciseLog.exercise_id, { actual_sets: value })}
-                />
-                <TextField
-                  label={labels.actualReps}
-                  value={exerciseLog.actual_reps ?? ""}
-                  onChange={(value) => updateExerciseLog(exerciseLog.exercise_id, { actual_reps: value })}
-                />
-                <TextField
-                  label={labels.actualWeight}
-                  value={exerciseLog.actual_weight_kg ?? ""}
-                  onChange={(value) => updateExerciseLog(exerciseLog.exercise_id, { actual_weight_kg: value })}
-                />
-              </div>
             </div>
+            <ExerciseSetLog
+              exerciseName={exerciseLog.exercise_name}
+              sets={exerciseLog.sets ?? []}
+              plannedReps={exercise?.reps ?? ""}
+              onChange={(index: number, patch: Partial<ExerciseSet>) =>
+                updateExerciseLog(exerciseLog.exercise_id, (entry) => updateSet(entry, index, patch, exercise))
+              }
+              onAdd={() => updateExerciseLog(exerciseLog.exercise_id, addSet)}
+              onRemove={() => updateExerciseLog(exerciseLog.exercise_id, removeLastSet)}
+            />
             <label className="mt-3 block">
                 <span className="text-xs font-black uppercase tracking-[0.14em] text-[#a6ff00]">
                 {labels.exerciseNote}
               </span>
               <input
                 value={exerciseLog.note}
-                onChange={(event) => updateExerciseLog(exerciseLog.exercise_id, { note: event.target.value })}
+                onChange={(event) =>
+                  updateExerciseLog(exerciseLog.exercise_id, (entry) => ({ ...entry, note: event.target.value }))
+                }
                 placeholder={labels.exerciseNotePlaceholder}
                 className="apex-input mt-2 w-full rounded-2xl px-4 py-2 text-sm"
               />
@@ -219,35 +224,5 @@ export function DailyLogForm({ day, labels }: DailyLogFormProps) {
         {saveStatus ? <p aria-live="polite" className="text-sm font-bold text-white/60">{saveStatus}</p> : null}
       </div>
     </section>
-  );
-}
-
-function NumberField({ label, value, onChange }: { label: string; value: number | null; onChange: (value: number | null) => void }) {
-  return (
-    <label className="block">
-      <span className="text-xs font-black uppercase tracking-[0.14em] text-[#a6ff00]">{label}</span>
-      <input
-        type="number"
-        min="0"
-        value={value ?? ""}
-        onChange={(event) => onChange(event.target.value ? Number(event.target.value) : null)}
-        aria-label={label}
-        className="apex-input mt-1 w-full rounded-2xl px-3 py-2 text-sm"
-      />
-    </label>
-  );
-}
-
-function TextField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
-  return (
-    <label className="block">
-      <span className="text-xs font-black uppercase tracking-[0.14em] text-[#a6ff00]">{label}</span>
-      <input
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        aria-label={label}
-        className="apex-input mt-1 w-full rounded-2xl px-3 py-2 text-sm"
-      />
-    </label>
   );
 }

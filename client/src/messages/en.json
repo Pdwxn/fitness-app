@@ -499,7 +499,17 @@
       "save": "Save progress",
       "saving": "Saving...",
       "savedLocal": "Saved locally. It will sync when connection is available.",
-      "synced": "Progress saved and sync attempted."
+      "synced": "Progress saved and sync attempted.",
+      "setNumber": "Set",
+      "reps": "Reps",
+      "kg": "Kg",
+      "done": "Done",
+      "repsAria": "Reps for set {number} of {exercise}",
+      "kgAria": "Weight for set {number} of {exercise}",
+      "doneAria": "Set {number} of {exercise} completed",
+      "addSet": "+ Set",
+      "removeSet": "− Set",
+      "exerciseDone": "Exercise complete"
     },
     "states": {
       "loading": "Loading routine day...",

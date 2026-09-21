@@ -53,7 +53,7 @@ const IMG = "https://cdn.jsdelivr.net/gh/x/y@abc/images/1.jpg";
 let network: ReturnType<typeof vi.fn<(request: Request) => Promise<Response>>>;
 
 beforeEach(() => {
-  network = vi.fn(async (_request: Request) => new Response("live", { status: 200 }));
+  network = vi.fn<(request: Request) => Promise<Response>>(async () => new Response("live", { status: 200 }));
 });
 
 describe("service worker", () => {
