@@ -13,7 +13,7 @@ export default async function ProfilePage({
   const t = await getTranslations("Profile");
 
   return (
-    <AppShell locale={locale} title={t("title")} description={t("description")}>
+    <AppShell locale={locale} title={t("title")} description={t("description")} hideHeader>
       <ProfileContent locale={locale} />
     </AppShell>
   );

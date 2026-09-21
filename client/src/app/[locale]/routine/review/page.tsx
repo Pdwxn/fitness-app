@@ -13,7 +13,7 @@ export default async function CoachReviewPage({
   const t = await getTranslations("Coach");
 
   return (
-    <AppShell locale={locale} title={t("reviewTitle")} description={t("reviewDescription")}>
+    <AppShell locale={locale} title={t("reviewTitle")} description={t("reviewDescription")} hideHeader>
       <CoachReviewContent locale={locale} />
     </AppShell>
   );

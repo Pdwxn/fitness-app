@@ -114,7 +114,7 @@ describe("CoachChangeCard", () => {
 
   it("renders a substitution as from -> to", () => {
     renderWithIntl(<CoachChangeCard change={changes[1]} />);
-    expect(screen.getByText("Press militar → Press Arnold")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Press militar → Press Arnold" })).toBeInTheDocument();
   });
 
   it("renders an addition with its prescription", () => {
@@ -147,7 +147,9 @@ describe("CoachReviewContent", () => {
   it("shows an empty state with no pending proposal", () => {
     usePendingProposal.mockReturnValue({ proposal: null, isLoading: false, isError: false });
     renderWithIntl(<CoachReviewContent locale="es" />);
-    expect(screen.getByText("No tienes ajustes pendientes por revisar.")).toBeInTheDocument();
+    expect(screen.getByText("Sin propuestas pendientes")).toBeInTheDocument();
+    expect(screen.getByText("Tu rutina está al día.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Volver a Rutina activa" })).toHaveAttribute("href", "/es/routine");
   });
 
   it("approving calls the API, confirms and goes to the dashboard", async () => {
@@ -179,10 +181,12 @@ describe("CoachReviewContent", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Aplicar cambios" }));
 
-    await waitFor(() => expect(toastError).toHaveBeenCalled());
-    expect(toastError.mock.calls[0][0]).toContain("Tu rutina cambió");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Tu rutina cambió");
+    expect(toastError).not.toHaveBeenCalled();
     expect(push).not.toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: "Aplicar cambios" })).toBeEnabled();
+    // Applying can't work any more, but keeping the routine still can.
+    expect(screen.getByRole("button", { name: "Aplicar cambios" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Mantener mi rutina" })).toBeEnabled();
   });
 });
 

@@ -2,12 +2,14 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, Flame } from "lucide-react";
 import { useQueries } from "@tanstack/react-query";
 
+import { useDailyLogs } from "@/hooks/useDailyLogs";
 import { fetchActiveRoutine } from "@/hooks/useRoutineCache";
 import { fetchProgressStats } from "@/hooks/useProgressStats";
 import { queryKeys } from "@/lib/query-keys";
+import { computeStreak } from "@/lib/streak";
 
 import { CoachProposalBanner } from "@/components/coach/CoachProposalBanner";
 import { ActiveRoutineCard } from "./ActiveRoutineCard";
@@ -123,7 +125,8 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
     }
     return `${routine.month}/${routine.year}`;
   }, [routine, labels.stats.pending, labels.activeRoutine.eyebrow]);
-  const completedDays = stats?.completed_days ?? 0;
+  const { logs } = useDailyLogs();
+  const streak = useMemo(() => computeStreak(logs, routine ?? null), [logs, routine]);
 
   return (
     <div className="flex flex-col gap-5">
@@ -132,9 +135,12 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
           <p className="text-base text-white/60">
             {getGreeting(labels.greeting)}, <span className="font-black text-white">{labels.athlete}</span>
           </p>
-          <p className="mt-1 text-sm font-bold text-white/50">
-            🔥 {Math.max(1, completedDays)} {labels.dayStreak}
-          </p>
+          {streak > 0 ? (
+            <p className="mt-1 flex items-center gap-1.5 text-sm font-bold text-white/50">
+              <Flame aria-hidden="true" size={16} strokeWidth={1.8} className="text-[#a6ff00]" />
+              {streak} {labels.dayStreak}
+            </p>
+          ) : null}
         </div>
       </div>
 

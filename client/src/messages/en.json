@@ -247,6 +247,7 @@
       },
       "schedule": {
         "minutes": "{count} min",
+        "daysUnit": "days",
         "daysLabel": "How many days per week can you train?",
         "durationLabel": "How long per session?",
         "routineLabel": "Routine type",
@@ -390,16 +391,17 @@
     "rejectHint": "If you keep it, your routine stays the same and carries on as this month's.",
     "approved": "Done, your routine was updated.",
     "rejected": "Your routine stays the same.",
-    "backToDashboard": "Back to home",
+    "backToRoutine": "Back to active routine",
     "errors": {
       "generic": "We couldn't complete that. Please try again.",
       "offline": "You need a connection to decide on this proposal.",
-      "conflict": "Your routine changed since this proposal was made. Keep your routine and try again."
+      "conflict": "Your routine changed since this proposal was made, so the changes could not be applied."
     },
     "states": {
-      "loading": "Looking for proposed adjustments...",
+      "loading": "Loading proposals...",
       "error": "We couldn't load the proposal. Try refreshing the page.",
-      "empty": "You have no adjustments waiting for review."
+      "emptyTitle": "No pending proposals",
+      "empty": "Your routine is up to date."
     },
     "banner": {
       "title": "Your coach prepared adjustments for your routine",
@@ -589,25 +591,56 @@
   },
   "Progress": {
     "title": "Progress",
-    "subtitle": "Track your performance and growth.",
-    "description": "Track streaks, completed days, and training statistics.",
+    "description": "Volume, consistency and strength from your logs.",
+    "periodLabel": "Period",
     "thisWeek": "This week",
-    "aiInsight": "AI Insight",
-    "aiInsightText": "Great job. Your training consistency is improving. Keep logging workouts to unlock better recommendations.",
-    "recentLogs": "Recent logs",
-    "emptyLogs": "No workouts logged yet. Complete a routine day to start tracking progress.",
-    "completed": "Completed",
-    "notCompleted": "Not completed",
-    "viewDay": "View day",
+    "thisMonth": "This month",
+    "vsWeek": "vs previous week",
+    "vsMonth": "vs previous month",
+    "volume": {
+      "title": "Volume lifted",
+      "unit": "kg",
+      "noPrevious": "No data from the previous period",
+      "chartAria": "Daily volume for the period"
+    },
+    "workouts": {
+      "title": "Workouts",
+      "ofDays": "/ {planned} days",
+      "daysAria": "{done} of {planned} training days completed"
+    },
+    "consistency": {
+      "title": "Consistency",
+      "aria": "Consistency {percent}%",
+      "none": "No training days to measure yet"
+    },
+    "muscles": {
+      "title": "Muscle groups",
+      "subtitle": "Sets per muscle · {vs}",
+      "sets": "sets",
+      "same": "Same",
+      "empty": "No sets logged in this period yet."
+    },
+    "strength": {
+      "title": "Strength trend",
+      "subtitle": "Weight of the heaviest set by date",
+      "exercise": "Exercise",
+      "sinceFirst": "since the first log",
+      "chartAria": "Weight of the best {exercise} set by date, from {from} kg on {fromDate} to {to} kg on {toDate}",
+      "empty": "Log sets with weight to see your progress."
+    },
+    "recent": {
+      "title": "Recent logs",
+      "session": "Workout",
+      "completed": "Completed",
+      "notCompleted": "Not completed",
+      "viewDay": "View day",
+      "viewDayAria": "View day: {day}, {date}",
+      "empty": "You haven't logged any workouts yet. Complete a routine day to start measuring progress."
+    },
     "states": {
       "loading": "Loading progress...",
       "error": "We could not load your progress. Try refreshing the page.",
-      "offlineFallback": "You are viewing progress saved on this device."
-    },
-    "stats": {
-      "completedDays": "Completed days",
-      "totalExercises": "Completed exercises",
-      "pendingSync": "Pending sync"
+      "offline": "You are viewing progress saved on this device"
     }
   },
   "Push": {
@@ -622,64 +655,76 @@
   },
   "Profile": {
     "title": "Profile",
-    "description": "Manage your personal data, language, units, and training preferences.",
-    "personal": {
-      "eyebrow": "Personal data",
-      "title": "Your base information",
-      "description": "These details power recommendations and are stored internally in metric format."
+    "description": "Manage your details, settings and training preferences.",
+    "tiles": {
+      "streak": "Streak",
+      "workouts": "Workouts completed",
+      "exercises": "Exercises completed"
     },
-    "fitness": {
-      "eyebrow": "Fitness",
-      "title": "Training preferences",
-      "description": "Update goals, equipment, and limitations so your profile stays ready for future routines.",
-      "activity": "Activity level",
-      "goals": "Physical goals",
-      "equipment": "Equipment type",
-      "homeEquipment": "Available home equipment",
-      "routine": "Routine type",
-      "injuries": "Injuries or discomfort"
-    },
-    "routine": {
-      "eyebrow": "Monthly routine",
-      "activeTitle": "You have an active routine this month",
-      "activeDescription": "Profile changes do not delete your current routine. Future monthly generations will use your updated data.",
-      "outdatedTitle": "Your active routine is not for the current month",
-      "outdatedDescription": "The app keeps your latest active routine while the monthly cycle prepares a new one automatically.",
-      "emptyTitle": "No active routine saved",
-      "emptyDescription": "If onboarding is complete, automatic generation may have failed or stayed pending. There is no manual button on the dashboard.",
-      "month": "Month",
-      "status": "Status",
-      "weeks": "Weeks",
-      "lastSync": "Last sync",
-      "active": "Active",
-      "outdated": "Previous month",
-      "missing": "Pending",
-      "notAvailable": "Not available",
-      "never": "Never"
+    "plan": {
+      "title": "Current plan",
+      "manual": "Manual routine",
+      "monthly": "Monthly plan {period}",
+      "cycle": "Cycle progress",
+      "week": "Week {current} of {total}",
+      "view": "View routine",
+      "none": "You don't have an active routine yet.",
+      "choose": "Choose a routine"
     },
     "settings": {
-      "eyebrow": "Settings",
-      "title": "Local preferences",
-      "description": "Language, units, and offline state. For now they rely on profile data and local cache.",
+      "title": "Settings",
       "language": "Language",
       "units": "Units",
-      "syncStatus": "Offline state",
-      "pendingSync": "Pending sync",
-      "onlineCache": "Cache up to date",
-      "offlineFallback": "Offline mode",
-      "saveHint": "Language and unit changes are saved with the personal data button."
+      "languageOptions": { "es": "Español", "en": "English" },
+      "unitOptions": { "metric": "Metric", "imperial": "Imperial" }
+    },
+    "base": { "title": "Basic information" },
+    "prefs": {
+      "title": "Training preferences",
+      "level": "Level",
+      "style": "Style",
+      "intensity": "Intensity",
+      "days": "Training days",
+      "duration": "Duration",
+      "equipment": "Equipment",
+      "homeEquipment": "Equipment available at home",
+      "goals": "Goals",
+      "specificGoal": "Specific goal",
+      "routine": "Routine type",
+      "injuries": "Injuries",
+      "noInjuries": "No injuries on record",
+      "injuryCount": "{count, plural, one {# injury on record} other {# injuries on record}}"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "reminders": "Reminders",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "blocked": "Blocked in the browser",
+      "blockedHelp": "Notifications are blocked in this browser. Allow them in the site settings to turn reminders on.",
+      "unavailable": "Not available yet",
+      "unavailableHelp": "This browser doesn't support reminders.",
+      "description": "Turn on alerts so you don't skip workouts.",
+      "iosHelp": "On iPhone you need to install the app: tap Share and choose “Add to Home Screen”. Then you can turn reminders on."
+    },
+    "sync": {
+      "title": "Sync",
+      "last": "Last sync",
+      "pending": "Pending",
+      "noPending": "Nothing pending",
+      "never": "Never"
     },
     "actions": {
-      "savePersonal": "Save personal data",
-      "saveFitness": "Save fitness data",
-      "saving": "Saving..."
+      "save": "Save",
+      "saving": "Saving...",
+      "logout": "Log out",
+      "loggingOut": "Logging out..."
     },
     "states": {
       "loading": "Loading profile...",
       "loadError": "We could not load your profile. Try refreshing the page.",
       "saveError": "We could not save your changes.",
-      "savedProfile": "Personal data saved.",
-      "savedHealth": "Fitness data saved."
+      "saved": "Changes saved."
     }
   }
 }
