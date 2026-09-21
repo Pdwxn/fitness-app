@@ -19,26 +19,6 @@ export default async function DashboardPage({
         labels={{
           loading: t("states.loading"),
           error: t("states.error"),
-          onboardingRequired: {
-            eyebrow: t("onboardingRequired.eyebrow"),
-            title: t("onboardingRequired.title"),
-            description: t("onboardingRequired.description"),
-            cta: t("onboardingRequired.cta"),
-          },
-          routinePending: {
-            eyebrow: t("routinePending.eyebrow"),
-            title: t("routinePending.title"),
-            description: t("routinePending.description"),
-            badges: [
-              t("routinePending.badges.duration"),
-              t("routinePending.badges.ai"),
-              t("routinePending.badges.offline"),
-            ],
-            cta: t("routinePending.cta"),
-            generating: t("routinePending.generating"),
-            error: t("routinePending.error"),
-            retry: t("routinePending.retry"),
-          },
           stats: {
             title: t("stats.title"),
             completedDays: t("stats.completedDays"),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ClipboardList, Flame } from "lucide-react";
 import { useQueries } from "@tanstack/react-query";
@@ -9,7 +9,9 @@ import { useDailyLogs } from "@/hooks/useDailyLogs";
 import { fetchActiveRoutine } from "@/hooks/useRoutineCache";
 import { fetchProgressStats } from "@/hooks/useProgressStats";
 import { queryKeys } from "@/lib/query-keys";
+import { getFromStorage, STORAGE_KEYS } from "@/lib/storage";
 import { computeStreak } from "@/lib/streak";
+import type { OnboardingProfile } from "@/types/onboarding";
 
 import { CoachProposalBanner } from "@/components/coach/CoachProposalBanner";
 import { ActiveRoutineCard } from "./ActiveRoutineCard";
@@ -28,22 +30,6 @@ type DashboardContentProps = {
   labels: {
     loading: string;
     error: string;
-    onboardingRequired: {
-      eyebrow: string;
-      title: string;
-      description: string;
-      cta: string;
-    };
-    routinePending: {
-      eyebrow: string;
-      title: string;
-      description: string;
-      badges: [string, string, string];
-      cta: string;
-      generating: string;
-      error: string;
-      retry: string;
-    };
     stats: {
       title: string;
       completedDays: string;
@@ -126,6 +112,11 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
     return `${routine.month}/${routine.year}`;
   }, [routine, labels.stats.pending, labels.activeRoutine.eyebrow]);
   const { logs } = useDailyLogs();
+  const [firstName, setFirstName] = useState<string | null>(null);
+  useEffect(() => {
+    const name = getFromStorage<OnboardingProfile>(STORAGE_KEYS.PROFILE)?.full_name?.trim().split(/\s+/)[0];
+    setFirstName(name || null);
+  }, []);
   const streak = useMemo(() => computeStreak(logs, routine ?? null), [logs, routine]);
 
   return (
@@ -133,7 +124,7 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
       <div className="flex items-baseline justify-between gap-3">
         <div>
           <p className="text-base text-white/60">
-            {getGreeting(labels.greeting)}, <span className="font-black text-white">{labels.athlete}</span>
+            {getGreeting(labels.greeting)}, <span className="font-black text-white">{firstName ?? labels.athlete}</span>
           </p>
           {streak > 0 ? (
             <p className="mt-1 flex items-center gap-1.5 text-sm font-bold text-white/50">
