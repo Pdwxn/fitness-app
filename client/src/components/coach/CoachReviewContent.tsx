@@ -39,9 +39,7 @@ export function CoachReviewContent({ locale }: { locale: string }) {
     setConflict(false);
     try {
       const routine: Routine =
-        decision === "approve"
-          ? await approveProposal(proposal.id)
-          : await rejectProposal(proposal.id);
+        decision === "approve" ? await approveProposal(proposal.id) : await rejectProposal(proposal.id);
 
       await db.routineCache.put(routine).catch(() => undefined);
       queryClient.setQueryData(queryKeys.routine.active(), routine);
@@ -122,55 +120,62 @@ export function CoachReviewContent({ locale }: { locale: string }) {
     <div className="flex flex-col gap-5 text-white">
       {title}
 
-      <section
-        aria-label={t("summaryLabel")}
-        className="relative overflow-hidden rounded-[2rem] border border-white/[0.13] bg-white/[0.065] p-6"
-      >
-        <div className="pointer-events-none absolute -top-[90px] left-[120px] size-60 rounded-full bg-[radial-gradient(circle,rgba(166,255,0,0.4)_0%,transparent_68%)] blur-[40px]" />
-        <AthleteSilhouette className="pointer-events-none absolute -bottom-6 -right-4 hidden h-52 w-auto opacity-60 md:block" />
-        <div className="relative flex flex-col gap-3.5">
-          <p className="text-[13px] font-bold uppercase tracking-[0.22em] text-[#a6ff00]">{t("eyebrow")}</p>
-          <h2 className="text-[28px] font-black leading-[1.05] tracking-tight">{t("summaryLabel")}</h2>
-          {proposal.summary ? <p className="text-[17px] font-medium leading-relaxed text-white/60">{proposal.summary}</p> : null}
-          <span className="flex w-fit items-center gap-2.5 rounded-3xl bg-[#a6ff00] px-4 py-2.5 text-[17px] font-extrabold text-black">
-            <Sparkles aria-hidden="true" size={20} strokeWidth={2} />
-            {t("changeCount", { count: proposal.changes.length })}
-          </span>
-        </div>
-      </section>
-
-      <div className="grid gap-4">
-        {proposal.changes.map((change, index) => (
-          <CoachChangeCard key={`${change.type}-${index}`} change={change} />
-        ))}
-      </div>
-
-      {conflict ? (
-        <div role="alert" className="flex items-start gap-3 rounded-3xl border border-red-400/55 bg-red-400/[0.08] px-[18px] py-4">
-          <AlertCircle aria-hidden="true" size={24} strokeWidth={1.8} className="mt-0.5 shrink-0 text-red-400" />
-          <p className="text-base font-semibold leading-snug">{t("errors.conflict")}</p>
-        </div>
-      ) : null}
-
-      <div className="flex flex-col gap-3 md:max-w-xl">
-        <button
-          type="button"
-          onClick={() => decide("approve")}
-          disabled={busy !== null || conflict}
-          className="apex-button flex h-[62px] items-center justify-center gap-2.5 rounded-[1.9375rem] text-[19px] font-extrabold disabled:opacity-50"
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-start lg:gap-8">
+        <section
+          aria-label={t("summaryLabel")}
+          className="relative overflow-hidden lg:col-start-1 lg:row-start-1 rounded-[2rem] border border-white/[0.13] bg-white/[0.065] p-6"
         >
-          <Check aria-hidden="true" size={22} strokeWidth={2.4} />
-          {busy === "approve" ? t("approving") : t("approve")}
-        </button>
-        <button
-          type="button"
-          onClick={() => decide("reject")}
-          disabled={busy !== null}
-          className="flex h-[58px] items-center justify-center rounded-[29px] border-[1.5px] border-white/30 text-lg font-bold disabled:opacity-60"
-        >
-          {busy === "reject" ? t("rejecting") : t("reject")}
-        </button>
-        <p className="text-center text-[15px] font-medium leading-snug text-white/60">{t("rejectHint")}</p>
+          <div className="pointer-events-none absolute -top-[90px] left-[120px] size-60 rounded-full bg-[radial-gradient(circle,rgba(166,255,0,0.4)_0%,transparent_68%)] blur-[40px]" />
+          <AthleteSilhouette className="pointer-events-none absolute -bottom-6 -right-4 hidden h-52 w-auto opacity-60 md:block" />
+          <div className="relative flex flex-col gap-3.5">
+            <p className="text-[13px] font-bold uppercase tracking-[0.22em] text-[#a6ff00]">{t("eyebrow")}</p>
+            <h2 className="text-[28px] font-black leading-[1.05] tracking-tight">{t("summaryLabel")}</h2>
+            {proposal.summary ? (
+              <p className="text-[17px] font-medium leading-relaxed text-white/60">{proposal.summary}</p>
+            ) : null}
+            <span className="flex w-fit items-center gap-2.5 rounded-3xl bg-[#a6ff00] px-4 py-2.5 text-[17px] font-extrabold text-black">
+              <Sparkles aria-hidden="true" size={20} strokeWidth={2} />
+              {t("changeCount", { count: proposal.changes.length })}
+            </span>
+          </div>
+        </section>
+
+        <div className="grid gap-4 lg:col-start-2 lg:row-span-3 lg:row-start-1">
+          {proposal.changes.map((change, index) => (
+            <CoachChangeCard key={`${change.type}-${index}`} change={change} />
+          ))}
+        </div>
+
+        {conflict ? (
+          <div
+            role="alert"
+            className="lg:col-start-1 flex items-start gap-3 rounded-3xl border border-red-400/55 bg-red-400/[0.08] px-[18px] py-4"
+          >
+            <AlertCircle aria-hidden="true" size={24} strokeWidth={1.8} className="mt-0.5 shrink-0 text-red-400" />
+            <p className="text-base font-semibold leading-snug">{t("errors.conflict")}</p>
+          </div>
+        ) : null}
+
+        <div className="flex flex-col gap-3 md:max-w-xl lg:col-start-1 lg:max-w-none">
+          <button
+            type="button"
+            onClick={() => decide("approve")}
+            disabled={busy !== null || conflict}
+            className="apex-button flex h-[62px] items-center justify-center gap-2.5 rounded-[1.9375rem] text-[19px] font-extrabold disabled:opacity-50"
+          >
+            <Check aria-hidden="true" size={22} strokeWidth={2.4} />
+            {busy === "approve" ? t("approving") : t("approve")}
+          </button>
+          <button
+            type="button"
+            onClick={() => decide("reject")}
+            disabled={busy !== null}
+            className="flex h-[58px] items-center justify-center rounded-[29px] border-[1.5px] border-white/30 text-lg font-bold disabled:opacity-60"
+          >
+            {busy === "reject" ? t("rejecting") : t("reject")}
+          </button>
+          <p className="text-center text-[15px] font-medium leading-snug text-white/60">{t("rejectHint")}</p>
+        </div>
       </div>
     </div>
   );
