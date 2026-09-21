@@ -27,6 +27,7 @@ import {
   TRAINING_STYLES,
 } from "@/lib/constants";
 import { db } from "@/lib/db";
+import { setPreferredUnits } from "@/lib/preferredUnits";
 import { getScheduledDay } from "@/lib/schedule";
 import { getFromStorage, setInStorage, STORAGE_KEYS } from "@/lib/storage";
 import { computeStreak } from "@/lib/streak";
@@ -110,6 +111,7 @@ export function ProfileContent({ locale }: { locale: string }) {
         if (cancelled) return;
         setProfile(profileResponse);
         setHealth(healthResponse);
+        setPreferredUnits(profileResponse.preferred_units);
         setInStorage(STORAGE_KEYS.PROFILE, profileResponse);
         setInStorage(STORAGE_KEYS.HEALTH_PROFILE, healthResponse);
         setError(null);
@@ -153,6 +155,7 @@ export function ProfileContent({ locale }: { locale: string }) {
           body: JSON.stringify(profile),
         });
         setProfile(response);
+        setPreferredUnits(response.preferred_units);
         setInStorage(STORAGE_KEYS.PROFILE, response);
         setInStorage(STORAGE_KEYS.SETTINGS, {
           preferred_language: response.preferred_language,

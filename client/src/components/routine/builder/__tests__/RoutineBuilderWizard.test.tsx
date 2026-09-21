@@ -38,6 +38,9 @@ vi.mock("../ExercisePicker", () => ({
   ),
 }));
 
+const weightUnit = vi.fn(() => "kg");
+vi.mock("@/hooks/useWeightUnit", () => ({ useWeightUnit: () => weightUnit() }));
+
 const { RoutineBuilderWizard } = await import("../RoutineBuilderWizard");
 
 function renderWizard(mode: "create" | "edit" = "create") {

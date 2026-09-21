@@ -12,6 +12,8 @@ const useProgressStats = vi.fn();
 
 vi.mock("@/hooks/useDailyLogs", () => ({ useDailyLogs: () => useDailyLogs() }));
 vi.mock("@/hooks/useProgressStats", () => ({ useProgressStats: () => useProgressStats() }));
+const weightUnit = vi.fn(() => "kg");
+vi.mock("@/hooks/useWeightUnit", () => ({ useWeightUnit: () => weightUnit() }));
 vi.mock("@/hooks/useRoutineCache", () => ({ useRoutineCache: () => ({ routine }) }));
 
 const routine = {
