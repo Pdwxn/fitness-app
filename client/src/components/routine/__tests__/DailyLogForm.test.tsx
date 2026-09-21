@@ -12,6 +12,9 @@ const saveLogLocally = vi.fn<(log: DailyLog) => Promise<void>>(async () => undef
 vi.mock("@/hooks/useDailyLogs", () => ({ useDailyLogs: (...args: unknown[]) => useDailyLogs(...args) }));
 vi.mock("@/lib/sync", () => ({ saveLogLocally: (log: DailyLog) => saveLogLocally(log) }));
 
+const weightUnit = vi.fn(() => "kg");
+vi.mock("@/hooks/useWeightUnit", () => ({ useWeightUnit: () => weightUnit() }));
+
 const { DailyLogForm } = await import("../DailyLogForm");
 
 function makeDay(exercises: Partial<RoutineDay["exercises"][number]>[] = [{}]): RoutineDay {
@@ -259,5 +262,27 @@ describe("DailyLogForm exercise list and sheet", () => {
     // e1: 1 of 2 restored sets done; e2: fresh, 0 of 2 done.
     expect(screen.getByRole("button", { name: /^Press de banca,/ })).toHaveTextContent("1/2");
     expect(screen.getByRole("button", { name: /^Ejercicio 2,/ })).toHaveTextContent("0/2");
+  });
+});
+
+describe("DailyLogForm in pounds", () => {
+  it("shows the planned weight in lb but saves kilograms", async () => {
+    weightUnit.mockReturnValue("lb");
+    try {
+      renderForm(makeDay()); // planned 60.00 kg
+      const user = userEvent.setup();
+
+      expect(kg(1)).toHaveValue("132.3");
+
+      await user.clear(kg(1));
+      await user.type(kg(1), "135");
+      await user.click(tick(1));
+      await user.click(screen.getByRole("button", { name: "Guardar progreso" }));
+
+      const saved = saveLogLocally.mock.calls.at(-1)![0];
+      expect(saved.exercises_done[0].sets![0].weight_kg).toBe("61.24");
+    } finally {
+      weightUnit.mockReturnValue("kg");
+    }
   });
 });

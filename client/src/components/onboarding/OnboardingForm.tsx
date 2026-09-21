@@ -14,6 +14,7 @@ import { Step4Health } from "./steps/Step4Health";
 import { Step5Equipment } from "./steps/Step5Equipment";
 import { Step6Schedule } from "./steps/Step6Schedule";
 import { authenticatedClientFetch } from "@/lib/api/authenticated-client";
+import { setPreferredUnits } from "@/lib/preferredUnits";
 import { getFromStorage, setInStorage, STORAGE_KEYS } from "@/lib/storage";
 import { TOTAL_STEPS, useOnboardingStore } from "@/store/onboardingStore";
 import type { Routine } from "@/types/routine";
@@ -188,6 +189,7 @@ export function OnboardingForm({ locale }: { locale: string }) {
 
       if (response.completed) {
         setInStorage(STORAGE_KEYS.ONBOARDING_STATUS, { completed: response.completed });
+        setPreferredUnits(data.profile.preferred_units);
         if (response.routine) {
           setInStorage(STORAGE_KEYS.ROUTINE, response.routine);
         }

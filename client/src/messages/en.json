@@ -485,7 +485,7 @@
     "sets": "Sets",
     "reps": "Reps",
     "rest": "Rest (s)",
-    "weight": "Weight (kg)",
+    "weight": "Weight",
     "save": "Save routine",
     "saveEdit": "Save changes",
     "saving": "Saving...",
@@ -543,6 +543,7 @@
       "setNumber": "Set",
       "reps": "Reps",
       "kg": "Kg",
+      "lb": "Lb",
       "done": "Done",
       "repsAria": "Reps for set {number} of {exercise}",
       "kgAria": "Weight for set {number} of {exercise}",
@@ -580,12 +581,12 @@
     },
     "progression": {
       "label": "Suggestion",
-      "nextWeight": "{weight} kg x {reps}",
+      "nextWeight": "{weight} {unit} x {reps}",
       "reasons": {
         "repeat_incomplete_sets": "Complete every planned set before increasing weight.",
         "repeat_missed_reps": "You didn't hit the rep range last time — repeat the same weight.",
         "increase_reps": "You hit the bottom of the range — add reps before adding weight.",
-        "increase_weight": "You hit the top of the range last time — try +{increment}kg."
+        "increase_weight": "You hit the top of the range last time — try +{increment}{unit}."
       }
     }
   },
@@ -625,7 +626,7 @@
       "subtitle": "Weight of the heaviest set by date",
       "exercise": "Exercise",
       "sinceFirst": "since the first log",
-      "chartAria": "Weight of the best {exercise} set by date, from {from} kg on {fromDate} to {to} kg on {toDate}",
+      "chartAria": "Weight of the best {exercise} set by date, from {from} {unit} on {fromDate} to {to} {unit} on {toDate}",
       "empty": "Log sets with weight to see your progress."
     },
     "recent": {

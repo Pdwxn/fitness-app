@@ -9,6 +9,8 @@ import { StatusCard } from "@/components/ui/StatusCard";
 import { useDailyLogs } from "@/hooks/useDailyLogs";
 import { useProgressStats } from "@/hooks/useProgressStats";
 import { useRoutineCache } from "@/hooks/useRoutineCache";
+import { useWeightUnit } from "@/hooks/useWeightUnit";
+import { kgToUnitNumber } from "@/lib/units";
 import {
   analyzeProgress,
   strengthOptions,
@@ -38,12 +40,20 @@ export function ProgressContent({ locale }: { locale: string }) {
   const { isLoading: statsLoading, hasError: statsError, isOfflineFallback: statsOffline, stats } = useProgressStats();
   const { logs, isLoading: logsLoading, hasError: logsError, isOfflineFallback: logsOffline } = useDailyLogs();
   const { routine } = useRoutineCache();
+  const unit = useWeightUnit();
 
   const now = useMemo(() => new Date(), []);
   const analysis = useMemo(() => analyzeProgress(logs, routine, period, now), [logs, routine, period, now]);
   const options = useMemo(() => strengthOptions(logs), [logs]);
   const exerciseKey = options.some((option) => option.key === chosenExercise) ? chosenExercise : (options[0]?.key ?? null);
-  const series = useMemo(() => (exerciseKey ? strengthSeries(logs, exerciseKey) : []), [logs, exerciseKey]);
+  const series = useMemo(
+    () =>
+      (exerciseKey ? strengthSeries(logs, exerciseKey) : []).map((point) => ({
+        ...point,
+        value: Math.round(kgToUnitNumber(point.value, unit) * 10) / 10,
+      })),
+    [logs, exerciseKey, unit],
+  );
   const exerciseName = options.find((option) => option.key === exerciseKey)?.name ?? "";
   const dayNames = useMemo(() => {
     const names = new Map<string, string>();
@@ -110,8 +120,10 @@ export function ProgressContent({ locale }: { locale: string }) {
       <div className="grid gap-7 md:grid-cols-2 md:gap-x-12">
         <Card title={t("volume.title")}>
           <div className="flex items-baseline gap-2">
-            <span className="text-5xl font-black leading-none">{number.format(volume.total)}</span>
-            <span className="text-lg font-bold text-white/60">{t("volume.unit")}</span>
+            <span className="text-5xl font-black leading-none">
+              {number.format(Math.round(kgToUnitNumber(volume.total, unit)))}
+            </span>
+            <span className="text-lg font-bold text-white/60">{unit}</span>
           </div>
           <p className="text-[15px] font-semibold text-white/60">
             {volume.deltaPercent === null ? (
@@ -130,7 +142,7 @@ export function ProgressContent({ locale }: { locale: string }) {
             points={volume.daily}
             highlightDate={todayKey}
             ariaLabel={t("volume.chartAria")}
-            format={(value) => `${number.format(value)} ${t("volume.unit")}`}
+            format={(value) => `${number.format(Math.round(kgToUnitNumber(value, unit)))} ${unit}`}
             labelFor={(point, index) =>
               period === "week"
                 ? new Intl.DateTimeFormat(intlLocale, { weekday: "narrow" }).format(new Date(`${point.date}T12:00:00`))
@@ -222,12 +234,12 @@ export function ProgressContent({ locale }: { locale: string }) {
               </label>
               <div className="flex items-baseline gap-2">
                 <span className="text-5xl font-black leading-none">{number.format(last.value)}</span>
-                <span className="text-lg font-bold text-white/60">kg</span>
+                <span className="text-lg font-bold text-white/60">{unit}</span>
                 {series.length > 1 ? (
                   <span className="text-[15px] font-semibold text-white/60">
                     <span className="font-extrabold text-white">
                       {gain > 0 ? "+" : gain < 0 ? "−" : ""}
-                      {number.format(Math.abs(gain))} kg
+                      {number.format(Math.abs(Math.round(gain * 10) / 10))} {unit}
                     </span>{" "}
                     {t("strength.sinceFirst")}
                   </span>
@@ -237,12 +249,13 @@ export function ProgressContent({ locale }: { locale: string }) {
                 points={series}
                 ariaLabel={t("strength.chartAria", {
                   exercise: exerciseName,
+                  unit,
                   from: number.format(first.value),
                   fromDate: shortDate(first.date),
                   to: number.format(last.value),
                   toDate: shortDate(last.date),
                 })}
-                formatValue={(value) => `${number.format(value)} kg`}
+                formatValue={(value) => `${number.format(value)} ${unit}`}
                 formatDate={shortDate}
               />
             </>

@@ -4,10 +4,14 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { AlertCircle, ChevronDown, ChevronUp, Plus, Trash2, X } from "lucide-react";
 
+import { useWeightUnit } from "@/hooks/useWeightUnit";
 import { weekdayNameForDayNumber } from "@/lib/schedule";
 import { useRoutineBuilderStore, type DraftValidationError } from "@/store/routineBuilderStore";
 import type { DraftDay, DraftExercise } from "@/types/routine";
 import type { Exercise } from "@/types/exercise";
+
+import { WeightInput } from "@/components/ui/WeightInput";
+import type { WeightUnit } from "@/lib/units";
 
 import { ExercisePicker } from "./ExercisePicker";
 import { describeValidationError } from "./validationMessage";
@@ -31,6 +35,7 @@ function numberOrNull(value: string): number | null {
 export function RoutineDayEditor({ weekIdx, dayIdx, day, locale, canRemove, errors }: RoutineDayEditorProps) {
   const t = useTranslations("Builder");
   const tv = useTranslations("Builder.validation");
+  const unit = useWeightUnit();
   const [pickerOpen, setPickerOpen] = useState(false);
   const { setDayName, toggleRestDay, removeDay, addExercise, removeExercise, setExerciseField, moveExercise } =
     useRoutineBuilderStore();
@@ -169,10 +174,11 @@ export function RoutineDayEditor({ weekIdx, dayIdx, day, locale, canRemove, erro
                   value={exercise.reps}
                   onChange={(value) => handleField(exerciseIdx, "reps", value)}
                 />
-                <NumberField
-                  label={t("weight")}
-                  value={exercise.weight_kg ?? ""}
-                  onChange={(value) => handleField(exerciseIdx, "weight_kg", value)}
+                <WeightField
+                  label={`${t("weight")} (${unit})`}
+                  valueKg={exercise.weight_kg}
+                  unit={unit}
+                  onChangeKg={(kg) => handleField(exerciseIdx, "weight_kg", kg)}
                 />
                 <NumberField
                   label={t("rest")}
@@ -225,6 +231,30 @@ function NumberField({
         inputMode="decimal"
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        className="apex-input h-12 w-full min-w-0 rounded-2xl text-center text-lg font-bold"
+      />
+    </label>
+  );
+}
+
+function WeightField({
+  label,
+  valueKg,
+  unit,
+  onChangeKg,
+}: {
+  label: string;
+  valueKg: string | null;
+  unit: WeightUnit;
+  onChangeKg: (kg: string) => void;
+}) {
+  return (
+    <label className="flex min-w-0 flex-col gap-1.5">
+      <span className="text-sm font-semibold text-white/60">{label}</span>
+      <WeightInput
+        valueKg={valueKg}
+        unit={unit}
+        onChangeKg={onChangeKg}
         className="apex-input h-12 w-full min-w-0 rounded-2xl text-center text-lg font-bold"
       />
     </label>

@@ -485,7 +485,7 @@
     "sets": "Series",
     "reps": "Reps",
     "rest": "Descanso (s)",
-    "weight": "Peso (kg)",
+    "weight": "Peso",
     "save": "Guardar rutina",
     "saveEdit": "Guardar cambios",
     "saving": "Guardando...",
@@ -543,6 +543,7 @@
       "setNumber": "Serie",
       "reps": "Reps",
       "kg": "Kg",
+      "lb": "Lb",
       "done": "Hecha",
       "repsAria": "Repeticiones de la serie {number} de {exercise}",
       "kgAria": "Peso de la serie {number} de {exercise}",
@@ -580,12 +581,12 @@
     },
     "progression": {
       "label": "Sugerencia",
-      "nextWeight": "{weight} kg x {reps}",
+      "nextWeight": "{weight} {unit} x {reps}",
       "reasons": {
         "repeat_incomplete_sets": "Completa todas las series planificadas antes de subir de peso.",
         "repeat_missed_reps": "No llegaste al rango de reps la última vez — repite el mismo peso.",
         "increase_reps": "Llegaste al mínimo del rango — sube reps antes de subir peso.",
-        "increase_weight": "Completaste el tope de reps la última vez — prueba +{increment}kg."
+        "increase_weight": "Completaste el tope de reps la última vez — prueba +{increment}{unit}."
       }
     }
   },
@@ -625,7 +626,7 @@
       "subtitle": "Peso de la serie más pesada por fecha",
       "exercise": "Ejercicio",
       "sinceFirst": "desde el primer registro",
-      "chartAria": "Peso de la mejor serie de {exercise} por fecha, de {from} kg el {fromDate} a {to} kg el {toDate}",
+      "chartAria": "Peso de la mejor serie de {exercise} por fecha, de {from} {unit} el {fromDate} a {to} {unit} el {toDate}",
       "empty": "Registra series con peso para ver tu evolución."
     },
     "recent": {

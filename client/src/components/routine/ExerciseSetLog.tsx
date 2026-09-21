@@ -2,6 +2,8 @@
 
 import { useTranslations } from "next-intl";
 
+import { WeightInput } from "@/components/ui/WeightInput";
+import { useWeightUnit } from "@/hooks/useWeightUnit";
 import { MAX_SETS } from "@/lib/setLog";
 import type { ExerciseSet } from "@/types/progress";
 
@@ -25,13 +27,14 @@ export function ExerciseSetLog({
   onRemove,
 }: ExerciseSetLogProps) {
   const t = useTranslations("RoutineDay.tracker");
+  const unit = useWeightUnit();
 
   return (
     <div className="mt-4">
       <div className="grid grid-cols-[2rem_1fr_1fr_3rem] items-center gap-2 px-1 text-xs font-black uppercase tracking-[0.14em] text-[#a6ff00]">
         <span>{t("setNumber")}</span>
         <span>{t("reps")}</span>
-        <span>{t("kg")}</span>
+        <span>{unit === "lb" ? t("lb") : t("kg")}</span>
         <span className="text-center">{t("done")}</span>
       </div>
 
@@ -52,11 +55,11 @@ export function ExerciseSetLog({
               onChange={(event) => onChange(index, { reps: event.target.value })}
               className="apex-input w-full rounded-xl px-3 py-2 text-sm"
             />
-            <input
-              inputMode="decimal"
-              value={set.weight_kg ?? ""}
+            <WeightInput
+              valueKg={set.weight_kg}
+              unit={unit}
               aria-label={t("kgAria", { number: index + 1, exercise: exerciseName })}
-              onChange={(event) => onChange(index, { weight_kg: event.target.value })}
+              onChangeKg={(kg) => onChange(index, { weight_kg: kg })}
               className="apex-input w-full rounded-xl px-3 py-2 text-sm"
             />
             <button

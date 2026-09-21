@@ -4,6 +4,8 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
 import { useFeaturedTrainingDay } from "@/hooks/useFeaturedTrainingDay";
+import { useWeightUnit } from "@/hooks/useWeightUnit";
+import { formatWeightLabel } from "@/lib/units";
 import type { Routine } from "@/types/routine";
 
 const PREVIEW_COUNT = 4;
@@ -21,6 +23,7 @@ type TodayExercisePreviewProps = {
 /** A glance at the featured day's first few exercises, with a link to the full routine for anything more. */
 export function TodayExercisePreview({ routine, dayHref, routineHref, labels }: TodayExercisePreviewProps) {
   const { day } = useFeaturedTrainingDay(routine);
+  const unit = useWeightUnit();
   if (!day || day.exercises.length === 0) return null;
 
   const preview = day.exercises.slice(0, PREVIEW_COUNT);
@@ -44,7 +47,7 @@ export function TodayExercisePreview({ routine, dayHref, routineHref, labels }: 
                 <span className="block text-[17px] font-bold leading-tight">{exercise.name}</span>
                 <span className="mt-1 block text-[15px] font-medium text-white/60">
                   {exercise.sets ?? "-"} × {exercise.reps || "-"}
-                  {exercise.weight_kg ? ` · ${exercise.weight_kg} kg` : ""}
+                  {exercise.weight_kg ? ` · ${formatWeightLabel(exercise.weight_kg, unit)}` : ""}
                 </span>
               </span>
               <ChevronRight aria-hidden="true" size={22} className="shrink-0 text-white/60" />
