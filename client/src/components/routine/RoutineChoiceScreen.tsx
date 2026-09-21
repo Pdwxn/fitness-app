@@ -65,10 +65,8 @@ function ChoiceCard({
   return (
     <Link
       href={href}
-      className={`group flex min-h-[220px] flex-col gap-4 rounded-[2rem] text-white ${
-        highlighted
-          ? "border border-[#a6ff00]/55 bg-[#a6ff00]/[0.07] p-6"
-          : "border-t border-white/[0.13] pt-6"
+      className={`group flex min-h-[220px] flex-col gap-4 rounded-[2rem] border p-6 text-white ${
+        highlighted ? "border-[#a6ff00]/55 bg-[#a6ff00]/[0.07]" : "border-white/[0.13] bg-white/[0.04]"
       }`}
     >
       <div className="flex items-center justify-between">

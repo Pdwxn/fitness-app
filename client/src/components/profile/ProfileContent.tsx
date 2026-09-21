@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { AlertCircle, CheckCircle2, ChevronRight, Loader2 } from "lucide-react";
 
@@ -29,6 +30,7 @@ import { db } from "@/lib/db";
 import { getScheduledDay } from "@/lib/schedule";
 import { getFromStorage, setInStorage, STORAGE_KEYS } from "@/lib/storage";
 import { computeStreak } from "@/lib/streak";
+import { cmToFeetInches, feetInchesToCm, kgToLb, lbToKg } from "@/lib/units";
 import { routinePeriodLabel } from "@/types/routine";
 import type { OnboardingHealth, OnboardingProfile, UnitSystem } from "@/types/onboarding";
 
@@ -71,6 +73,8 @@ function numberOrNull(raw: string): number | null {
 export function ProfileContent({ locale }: { locale: string }) {
   const t = useTranslations("Profile");
   const onboarding = useTranslations("Onboarding.form");
+  const router = useRouter();
+  const pathname = usePathname();
   const [profile, setProfile] = useState<OnboardingProfile>(emptyProfile(locale));
   const [health, setHealth] = useState<OnboardingHealth>(emptyHealth);
   const [isLoading, setIsLoading] = useState(true);
@@ -155,6 +159,10 @@ export function ProfileContent({ locale }: { locale: string }) {
           preferred_units: response.preferred_units,
         });
         setProfileDirty(false);
+        if (response.preferred_language !== locale) {
+          // The language setting also switches the interface, which lives in the URL.
+          router.replace(pathname.replace(/^\/[a-z]{2}(?=\/|$)/, `/${response.preferred_language}`));
+        }
       }
       if (healthDirty) {
         const payload = {
@@ -211,6 +219,8 @@ export function ProfileContent({ locale }: { locale: string }) {
     .join("")
     .toUpperCase();
   const dirty = profileDirty || healthDirty;
+  const imperial = profile.preferred_units === "imperial";
+  const heightImperial = profile.height_cm != null ? cmToFeetInches(profile.height_cm) : null;
   const injuries = health.injuries.length;
 
   return (
@@ -348,19 +358,49 @@ export function ProfileContent({ locale }: { locale: string }) {
             label={onboarding("personal.weight")}
             type="number"
             inputMode="decimal"
-            value={profile.weight_kg ?? ""}
-            onChange={(value) => updateProfile({ weight_kg: numberOrNull(value) })}
-            suffix="kg"
+            value={profile.weight_kg == null ? "" : imperial ? kgToLb(profile.weight_kg) : profile.weight_kg}
+            onChange={(value) => {
+              const parsed = numberOrNull(value);
+              updateProfile({ weight_kg: parsed == null ? null : imperial ? lbToKg(parsed) : parsed });
+            }}
+            suffix={imperial ? "lb" : "kg"}
           />
-          <TextField
-            id="profile-height"
-            label={onboarding("personal.height")}
-            type="number"
-            inputMode="numeric"
-            value={profile.height_cm ?? ""}
-            onChange={(value) => updateProfile({ height_cm: numberOrNull(value) })}
-            suffix="cm"
-          />
+          {imperial ? (
+            <div className="grid grid-cols-2 gap-3">
+              <TextField
+                id="profile-height-ft"
+                label={onboarding("personal.heightFeet")}
+                type="number"
+                inputMode="numeric"
+                value={heightImperial?.feet ?? ""}
+                onChange={(value) =>
+                  updateProfile({ height_cm: feetInchesToCm(Number(value) || 0, heightImperial?.inches ?? 0) })
+                }
+                suffix="ft"
+              />
+              <TextField
+                id="profile-height-in"
+                label={onboarding("personal.heightInches")}
+                type="number"
+                inputMode="numeric"
+                value={heightImperial?.inches ?? ""}
+                onChange={(value) =>
+                  updateProfile({ height_cm: feetInchesToCm(heightImperial?.feet ?? 0, Number(value) || 0) })
+                }
+                suffix="in"
+              />
+            </div>
+          ) : (
+            <TextField
+              id="profile-height"
+              label={onboarding("personal.height")}
+              type="number"
+              inputMode="numeric"
+              value={profile.height_cm ?? ""}
+              onChange={(value) => updateProfile({ height_cm: numberOrNull(value) })}
+              suffix="cm"
+            />
+          )}
         </div>
       </Section>
 

@@ -171,7 +171,10 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "user": "100/hour",
+        # A page load fires several requests (routine, logs, stats, catalog sync...),
+        # so this has to leave room for normal use; the expensive endpoints have
+        # their own stricter scopes below.
+        "user": "1000/hour",
         "anon": "10/hour",
         "generate_routine": "3/day",
         "manual_routine": "60/day",

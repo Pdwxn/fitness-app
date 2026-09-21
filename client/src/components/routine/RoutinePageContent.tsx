@@ -71,11 +71,11 @@ export function RoutinePageContent({ locale }: RoutinePageContentProps) {
           </span>
         </div>
 
-        <div className="flex flex-col gap-2.5 sm:flex-row">
+        <div className="flex flex-row gap-2.5">
           {isManual ? (
             <Link
               href={`/${locale}/routine/builder?mode=edit`}
-              className="apex-button-outline flex h-12 flex-1 items-center justify-center gap-2 rounded-3xl px-5 text-base font-bold sm:flex-none"
+              className="apex-button-outline flex h-12 flex-1 items-center justify-center gap-2 rounded-3xl px-3 text-[15px] font-bold sm:flex-none sm:px-5 sm:text-base"
             >
               <Pencil aria-hidden="true" size={20} strokeWidth={1.6} />
               {t("editRoutine")}

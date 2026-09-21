@@ -24,3 +24,14 @@ LOGGING = {
         },
     },
 }
+
+
+# Hot reloads and manual testing hit the API far more than real use; don't let
+# the per-user limit lock a developer out for the rest of the hour.
+REST_FRAMEWORK = {  # noqa: F405
+    **REST_FRAMEWORK,  # noqa: F405
+    "DEFAULT_THROTTLE_RATES": {
+        **REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"],  # noqa: F405
+        "user": "100000/hour",
+    },
+}

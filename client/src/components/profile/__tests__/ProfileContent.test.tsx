@@ -23,7 +23,11 @@ vi.mock("@/hooks/useProgressStats", () => ({
 vi.mock("@/hooks/useDailyLogs", () => ({ useDailyLogs: () => ({ logs: [] }) }));
 vi.mock("@/hooks/usePushSubscription", () => ({ usePushSubscription: () => usePushSubscription() }));
 vi.mock("@/components/auth/LogoutButton", () => ({ LogoutButton: ({ label }: { label: string }) => <button>{label}</button> }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+const routerReplace = vi.fn();
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn(), replace: routerReplace }),
+  usePathname: () => "/es/profile",
+}));
 
 const { ProfileContent } = await import("../ProfileContent");
 
@@ -66,6 +70,7 @@ function renderProfile() {
 beforeEach(() => {
   localStorage.clear();
   authenticatedClientFetch.mockReset();
+  routerReplace.mockReset();
   authenticatedClientFetch.mockImplementation(async (path: string, init?: { method?: string; body?: string }) => {
     if (init?.method === "PUT") return JSON.parse(init.body ?? "{}");
     return path.includes("health") ? healthResponse : profileResponse;
@@ -125,5 +130,47 @@ describe("ProfileContent", () => {
     expect(screen.getByText("Bloqueados en el navegador")).toBeInTheDocument();
     expect(screen.getByRole("switch", { name: "Recordatorios" })).toBeDisabled();
     expect(screen.getByText(/bloqueadas en este navegador/)).toBeInTheDocument();
+  });
+
+  it("switches the interface language when the language setting is saved", async () => {
+    renderProfile();
+    const user = userEvent.setup();
+    await screen.findByRole("heading", { name: "Ana Pérez" });
+
+    await user.click(screen.getByRole("button", { name: "English" }));
+    await user.click(screen.getByRole("button", { name: "Guardar" }));
+
+    await screen.findByText("Cambios guardados.");
+    expect(routerReplace).toHaveBeenCalledWith("/en/profile");
+  });
+
+  it("does not navigate when the language didn't change", async () => {
+    renderProfile();
+    const user = userEvent.setup();
+    await screen.findByRole("heading", { name: "Ana Pérez" });
+
+    await user.click(screen.getByRole("button", { name: "Imperial" }));
+    await user.click(screen.getByRole("button", { name: "Guardar" }));
+
+    await screen.findByText("Cambios guardados.");
+    expect(routerReplace).not.toHaveBeenCalled();
+  });
+
+  it("shows weight and height in imperial units and saves them back in metric", async () => {
+    renderProfile();
+    const user = userEvent.setup();
+    await screen.findByRole("heading", { name: "Ana Pérez" });
+
+    expect(screen.getByLabelText("Peso")).toHaveValue(60);
+    await user.click(screen.getByRole("button", { name: "Imperial" }));
+
+    expect(screen.getByLabelText("Peso")).toHaveValue(132.3); // 60 kg
+    expect(screen.getByLabelText("Altura (ft)")).toHaveValue(5); // 165 cm = 5 ft 5 in
+    expect(screen.getByLabelText("Altura (in)")).toHaveValue(5);
+
+    await user.click(screen.getByRole("button", { name: "Guardar" }));
+    await screen.findByText("Cambios guardados.");
+    const body = JSON.parse(authenticatedClientFetch.mock.calls.find(([, init]) => init?.method === "PUT")![1].body);
+    expect(body).toMatchObject({ preferred_units: "imperial", weight_kg: 60, height_cm: 165 });
   });
 });
