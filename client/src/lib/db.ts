@@ -39,7 +39,7 @@ export interface PendingRoutineItem {
  */
 export interface ProgressionPrefEntry {
   source_external_id: string;
-  policy: "off" | "linear" | "double";
+  policy: "off" | "linear" | "double" | "greyskull";
 }
 
 export const META_KEYS = {

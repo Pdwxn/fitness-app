@@ -575,12 +575,24 @@
     },
     "progression": {
       "label": "Suggestion",
+      "policy": {
+        "label": "Progression",
+        "auto": "Automatic",
+        "off": "No suggestions",
+        "linear": "Linear",
+        "double": "Double progression",
+        "greyskull": "GreySkull"
+      },
       "nextWeight": "{weight} {unit} x {reps}",
       "reasons": {
         "repeat_incomplete_sets": "Complete every planned set before increasing weight.",
         "repeat_missed_reps": "You didn't hit the rep range last time — repeat the same weight.",
         "increase_reps": "You hit the bottom of the range — add reps before adding weight.",
-        "increase_weight": "You hit the top of the range last time — try +{increment}{unit}."
+        "increase_weight": "You hit the top of the range last time — try +{increment}{unit}.",
+        "increase_time": "You held the top time in every set — try {target}.",
+        "raise_rep_target": "You beat the top of the range — aim for {reps} reps.",
+        "add_bodyweight_load": "You're doing {reps}+ reps per set — add weight or a harder variation.",
+        "deload": "You missed the top set {failures} times in a row — drop the weight 10% and build back up."
       }
     }
   },

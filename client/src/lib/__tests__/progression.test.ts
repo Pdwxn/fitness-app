@@ -9,6 +9,7 @@ import {
   getIncrementKg,
   parseAchievedNumbers,
   parseRepRange,
+  parseTimeRange,
   setExercisePolicy,
   suggestNext,
   type ComputeSuggestionInput,
@@ -127,7 +128,7 @@ describe("computeSuggestion", () => {
   });
 
   it("returns unavailable_equipment when the equipment has no increment", () => {
-    const result = computeSuggestion(baseInput({ equipment: "body weight" }));
+    const result = computeSuggestion(baseInput({ equipment: "resistance band" }));
     expect(result.kind).toBe("unavailable_equipment");
   });
 
@@ -292,5 +293,95 @@ describe("getExerciseHistory / getExercisePolicy / setExercisePolicy (Dexie-back
   it("suggestNext returns no_catalog_match for a blank source_external_id", async () => {
     const result = await suggestNext({ sourceExternalId: "", plannedReps: "8-10", plannedSets: 4 });
     expect(result).toEqual({ policy: "off", kind: "no_catalog_match" });
+  });
+});
+
+describe("timed exercises", () => {
+  const timed = (over: Partial<ComputeSuggestionInput> = {}) =>
+    baseInput({ equipment: "body weight", plannedReps: "30-45s", ...over });
+
+  it("parses time ranges and ignores plain reps", () => {
+    expect(parseTimeRange("30s")).toMatchObject({ min: 30, max: 30, unit: "s", step: 5 });
+    expect(parseTimeRange("30-45 sec")).toMatchObject({ min: 30, max: 45 });
+    expect(parseTimeRange("2 min")).toMatchObject({ unit: "min", step: 1 });
+    expect(parseTimeRange("8-10")).toBeNull();
+    expect(parseTimeRange("AMRAP")).toBeNull();
+  });
+
+  it("adds a few seconds once every set reaches the top of the range", () => {
+    const result = computeSuggestion(timed({ lastEntry: makeEntry({ actual_reps: "45,45,50" }) }));
+    expect(result).toMatchObject({ kind: "increase_time", nextReps: "55s" });
+  });
+
+  it("keeps the range while the floor is met but the top isn't", () => {
+    expect(computeSuggestion(timed({ lastEntry: makeEntry({ actual_reps: "35,40,32" }) })).kind).toBe("increase_reps");
+  });
+
+  it("repeats when a set fell short or the session wasn't finished", () => {
+    expect(computeSuggestion(timed({ lastEntry: makeEntry({ actual_reps: "20,30,30" }) })).kind).toBe("repeat_missed_reps");
+    expect(computeSuggestion(timed({ lastEntry: makeEntry({ completed: false }) })).kind).toBe("repeat_incomplete_sets");
+  });
+
+  it("works without equipment increments (planks have no weight)", () => {
+    const result = computeSuggestion(timed({ equipment: "body weight", lastEntry: makeEntry({ actual_reps: "45" }) }));
+    expect(result.kind).toBe("increase_time");
+  });
+});
+
+describe("bodyweight ceiling", () => {
+  const bw = (actual_reps: string, over: Partial<ExerciseLog> = {}) =>
+    computeSuggestion(baseInput({ equipment: "body weight", plannedReps: "8-12", lastEntry: makeEntry({ actual_reps, ...over }) }));
+
+  it("raises the rep target past the top of the range", () => {
+    expect(bw("12,12,13")).toMatchObject({ kind: "raise_rep_target", nextReps: "14" });
+  });
+
+  it("suggests load once every set is far beyond the range", () => {
+    expect(bw("20,21,20").kind).toBe("add_bodyweight_load");
+  });
+
+  it("moves within the range and repeats otherwise", () => {
+    expect(bw("9,10,8").kind).toBe("increase_reps");
+    expect(bw("6,8,8").kind).toBe("repeat_missed_reps");
+    expect(bw("12,12", { completed: false }).kind).toBe("repeat_incomplete_sets");
+  });
+});
+
+describe("greyskull", () => {
+  const set = (reps: string, weight = "60") => ({ reps, weight_kg: weight, completed: true });
+  const entry = (topReps: string, over: Partial<ExerciseLog> = {}) =>
+    makeEntry({
+      sets: [set("5"), set("5"), set(topReps)],
+      actual_reps: `5,5,${topReps}`,
+      actual_weight_kg: "60",
+      ...over,
+    });
+  const gs = (lastEntry: ExerciseLog, history?: ExerciseLog[]) =>
+    computeSuggestion(baseInput({ policy: "greyskull", plannedReps: "5", lastEntry, history: history ?? [lastEntry] }));
+
+  it("adds one increment when the top set reaches the target", () => {
+    expect(gs(entry("6"))).toMatchObject({ kind: "increase_weight", nextWeightKg: 62.5 });
+  });
+
+  it("doubles the jump when the top set doubles the target", () => {
+    expect(gs(entry("10"))).toMatchObject({ kind: "increase_weight", nextWeightKg: 65 });
+  });
+
+  it("repeats after a single failed top set", () => {
+    expect(gs(entry("4")).kind).toBe("repeat_missed_reps");
+  });
+
+  it("deloads 10% after three failed top sets in a row", () => {
+    const failed = entry("3");
+    expect(gs(failed, [failed, failed, failed])).toMatchObject({ kind: "deload", nextWeightKg: 55 });
+  });
+
+  it("a success in between resets the failure count", () => {
+    const failed = entry("3");
+    expect(gs(failed, [failed, entry("5"), failed]).kind).toBe("repeat_missed_reps");
+  });
+
+  it("repeats when the log has no per-set detail", () => {
+    expect(gs(makeEntry({ sets: undefined })).kind).toBe("repeat_missed_reps");
   });
 });
