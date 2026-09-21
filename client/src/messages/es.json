@@ -296,26 +296,6 @@
       "loading": "Cargando estado de tu perfil...",
       "error": "No pudimos revisar tu onboarding. Intenta recargar la página."
     },
-    "onboardingRequired": {
-      "eyebrow": "Falta onboarding",
-      "title": "Completa tu perfil antes de continuar",
-      "description": "Necesitamos tus datos, objetivos y equipo disponible para preparar la rutina personalizada.",
-      "cta": "Completar onboarding"
-    },
-    "routinePending": {
-      "eyebrow": "Rutina pendiente",
-      "title": "Tu perfil está listo, pero aún no hay rutina activa",
-      "description": "La rutina se genera automáticamente al completar onboarding. Si no aparece, probablemente la generación con IA falló o quedó pendiente; tus datos ya están guardados.",
-      "badges": {
-        "duration": "Perfil guardado",
-        "ai": "IA pendiente",
-        "offline": "Sin rutina activa"
-      },
-      "cta": "Generar mi rutina",
-      "generating": "Creando tu rutina personalizada...",
-      "error": "Error al generar. Intenta de nuevo.",
-      "retry": "Intentar de nuevo"
-    },
     "greeting": {
       "morning": "Buenos días",
       "afternoon": "Buenas tardes",
@@ -675,16 +655,6 @@
       "error": "No pudimos cargar tu progreso. Intenta recargar la página.",
       "offline": "Estás viendo progreso guardado en este dispositivo"
     }
-  },
-  "Push": {
-    "eyebrow": "Recordatorios",
-    "description": "Recibí un aviso cuando tu nueva rutina mensual esté lista.",
-    "enable": "Activar recordatorios",
-    "enabling": "Activando...",
-    "enabledDescription": "Los recordatorios están activos en este dispositivo.",
-    "disable": "Desactivar",
-    "disabling": "Desactivando...",
-    "iosHint": "Instalá Apex Fit en tu pantalla de inicio (Compartir -> Agregar a inicio) para activar recordatorios en iPhone/iPad."
   },
   "Profile": {
     "title": "Perfil",

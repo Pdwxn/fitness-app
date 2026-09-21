@@ -5,12 +5,6 @@ export type HealthCheck = {
   service: string;
 };
 
-export async function getHealthCheck(): Promise<HealthCheck> {
-  return apiFetch<HealthCheck>("/api/v1/health/", {
-    cache: "no-store",
-  });
-}
-
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, init);
 
