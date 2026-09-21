@@ -14,12 +14,10 @@ Here, only exercises whose tracked fields actually changed get a bumped
 ``updated_at``. Exercises missing from a re-import are soft-deleted; ones that
 reappear (their external_id shows up again) are restored.
 
-Known limitation: a soft-deleted (removed) exercise is excluded from
+Removals: a soft-deleted exercise is excluded from
 ``GET /api/v1/exercises/?updated_since=`` (it filters on the active manager),
-so a delta sync never tells an already-synced client an exercise was removed
--- only a full re-sync (no ``updated_since``) will drop it from the client's
-local cache. Acceptable for now since removals from the upstream dataset are
-rare; a real tombstone mechanism would be needed to fix this properly.
+so clients learn about removals from ``GET /api/v1/exercises/removed/`` instead.
+Soft-deleting bumps ``updated_at`` for exactly that reason.
 """
 from django.utils import timezone
 

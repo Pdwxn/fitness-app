@@ -1,5 +1,5 @@
 import { ApiError, authenticatedClientFetch } from "./api/authenticated-client";
-import { fetchFullExerciseCatalog } from "./api/exercises";
+import { fetchFullExerciseCatalog, fetchRemovedExercises } from "./api/exercises";
 import { createManualRoutine } from "./api/routines";
 import { db, getMeta, META_KEYS, setMeta, type StatsEntry } from "./db";
 import { queryClient } from "./query-client";
@@ -189,11 +189,18 @@ export async function syncExerciseCatalog(force = false): Promise<boolean> {
     if (catalog.length > 0) {
       await db.exercises.bulkPut(catalog);
     }
+    // A delta can't carry removals, so ask for them separately. Their
+    // `updated_at` also moves the cursor, otherwise the same removals would
+    // come back on every sync.
+    const removed = previousCursor ? await fetchRemovedExercises(previousCursor) : [];
+    if (removed.length > 0) {
+      await db.exercises.bulkDelete(removed.map((exercise) => exercise.external_id));
+    }
     // Cursor for the *next* sync is the newest `updated_at` the server actually
     // sent us (server clock), not the client's local time -- avoids missing
     // rows on client/server clock skew. Falls back to the previous cursor, or
     // now on a genuinely first sync, when nothing came back.
-    const cursor = newestUpdatedAt(catalog) ?? previousCursor ?? new Date().toISOString();
+    const cursor = newestUpdatedAt([...catalog, ...removed]) ?? previousCursor ?? new Date().toISOString();
     await setMeta(META_KEYS.exercisesSyncedAt, cursor);
     return true;
   } catch {
