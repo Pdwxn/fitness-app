@@ -1,4 +1,8 @@
 import importlib
+import os
+import subprocess
+import sys
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -38,8 +42,22 @@ def test_migration_is_a_noop_for_locmem():
     assert "django_cache" not in connection.introspection.table_names()
 
 
-def test_production_uses_the_database_cache(monkeypatch):
-    monkeypatch.setenv("DATABASE_URL", "sqlite:///:memory:")
-    from config.settings import production
+def test_production_uses_the_database_cache():
+    # A subprocess: production.py mutates structures it star-imports from base
+    # (MIDDLEWARE, DATABASES), which would leak into every other test if it
+    # were imported in this process.
+    code = (
+        "from config.settings import production;"
+        "print(production.CACHES['default']['BACKEND'])"
+    )
+    env = {
+        **os.environ,
+        "DJANGO_SETTINGS_MODULE": "config.settings.production",
+        "DATABASE_URL": "sqlite:///:memory:",
+    }
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, env=env, cwd=Path(__file__).resolve().parents[2]
+    )
 
-    assert production.CACHES["default"]["BACKEND"].endswith("DatabaseCache")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip().endswith("DatabaseCache")

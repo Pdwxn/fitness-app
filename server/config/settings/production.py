@@ -61,3 +61,22 @@ CACHES = {
         "OPTIONS": {"MAX_ENTRIES": 10000, "CULL_FREQUENCY": 4},
     },
 }
+
+# --- Logging (stdout: Render/any PaaS collects it) ---
+# Unhandled exceptions are logged by django.request with the request path and a
+# traceback; app code logs through the "apps" loggers (AI failures, sync...).
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {"format": "%(asctime)s %(levelname)s %(name)s: %(message)s"},
+    },
+    "handlers": {
+        "console": {"class": "logging.StreamHandler", "formatter": "standard"},
+    },
+    "root": {"handlers": ["console"], "level": os.getenv("LOG_LEVEL", "INFO")},
+    "loggers": {
+        "django.request": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "django.security": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+    },
+}
