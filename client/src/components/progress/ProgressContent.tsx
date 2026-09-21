@@ -18,6 +18,9 @@ import {
   type ProgressPeriod,
 } from "@/lib/progressAnalytics";
 
+import { setsByZone, type BodyZone } from "@/lib/muscleMap";
+
+import { MuscleMap } from "./MuscleMap";
 import { DailyBars, Donut, LineChart } from "./ProgressCharts";
 
 function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
@@ -190,6 +193,17 @@ export function ProgressContent({ locale }: { locale: string }) {
         </div>
 
         <Card title={t("muscles.title")} subtitle={t("muscles.subtitle", { vs })}>
+          {muscles.length ? (
+            <MuscleMap
+              sets={setsByZone(muscles)}
+              frontLabel={t("muscles.front")}
+              backLabel={t("muscles.back")}
+              lessLabel={t("muscles.less")}
+              moreLabel={t("muscles.more")}
+              zoneLabel={(zone: BodyZone) => t(`muscles.zones.${zone}`)}
+              setsLabel={(count) => t("muscles.setCount", { count })}
+            />
+          ) : null}
           {muscles.length ? (
             <ul className="flex flex-col gap-3.5">
               {muscles.map((muscle) => (

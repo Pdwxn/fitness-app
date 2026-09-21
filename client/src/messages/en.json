@@ -619,6 +619,24 @@
       "subtitle": "Sets per muscle · {vs}",
       "sets": "sets",
       "same": "Same",
+      "front": "Front",
+      "back": "Back",
+      "less": "Less",
+      "more": "More sets",
+      "setCount": "{count, plural, one {# set} other {# sets}}",
+      "zones": {
+        "chest": "Chest",
+        "shoulders": "Shoulders",
+        "biceps": "Biceps",
+        "triceps": "Triceps",
+        "forearms": "Forearms",
+        "abs": "Core",
+        "back": "Back",
+        "glutes": "Glutes",
+        "quads": "Quads",
+        "hamstrings": "Hamstrings",
+        "calves": "Calves"
+      },
       "empty": "No sets logged in this period yet."
     },
     "strength": {
