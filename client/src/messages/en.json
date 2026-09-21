@@ -296,26 +296,6 @@
       "loading": "Loading your profile status...",
       "error": "We could not check your onboarding. Try refreshing the page."
     },
-    "onboardingRequired": {
-      "eyebrow": "Onboarding required",
-      "title": "Complete your profile before continuing",
-      "description": "We need your body data, goals, and available equipment to prepare your personalized routine.",
-      "cta": "Complete onboarding"
-    },
-    "routinePending": {
-      "eyebrow": "Routine pending",
-      "title": "Your profile is ready, but there is no active routine yet",
-      "description": "The routine is generated automatically after onboarding. If it does not appear, AI generation likely failed or is still pending; your profile data is already saved.",
-      "badges": {
-        "duration": "Profile saved",
-        "ai": "AI pending",
-        "offline": "No active routine"
-      },
-      "cta": "Generate my routine",
-      "generating": "Creating your personalized routine...",
-      "error": "Generation failed. Try again.",
-      "retry": "Try again"
-    },
     "greeting": {
       "morning": "Good morning",
       "afternoon": "Good afternoon",
@@ -675,16 +655,6 @@
       "error": "We could not load your progress. Try refreshing the page.",
       "offline": "You are viewing progress saved on this device"
     }
-  },
-  "Push": {
-    "eyebrow": "Reminders",
-    "description": "Get notified when your new monthly routine is ready.",
-    "enable": "Enable reminders",
-    "enabling": "Enabling...",
-    "enabledDescription": "Reminders are on for this device.",
-    "disable": "Turn off",
-    "disabling": "Turning off...",
-    "iosHint": "Install Apex Fit on your home screen (Share -> Add to Home Screen) to enable reminders on iPhone/iPad."
   },
   "Profile": {
     "title": "Profile",
