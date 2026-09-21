@@ -21,6 +21,7 @@ import {
 } from "@/store/routineBuilderStore";
 
 import { RoutineWeekEditor } from "./RoutineWeekEditor";
+import { isBlankDraft, TemplatePicker } from "./TemplatePicker";
 import { describeValidationError } from "./validationMessage";
 
 type RoutineBuilderWizardProps = { locale: string; mode?: "create" | "edit" };
@@ -251,6 +252,8 @@ export function RoutineBuilderWizard({ locale, mode = "create" }: RoutineBuilder
           </ul>
         </div>
       ) : null}
+
+      {mode === "create" && hydrated && isBlankDraft(draft) ? <TemplatePicker /> : null}
 
       {week ? (
         <RoutineWeekEditor

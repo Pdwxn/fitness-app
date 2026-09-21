@@ -124,6 +124,39 @@ describe("routineBuilderStore", () => {
     expect(day.exercises.map((e) => e.order)).toEqual([1, 2]);
   });
 
+  it("reorderExercise moves an exercise anywhere and renumbers order", () => {
+    for (const name of ["A", "B", "C", "D"]) {
+      store().addExercise(0, 0, { ...catalogExercise, name, external_id: name });
+    }
+    store().reorderExercise(0, 0, 0, 2);
+    let day = store().draft.weeks[0].days[0];
+    expect(day.exercises.map((e) => e.name)).toEqual(["B", "C", "A", "D"]);
+    expect(day.exercises.map((e) => e.order)).toEqual([1, 2, 3, 4]);
+
+    store().reorderExercise(0, 0, 3, 0);
+    day = store().draft.weeks[0].days[0];
+    expect(day.exercises.map((e) => e.name)).toEqual(["D", "B", "C", "A"]);
+  });
+
+  it("reorderExercise ignores out-of-range or identical positions", () => {
+    store().addExercise(0, 0, { ...catalogExercise, name: "A", external_id: "A" });
+    store().addExercise(0, 0, { ...catalogExercise, name: "B", external_id: "B" });
+    store().reorderExercise(0, 0, 0, 5);
+    store().reorderExercise(0, 0, 1, 1);
+    expect(store().draft.weeks[0].days[0].exercises.map((e) => e.name)).toEqual(["A", "B"]);
+  });
+
+  it("applyTemplate replaces the draft with named days and rest days", () => {
+    store().applyTemplate([{ name: "Push" }, { name: "Rest", rest: true }, { name: "Pull" }]);
+    const { weeks } = store().draft;
+    expect(weeks).toHaveLength(1);
+    expect(weeks[0].days.map((d) => [d.day_number, d.day_name, d.is_rest_day])).toEqual([
+      [1, "Push", false],
+      [2, "Rest", true],
+      [3, "Pull", false],
+    ]);
+  });
+
   it("moveExercise at the edges is a no-op", () => {
     store().addExercise(0, 0);
     store().addExercise(0, 0);

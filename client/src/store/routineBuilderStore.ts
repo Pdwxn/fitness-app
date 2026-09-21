@@ -1,3 +1,4 @@
+import { arrayMove } from "@dnd-kit/sortable";
 import { create } from "zustand";
 
 import { db, deleteMeta, getMeta, META_KEYS, setMeta } from "@/lib/db";
@@ -104,7 +105,13 @@ type BuilderState = {
     patch: Partial<DraftExercise>,
   ) => void;
   moveExercise: (weekIdx: number, dayIdx: number, exerciseIdx: number, dir: "up" | "down") => void;
+  /** Drag-and-drop: moves the exercise at `from` to position `to`. */
+  reorderExercise: (weekIdx: number, dayIdx: number, from: number, to: number) => void;
+  /** Replaces the draft with a template's week/day structure (no exercises: those are the user's pick). */
+  applyTemplate: (days: TemplateDay[]) => void;
 };
+
+export type TemplateDay = { name: string; rest?: boolean };
 
 let persistTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -264,6 +271,27 @@ export const useRoutineBuilderStore = create<BuilderState>((set, get) => {
         const exercises = [...day.exercises];
         [exercises[exerciseIdx], exercises[target]] = [exercises[target], exercises[exerciseIdx]];
         return { ...day, exercises };
+      }),
+
+    reorderExercise: (weekIdx, dayIdx, from, to) =>
+      mutateDay(weekIdx, dayIdx, (day) => {
+        const last = day.exercises.length - 1;
+        if (from === to || from < 0 || to < 0 || from > last || to > last) return day;
+        return { ...day, exercises: arrayMove(day.exercises, from, to) };
+      }),
+
+    applyTemplate: (days) =>
+      commit({
+        weeks: [
+          {
+            ...emptyWeek(1),
+            days: days.map((day, index) => ({
+              ...emptyDay(index + 1),
+              day_name: day.name,
+              is_rest_day: day.rest === true,
+            })),
+          },
+        ],
       }),
   };
 });
