@@ -12,6 +12,7 @@ import { queryClient } from "@/lib/query-client";
 import { db } from "@/lib/db";
 import { createManualRoutine, updateManualRoutine } from "@/lib/api/routines";
 import { ApiError } from "@/lib/api/authenticated-client";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useRoutineCache } from "@/hooks/useRoutineCache";
 import {
   queuePendingRoutine,
@@ -23,21 +24,6 @@ import { RoutineWeekEditor } from "./RoutineWeekEditor";
 import { describeValidationError } from "./validationMessage";
 
 type RoutineBuilderWizardProps = { locale: string; mode?: "create" | "edit" };
-
-function useOnlineStatus(): boolean {
-  const [isOnline, setIsOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine);
-  useEffect(() => {
-    const goOnline = () => setIsOnline(true);
-    const goOffline = () => setIsOnline(false);
-    window.addEventListener("online", goOnline);
-    window.addEventListener("offline", goOffline);
-    return () => {
-      window.removeEventListener("online", goOnline);
-      window.removeEventListener("offline", goOffline);
-    };
-  }, []);
-  return isOnline;
-}
 
 export function RoutineBuilderWizard({ locale, mode = "create" }: RoutineBuilderWizardProps) {
   const t = useTranslations("Builder");

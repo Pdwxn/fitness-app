@@ -1,4 +1,18 @@
 {
+  "States": {
+    "loading": "Cargando...",
+    "errorTitle": "No se pudo cargar",
+    "errorDescription": "Revisa tu conexión e inténtalo de nuevo.",
+    "crashTitle": "Algo salió mal",
+    "crashDescription": "Ocurrió un error inesperado en esta página.",
+    "retry": "Reintentar",
+    "reload": "Recargar",
+    "notFoundTitle": "No encontramos esta página",
+    "notFoundDescription": "Puede que el enlace esté mal o que ya no exista.",
+    "goHome": "Ir al inicio",
+    "offline": "Sin conexión. Estás usando datos guardados en este dispositivo.",
+    "pendingSync": "{count, plural, one {# pendiente por sincronizar} other {# pendientes por sincronizar}}"
+  },
   "Home": {
     "eyebrow": "App de fitness con IA",
     "title": "Entrena más inteligente. <accent>Progresa</accent> cada día.",

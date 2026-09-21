@@ -1,6 +1,25 @@
 "use client";
 
 import { Component, type ReactNode, type ErrorInfo } from "react";
+import { useTranslations } from "next-intl";
+
+import { ErrorState } from "@/components/ui/states";
+
+function CrashScreen() {
+  const t = useTranslations("States");
+  return (
+    <main className="apex-bg flex min-h-screen items-center px-5 py-8">
+      <div className="mx-auto w-full max-w-md">
+        <ErrorState
+          title={t("crashTitle")}
+          description={t("crashDescription")}
+          actionLabel={t("reload")}
+          onAction={() => window.location.reload()}
+        />
+      </div>
+    </main>
+  );
+}
 
 interface Props {
   children: ReactNode;
@@ -29,24 +48,7 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        this.props.fallback ?? (
-          <div className="flex min-h-screen items-center justify-center bg-zinc-950 p-4">
-            <div className="max-w-md text-center">
-              <h2 className="mb-2 text-xl font-semibold text-red-400">
-                Algo salió mal
-              </h2>
-              <p className="mb-4 text-zinc-400">
-                Ocurrió un error inesperado. Por favor, recarga la página.
-              </p>
-              <button
-                onClick={() => window.location.reload()}
-                className="rounded-lg bg-[#a6ff00] px-4 py-2 text-black font-black"
-              >
-                Recargar
-              </button>
-            </div>
-          </div>
-        )
+        this.props.fallback ?? <CrashScreen />
       );
     }
     return this.props.children;
