@@ -575,12 +575,24 @@
     },
     "progression": {
       "label": "Sugerencia",
+      "policy": {
+        "label": "Progresión",
+        "auto": "Automática",
+        "off": "Sin sugerencias",
+        "linear": "Lineal",
+        "double": "Doble progresión",
+        "greyskull": "GreySkull"
+      },
       "nextWeight": "{weight} {unit} x {reps}",
       "reasons": {
         "repeat_incomplete_sets": "Completa todas las series planificadas antes de subir de peso.",
         "repeat_missed_reps": "No llegaste al rango de reps la última vez — repite el mismo peso.",
         "increase_reps": "Llegaste al mínimo del rango — sube reps antes de subir peso.",
-        "increase_weight": "Completaste el tope de reps la última vez — prueba +{increment}{unit}."
+        "increase_weight": "Completaste el tope de reps la última vez — prueba +{increment}{unit}.",
+        "increase_time": "Aguantaste el tiempo máximo en todas las series — prueba {target}.",
+        "raise_rep_target": "Superaste el tope del rango — apunta a {reps} reps.",
+        "add_bodyweight_load": "Ya haces {reps}+ reps por serie — añade lastre o una variante más difícil.",
+        "deload": "Fallaste la serie final {failures} veces seguidas — baja el peso un 10% y vuelve a subir."
       }
     }
   },

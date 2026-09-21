@@ -15,6 +15,7 @@ import type { RoutineExercise } from "@/types/routine";
 import { ExerciseMedia } from "./ExerciseMedia";
 import { ExerciseSetLog } from "./ExerciseSetLog";
 import { ProgressionBadge } from "./ProgressionBadge";
+import { ProgressionPolicySelect } from "./ProgressionPolicySelect";
 
 type ExerciseSheetContentProps = {
   exercise: RoutineExercise;
@@ -78,6 +79,7 @@ export function ExerciseSheetContent({
       <ExerciseMedia name={exercise.name} imageUrl={exercise.image_url} demoUrl={exercise.video_url} />
 
       <ProgressionBadge exercise={exercise} />
+      <ProgressionPolicySelect exercise={exercise} />
 
       <ExerciseSetLog
         exerciseName={exercise.name}

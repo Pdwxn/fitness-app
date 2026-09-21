@@ -50,6 +50,31 @@ describe("ProgressionBadge", () => {
     expect(screen.getByText(/137.5 lb x 8-10/)).toBeInTheDocument();
   });
 
+  it("explains a deload with the lighter weight, in pounds when needed", () => {
+    useProgressionSuggestion.mockReturnValue({
+      policy: "greyskull",
+      kind: "deload",
+      nextWeightKg: 55,
+      nextReps: "5",
+      params: { failures: 3 },
+    });
+    weightUnit.mockReturnValue("lb");
+    renderBadge();
+    expect(screen.getByText(/3 veces seguidas/)).toBeInTheDocument();
+    expect(screen.getByText(/121.5 lb x 5/)).toBeInTheDocument();
+  });
+
+  it("shows the timed and bodyweight suggestions", () => {
+    useProgressionSuggestion.mockReturnValue({ policy: "linear", kind: "increase_time", params: { target: "55s" } });
+    const { unmount } = renderBadge();
+    expect(screen.getByText(/prueba 55s/)).toBeInTheDocument();
+    unmount();
+
+    useProgressionSuggestion.mockReturnValue({ policy: "linear", kind: "raise_rep_target", params: { reps: 14 } });
+    renderBadge();
+    expect(screen.getByText(/apunta a 14 reps/)).toBeInTheDocument();
+  });
+
   it("renders nothing when there is nothing actionable", () => {
     useProgressionSuggestion.mockReturnValue({ policy: "off", kind: "policy_off" });
     const { container } = renderBadge();

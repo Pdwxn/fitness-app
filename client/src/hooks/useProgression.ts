@@ -2,7 +2,8 @@
 
 import { useLiveQuery } from "dexie-react-hooks";
 
-import { setExercisePolicy, suggestNext, type ProgressionPolicy } from "@/lib/progression";
+import { db } from "@/lib/db";
+import { clearExercisePolicy, setExercisePolicy, suggestNext, type ProgressionPolicy } from "@/lib/progression";
 import type { RoutineExercise } from "@/types/routine";
 
 /**
@@ -26,4 +27,18 @@ export function useProgressionSuggestion(exercise: RoutineExercise) {
 export function useSetProgressionPolicy() {
   return (sourceExternalId: string, policy: ProgressionPolicy) =>
     setExercisePolicy(sourceExternalId, policy);
+}
+
+/** The policy the user picked for this exercise, `null` while it follows the automatic default. */
+export function useExercisePolicyPref(sourceExternalId: string | null | undefined) {
+  return useLiveQuery(
+    async () => (sourceExternalId ? ((await db.progressionPrefs.get(sourceExternalId))?.policy ?? null) : null),
+    [sourceExternalId],
+    null,
+  );
+}
+
+export function useChangeProgressionPolicy() {
+  return (sourceExternalId: string, policy: ProgressionPolicy | "auto") =>
+    policy === "auto" ? clearExercisePolicy(sourceExternalId) : setExercisePolicy(sourceExternalId, policy);
 }

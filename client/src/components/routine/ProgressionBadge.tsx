@@ -15,6 +15,10 @@ const ACTIONABLE_KINDS: ProgressionKind[] = [
   "repeat_missed_reps",
   "increase_reps",
   "increase_weight",
+  "increase_time",
+  "raise_rep_target",
+  "add_bodyweight_load",
+  "deload",
 ];
 
 export function ProgressionBadge({ exercise }: { exercise: RoutineExercise }) {
@@ -38,13 +42,17 @@ export function ProgressionBadge({ exercise }: { exercise: RoutineExercise }) {
   } else if (nextWeight != null) {
     nextWeight = Number(nextWeight.toFixed(2));
   }
+  // A deload has no increment to re-express: it is just a lighter weight.
+  if (unit === "lb" && suggestion.kind === "deload" && nextWeight != null) {
+    nextWeight = Math.round(kgToLb(nextWeight) * 2) / 2;
+  }
 
   return (
     <div className="flex items-start gap-2.5 rounded-2xl border border-[#a6ff00]/35 bg-[#a6ff00]/10 px-3.5 py-3 text-sm font-semibold leading-snug text-[#a6ff00]">
       <Lightbulb aria-hidden="true" size={20} strokeWidth={1.6} className="mt-0.5 shrink-0" />
       <span>
         {t(`reasons.${suggestion.kind}`, { ...suggestion.params, ...(increment === undefined ? {} : { increment }), unit })}
-        {suggestion.kind === "increase_weight" && nextWeight != null
+        {(suggestion.kind === "increase_weight" || suggestion.kind === "deload") && nextWeight != null
           ? ` (${t("nextWeight", { weight: nextWeight, reps: suggestion.nextReps ?? "", unit })})`
           : ""}
       </span>
