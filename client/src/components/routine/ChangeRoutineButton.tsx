@@ -49,16 +49,32 @@ export function ChangeRoutineButton({ routineId }: ChangeRoutineButtonProps) {
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="apex-card w-full max-w-sm rounded-[1.5rem] p-6 text-white">
-            <h3 className="text-lg font-black">{t("title")}</h3>
-            <p className="mt-2 text-sm leading-6 text-white/65">{t("body")}</p>
-            <div className="mt-5 flex gap-3">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-5 backdrop-blur-sm">
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="change-routine-title"
+            aria-describedby="change-routine-body"
+            onKeyDown={(event) => {
+              if (event.key === "Escape" && !busy) setOpen(false);
+            }}
+            className="flex w-full max-w-sm flex-col gap-5 rounded-[2rem] border border-white/[0.18] bg-[#111411] p-6 text-white shadow-[0_24px_60px_rgba(0,0,0,0.7)]"
+          >
+            <div className="flex flex-col gap-2">
+              <h3 id="change-routine-title" className="text-2xl font-black leading-tight tracking-tight">
+                {t("title")}
+              </h3>
+              <p id="change-routine-body" className="text-base leading-relaxed text-white/60">
+                {t("body")}
+              </p>
+            </div>
+            <div className="flex gap-3">
               <button
                 type="button"
+                autoFocus
                 onClick={() => setOpen(false)}
                 disabled={busy}
-                className="apex-button-outline flex-1 rounded-xl py-2.5 text-sm font-black"
+                className="flex h-[52px] flex-1 items-center justify-center rounded-3xl border-[1.5px] border-white/30 text-base font-bold disabled:opacity-60"
               >
                 {t("cancel")}
               </button>
@@ -66,7 +82,7 @@ export function ChangeRoutineButton({ routineId }: ChangeRoutineButtonProps) {
                 type="button"
                 onClick={handleConfirm}
                 disabled={busy}
-                className="apex-button flex-1 rounded-xl py-2.5 text-sm font-black"
+                className="apex-button flex h-[52px] flex-1 items-center justify-center rounded-3xl text-base font-extrabold disabled:opacity-60"
               >
                 {t("confirm")}
               </button>

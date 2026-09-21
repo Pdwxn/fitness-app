@@ -1,4 +1,18 @@
 {
+  "States": {
+    "loading": "Loading...",
+    "errorTitle": "Couldn't load",
+    "errorDescription": "Check your connection and try again.",
+    "crashTitle": "Something went wrong",
+    "crashDescription": "An unexpected error happened on this page.",
+    "retry": "Try again",
+    "reload": "Reload",
+    "notFoundTitle": "We couldn't find this page",
+    "notFoundDescription": "The link may be wrong or the page may no longer exist.",
+    "goHome": "Go to home",
+    "offline": "Offline. You're using data saved on this device.",
+    "pendingSync": "{count, plural, one {# item waiting to sync} other {# items waiting to sync}}"
+  },
   "Home": {
     "eyebrow": "AI fitness app",
     "title": "Train smarter. <accent>Progress</accent> every day.",

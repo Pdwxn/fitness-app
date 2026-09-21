@@ -1,5 +1,9 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
+import { ErrorState } from "@/components/ui/states";
+
 export function RouteErrorFallback({
   error,
   reset,
@@ -7,24 +11,19 @@ export function RouteErrorFallback({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations("States");
   console.error("[RouteErrorBoundary]", error);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950 p-4">
-      <div className="max-w-md text-center">
-        <h2 className="mb-2 text-xl font-semibold text-red-400">
-          Algo salió mal
-        </h2>
-        <p className="mb-4 text-zinc-400">
-          Ocurrió un error inesperado en esta página.
-        </p>
-        <button
-          onClick={reset}
-          className="rounded-lg bg-[#a6ff00] px-4 py-2 text-black font-black"
-        >
-          Reintentar
-        </button>
+    <main className="apex-bg flex min-h-screen items-center px-5 py-8">
+      <div className="mx-auto w-full max-w-md">
+        <ErrorState
+          title={t("crashTitle")}
+          description={t("crashDescription")}
+          actionLabel={t("retry")}
+          onAction={reset}
+        />
       </div>
-    </div>
+    </main>
   );
 }

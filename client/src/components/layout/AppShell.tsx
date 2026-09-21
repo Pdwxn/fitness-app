@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { getSessionUserLabel } from "@/lib/session";
 
 import { BottomNav, type NavIconName } from "./BottomNav";
+import { ConnectionBanner } from "./ConnectionBanner";
 import { PrivateHeader } from "./PrivateHeader";
 import { NextRoutineWatcher } from "../routine/NextRoutineWatcher";
 import { SilentSync } from "./SilentSync";
@@ -31,6 +32,7 @@ export async function AppShell({ locale, title, description, hideHeader, childre
       <NextRoutineWatcher locale={locale} />
       <BottomNav items={navItems} userLabel={userLabel} />
       <main className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 py-8 md:max-w-3xl md:px-10 lg:max-w-5xl">
+        <ConnectionBanner />
         {hideHeader ? null : <PrivateHeader title={title} description={description} userLabel={userLabel} />}
         {children}
       </main>
