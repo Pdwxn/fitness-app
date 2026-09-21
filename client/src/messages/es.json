@@ -619,6 +619,24 @@
       "subtitle": "Series por músculo · {vs}",
       "sets": "series",
       "same": "Igual",
+      "front": "Frontal",
+      "back": "Trasera",
+      "less": "Menos",
+      "more": "Más series",
+      "setCount": "{count, plural, one {# serie} other {# series}}",
+      "zones": {
+        "chest": "Pecho",
+        "shoulders": "Hombros",
+        "biceps": "Bíceps",
+        "triceps": "Tríceps",
+        "forearms": "Antebrazos",
+        "abs": "Core",
+        "back": "Espalda",
+        "glutes": "Glúteos",
+        "quads": "Cuádriceps",
+        "hamstrings": "Femorales",
+        "calves": "Gemelos"
+      },
       "empty": "Todavía no hay series registradas en este periodo."
     },
     "strength": {
