@@ -476,6 +476,18 @@
     "removeExercise": "Remove {name}",
     "moveUp": "Move {name} up",
     "moveDown": "Move {name} down",
+    "dragHandle": "Drag {name} to reorder",
+    "templates": {
+      "title": "Start from a template",
+      "description": "Sets up the days of the week for you; you choose the exercises.",
+      "names": { "full_body": "Full body", "upper_lower": "Upper / lower", "push_pull_legs": "Push / Pull / Legs" },
+      "hints": { "full_body": "3 days", "upper_lower": "4 days", "push_pull_legs": "6 days" },
+      "days": {
+        "fullA": "Full body A", "fullB": "Full body B", "fullC": "Full body C",
+        "upperA": "Upper A", "upperB": "Upper B", "lowerA": "Lower A", "lowerB": "Lower B",
+        "push": "Push", "pull": "Pull", "legs": "Legs", "rest": "Rest"
+      }
+    },
     "sets": "Sets",
     "reps": "Reps",
     "rest": "Rest (s)",

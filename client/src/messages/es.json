@@ -476,6 +476,18 @@
     "removeExercise": "Quitar {name}",
     "moveUp": "Subir {name}",
     "moveDown": "Bajar {name}",
+    "dragHandle": "Arrastrar {name} para reordenar",
+    "templates": {
+      "title": "Empieza desde una plantilla",
+      "description": "Te deja los días de la semana ya organizados; tú eliges los ejercicios.",
+      "names": { "full_body": "Cuerpo completo", "upper_lower": "Torso / pierna", "push_pull_legs": "Empuje / Tirón / Piernas" },
+      "hints": { "full_body": "3 días", "upper_lower": "4 días", "push_pull_legs": "6 días" },
+      "days": {
+        "fullA": "Cuerpo completo A", "fullB": "Cuerpo completo B", "fullC": "Cuerpo completo C",
+        "upperA": "Torso A", "upperB": "Torso B", "lowerA": "Pierna A", "lowerB": "Pierna B",
+        "push": "Empuje", "pull": "Tirón", "legs": "Piernas", "rest": "Descanso"
+      }
+    },
     "sets": "Series",
     "reps": "Reps",
     "rest": "Descanso (s)",

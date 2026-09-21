@@ -14,6 +14,7 @@ import { WeightInput } from "@/components/ui/WeightInput";
 import type { WeightUnit } from "@/lib/units";
 
 import { ExercisePicker } from "./ExercisePicker";
+import { SortableCard, SortableExercises } from "./SortableExercises";
 import { describeValidationError } from "./validationMessage";
 
 type RoutineDayEditorProps = {
@@ -37,8 +38,16 @@ export function RoutineDayEditor({ weekIdx, dayIdx, day, locale, canRemove, erro
   const tv = useTranslations("Builder.validation");
   const unit = useWeightUnit();
   const [pickerOpen, setPickerOpen] = useState(false);
-  const { setDayName, toggleRestDay, removeDay, addExercise, removeExercise, setExerciseField, moveExercise } =
-    useRoutineBuilderStore();
+  const {
+    setDayName,
+    toggleRestDay,
+    removeDay,
+    addExercise,
+    removeExercise,
+    setExerciseField,
+    moveExercise,
+    reorderExercise,
+  } = useRoutineBuilderStore();
 
   const weekdayName = weekdayNameForDayNumber(day.day_number, locale);
   const hasError = errors.length > 0;
@@ -117,7 +126,11 @@ export function RoutineDayEditor({ weekIdx, dayIdx, day, locale, canRemove, erro
 
       {hasError
         ? errors.map((error, index) => (
-            <p key={index} role="alert" className="flex items-start gap-2 text-[15px] font-semibold leading-snug text-red-300">
+            <p
+              key={index}
+              role="alert"
+              className="flex items-start gap-2 text-[15px] font-semibold leading-snug text-red-300"
+            >
               <AlertCircle aria-hidden="true" size={20} strokeWidth={1.8} className="mt-0.5 shrink-0" />
               <span>{describeValidationError(tv, error)}</span>
             </p>
@@ -126,68 +139,83 @@ export function RoutineDayEditor({ weekIdx, dayIdx, day, locale, canRemove, erro
 
       {!day.is_rest_day ? (
         <div className="flex flex-col gap-3">
-          {day.exercises.map((exercise, exerciseIdx) => (
-            <div key={exerciseIdx} className="flex flex-col gap-3 rounded-2xl bg-white/[0.04] p-3.5">
-              <div className="flex items-center gap-2">
-                <input
-                  value={exercise.name}
-                  onChange={(event) => handleField(exerciseIdx, "name", event.target.value)}
-                  placeholder="—"
-                  className="min-w-0 flex-1 border-0 bg-transparent p-0 text-lg font-extrabold leading-tight text-white outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={() => moveExercise(weekIdx, dayIdx, exerciseIdx, "up")}
-                  disabled={exerciseIdx === 0}
-                  aria-label={t("moveUp", { name: exercise.name || t("addExercise") })}
-                  className="grid size-11 shrink-0 place-items-center rounded-full border border-white/[0.22] text-white disabled:opacity-40"
-                >
-                  <ChevronUp aria-hidden="true" size={22} strokeWidth={1.6} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => moveExercise(weekIdx, dayIdx, exerciseIdx, "down")}
-                  disabled={exerciseIdx === day.exercises.length - 1}
-                  aria-label={t("moveDown", { name: exercise.name || t("addExercise") })}
-                  className="grid size-11 shrink-0 place-items-center rounded-full border border-white/[0.22] text-white disabled:opacity-40"
-                >
-                  <ChevronDown aria-hidden="true" size={22} strokeWidth={1.6} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => removeExercise(weekIdx, dayIdx, exerciseIdx)}
-                  aria-label={t("removeExercise", { name: exercise.name || t("addExercise") })}
-                  className="grid size-11 shrink-0 place-items-center rounded-full border border-white/[0.22] text-white"
-                >
-                  <Trash2 aria-hidden="true" size={20} strokeWidth={1.6} />
-                </button>
-              </div>
+          <SortableExercises
+            count={day.exercises.length}
+            onReorder={(from, to) => reorderExercise(weekIdx, dayIdx, from, to)}
+          >
+            {day.exercises.map((exercise, exerciseIdx) => (
+              <SortableCard
+                key={exerciseIdx}
+                index={exerciseIdx}
+                handleLabel={t("dragHandle", { name: exercise.name || t("addExercise") })}
+                className="flex flex-col gap-3 rounded-2xl bg-white/[0.04] p-3.5"
+              >
+                {(handle) => (
+                  <>
+                    <div className="flex items-center gap-2">
+                      {handle}
+                      <input
+                        value={exercise.name}
+                        onChange={(event) => handleField(exerciseIdx, "name", event.target.value)}
+                        placeholder="—"
+                        className="min-w-0 flex-1 border-0 bg-transparent p-0 text-lg font-extrabold leading-tight text-white outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => moveExercise(weekIdx, dayIdx, exerciseIdx, "up")}
+                        disabled={exerciseIdx === 0}
+                        aria-label={t("moveUp", { name: exercise.name || t("addExercise") })}
+                        className="grid size-11 shrink-0 place-items-center rounded-full border border-white/[0.22] text-white disabled:opacity-40"
+                      >
+                        <ChevronUp aria-hidden="true" size={22} strokeWidth={1.6} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveExercise(weekIdx, dayIdx, exerciseIdx, "down")}
+                        disabled={exerciseIdx === day.exercises.length - 1}
+                        aria-label={t("moveDown", { name: exercise.name || t("addExercise") })}
+                        className="grid size-11 shrink-0 place-items-center rounded-full border border-white/[0.22] text-white disabled:opacity-40"
+                      >
+                        <ChevronDown aria-hidden="true" size={22} strokeWidth={1.6} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeExercise(weekIdx, dayIdx, exerciseIdx)}
+                        aria-label={t("removeExercise", { name: exercise.name || t("addExercise") })}
+                        className="grid size-11 shrink-0 place-items-center rounded-full border border-white/[0.22] text-white"
+                      >
+                        <Trash2 aria-hidden="true" size={20} strokeWidth={1.6} />
+                      </button>
+                    </div>
 
-              <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-                <NumberField
-                  label={t("sets")}
-                  value={exercise.sets ?? ""}
-                  onChange={(value) => handleField(exerciseIdx, "sets", value)}
-                />
-                <NumberField
-                  label={t("reps")}
-                  value={exercise.reps}
-                  onChange={(value) => handleField(exerciseIdx, "reps", value)}
-                />
-                <WeightField
-                  label={`${t("weight")} (${unit})`}
-                  valueKg={exercise.weight_kg}
-                  unit={unit}
-                  onChangeKg={(kg) => handleField(exerciseIdx, "weight_kg", kg)}
-                />
-                <NumberField
-                  label={t("rest")}
-                  value={exercise.rest_seconds ?? ""}
-                  onChange={(value) => handleField(exerciseIdx, "rest_seconds", value)}
-                />
-              </div>
-            </div>
-          ))}
+                    <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+                      <NumberField
+                        label={t("sets")}
+                        value={exercise.sets ?? ""}
+                        onChange={(value) => handleField(exerciseIdx, "sets", value)}
+                      />
+                      <NumberField
+                        label={t("reps")}
+                        value={exercise.reps}
+                        onChange={(value) => handleField(exerciseIdx, "reps", value)}
+                      />
+                      <WeightField
+                        label={`${t("weight")} (${unit})`}
+                        valueKg={exercise.weight_kg}
+                        unit={unit}
+                        onChangeKg={(kg) => handleField(exerciseIdx, "weight_kg", kg)}
+                      />
+                      <NumberField
+                        label={t("rest")}
+                        value={exercise.rest_seconds ?? ""}
+                        onChange={(value) => handleField(exerciseIdx, "rest_seconds", value)}
+                      />
+                    </div>
+                  </>
+                )}
+              </SortableCard>
+            ))}
+          </SortableExercises>
 
           <button
             type="button"
