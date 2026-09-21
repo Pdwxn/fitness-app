@@ -366,6 +366,33 @@ class TestExerciseCatalog:
         response = client.get(reverse("exercise-catalog"), {"updated_since": "not-a-date"})
         assert response.status_code == 400
 
+    def test_removed_lists_soft_deleted_rows_since_the_cursor(self):
+        self._make_exercises(3)
+        cutoff = timezone.now()
+        StoredExercise.objects.filter(external_id="ex-001").update(deleted_at=timezone.now(), updated_at=timezone.now())
+
+        user = make_user()
+        client = APIClient()
+        client.force_authenticate(user=user)
+
+        response = client.get(reverse("exercise-removed"), {"updated_since": cutoff.isoformat()})
+        assert response.status_code == 200
+        removed = response.json()["removed"]
+        assert [row["external_id"] for row in removed] == ["ex-001"]
+        assert "updated_at" in removed[0]
+
+        # ...and a later cursor no longer reports it.
+        later = (timezone.now() + timezone.timedelta(seconds=5)).isoformat()
+        assert client.get(reverse("exercise-removed"), {"updated_since": later}).json()["removed"] == []
+
+    def test_removed_requires_and_validates_updated_since(self):
+        user = make_user()
+        client = APIClient()
+        client.force_authenticate(user=user)
+
+        assert client.get(reverse("exercise-removed")).status_code == 400
+        assert client.get(reverse("exercise-removed"), {"updated_since": "nope"}).status_code == 400
+
 
 # --------------------------------------------------------------------------- #
 # exercise_sync.sync_exercises (importer diffing logic)

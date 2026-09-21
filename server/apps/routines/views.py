@@ -232,16 +232,42 @@ class ExerciseCatalogView(ListAPIView):
 
         updated_since = self.request.query_params.get("updated_since")
         if updated_since:
-            parsed = parse_datetime(updated_since)
-            if parsed is None:
-                raise ValidationError(
-                    {"updated_since": "Must be an ISO-8601 datetime."}
-                )
-            if timezone.is_naive(parsed):
-                parsed = timezone.make_aware(parsed, timezone.get_current_timezone())
-            queryset = queryset.filter(updated_at__gt=parsed)
+            queryset = queryset.filter(updated_at__gt=_parse_updated_since(updated_since))
 
         return queryset
+
+
+def _parse_updated_since(value):
+    parsed = parse_datetime(value)
+    if parsed is None:
+        raise ValidationError({"updated_since": "Must be an ISO-8601 datetime."})
+    if timezone.is_naive(parsed):
+        parsed = timezone.make_aware(parsed, timezone.get_current_timezone())
+    return parsed
+
+
+class ExerciseRemovedView(APIView):
+    """Exercises removed from the catalog since ``?updated_since=``.
+
+    The delta list above only carries active rows, so without this a client that
+    already synced would keep a removed exercise forever. Each item carries its
+    ``updated_at`` so the client can move its sync cursor past the removal
+    instead of asking for it again on every sync.
+    """
+
+    def get(self, request):
+        updated_since = request.query_params.get("updated_since")
+        if not updated_since:
+            raise ValidationError({"updated_since": "This query parameter is required."})
+
+        rows = (
+            StoredExercise.all_objects.filter(
+                deleted_at__isnull=False, updated_at__gt=_parse_updated_since(updated_since)
+            )
+            .order_by("external_id")
+            .values("external_id", "updated_at")
+        )
+        return Response({"removed": list(rows)})
 
 
 class ManualRoutineView(APIView):

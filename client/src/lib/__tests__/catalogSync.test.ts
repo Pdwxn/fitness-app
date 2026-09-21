@@ -6,10 +6,12 @@ import type { Exercise } from "@/types/exercise";
 import type { ManualRoutineDraft, Routine } from "@/types/routine";
 
 const fetchFullExerciseCatalog = vi.fn();
+const fetchRemovedExercises = vi.fn();
 const createManualRoutine = vi.fn();
 
 vi.mock("@/lib/api/exercises", () => ({
   fetchFullExerciseCatalog: (updatedSince?: string) => fetchFullExerciseCatalog(updatedSince),
+  fetchRemovedExercises: (updatedSince: string) => fetchRemovedExercises(updatedSince),
 }));
 vi.mock("@/lib/api/routines", () => ({
   createManualRoutine: (draft: ManualRoutineDraft) => createManualRoutine(draft),
@@ -69,6 +71,8 @@ const fakeRoutine = { id: "r1", source: "manual", is_active: true } as unknown a
 
 beforeEach(async () => {
   fetchFullExerciseCatalog.mockReset();
+  fetchRemovedExercises.mockReset();
+  fetchRemovedExercises.mockResolvedValue([]);
   createManualRoutine.mockReset();
   await Promise.all(db.tables.map((table) => table.clear()));
 });
@@ -134,6 +138,27 @@ describe("syncExerciseCatalog", () => {
     await syncExerciseCatalog(true);
 
     expect(await getMeta(META_KEYS.exercisesSyncedAt)).toBe("2026-02-01T00:00:00.500000Z");
+  });
+
+  it("drops exercises the server removed and moves the cursor past the removal", async () => {
+    await db.exercises.bulkPut([makeExercise("keep"), makeExercise("gone")]);
+    await db.meta.put({ key: META_KEYS.exercisesSyncedAt, value: "2025-06-01T00:00:00Z" });
+    fetchFullExerciseCatalog.mockResolvedValue([]);
+    fetchRemovedExercises.mockResolvedValue([{ external_id: "gone", updated_at: "2026-03-01T00:00:00Z" }]);
+
+    await syncExerciseCatalog(true);
+
+    expect(fetchRemovedExercises).toHaveBeenCalledWith("2025-06-01T00:00:00Z");
+    expect((await db.exercises.toArray()).map((e) => e.external_id)).toEqual(["keep"]);
+    expect(await getMeta(META_KEYS.exercisesSyncedAt)).toBe("2026-03-01T00:00:00Z");
+  });
+
+  it("does not ask for removals on the first, full sync", async () => {
+    fetchFullExerciseCatalog.mockResolvedValue([makeExercise("a")]);
+
+    await syncExerciseCatalog(true);
+
+    expect(fetchRemovedExercises).not.toHaveBeenCalled();
   });
 
   it("keeps the previous cursor when the delta comes back empty", async () => {
