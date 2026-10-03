@@ -1,5 +1,6 @@
 "use client";
 
+import { use } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dumbbell, Home, TrendingUp, User } from "lucide-react";
@@ -21,10 +22,12 @@ type NavItem = {
 
 type BottomNavProps = {
   items: NavItem[];
-  userLabel: string;
+  /** Resolved on the server while the page streams; the nav suspends until then. */
+  userLabel: Promise<string>;
 };
 
-export function BottomNav({ items, userLabel }: BottomNavProps) {
+export function BottomNav({ items, userLabel: userLabelPromise }: BottomNavProps) {
+  const userLabel = use(userLabelPromise);
   const pathname = usePathname();
   const userInitial = userLabel.trim().charAt(0).toUpperCase() || "?";
 
