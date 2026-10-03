@@ -61,6 +61,7 @@ function renderPage() {
 }
 
 beforeEach(() => {
+  window.sessionStorage.clear();
   usePendingRoutine.mockReturnValue({ hasPending: false, isLoading: false });
   useDailyLogs.mockReturnValue({ logs: [] });
 });
@@ -168,6 +169,24 @@ describe("RoutinePageContent with an active routine", () => {
     expect(screen.getByRole("link", { name: /^Empuje S1/ })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Semana 2" }));
     expect(screen.queryByRole("link", { name: /^Empuje S1/ })).toBeNull();
+    expect(screen.getByRole("link", { name: /^Piernas S2/ })).toBeInTheDocument();
+  });
+
+  it("keeps the picked week when coming back from a day (the page remounts)", async () => {
+    useRoutineCache.mockReturnValue({
+      routine: makeRoutine(),
+      isLoading: false,
+      hasError: false,
+      isOfflineFallback: false,
+    });
+    setToday(2026, 9, 9); // today is week 1
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const first = renderPage();
+    await user.click(screen.getByRole("button", { name: "Semana 2" }));
+    first.unmount();
+
+    renderPage();
+    expect(screen.getByRole("button", { name: "Semana 2" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("link", { name: /^Piernas S2/ })).toBeInTheDocument();
   });
 
