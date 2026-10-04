@@ -1,5 +1,6 @@
 "use client";
 
+import { use } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dumbbell, Home, TrendingUp, User } from "lucide-react";
@@ -21,10 +22,12 @@ type NavItem = {
 
 type BottomNavProps = {
   items: NavItem[];
-  userLabel: string;
+  /** Resolved on the server while the page streams; the nav suspends until then. */
+  userLabel: Promise<string>;
 };
 
-export function BottomNav({ items, userLabel }: BottomNavProps) {
+export function BottomNav({ items, userLabel: userLabelPromise }: BottomNavProps) {
+  const userLabel = use(userLabelPromise);
   const pathname = usePathname();
   const userInitial = userLabel.trim().charAt(0).toUpperCase() || "?";
 
@@ -32,8 +35,11 @@ export function BottomNav({ items, userLabel }: BottomNavProps) {
     <>
       <nav
         aria-label="Main navigation"
-        className="fixed bottom-5 left-4 right-4 z-50 flex h-[68px] items-center gap-1 rounded-[2.125rem] border border-white/[0.13] bg-[#141614]/80 p-1.5 shadow-[0_-20px_50px_rgba(0,0,0,0.6)] backdrop-blur-2xl md:hidden"
-        style={{ paddingBottom: "calc(0.375rem + env(safe-area-inset-bottom))" }}
+        className="fixed left-4 right-4 z-50 flex h-[68px] items-center gap-1 rounded-[2.125rem] border border-white/[0.13] bg-[#141614]/80 p-1.5 shadow-[0_-20px_50px_rgba(0,0,0,0.6)] backdrop-blur-2xl md:hidden"
+        // The safe-area inset moves the whole pill up from the edge instead of
+        // padding its content: padding stayed even (p-1.5) but a taller bottom
+        // padding inside a fixed height squeezed the icons upward off-center.
+        style={{ bottom: "calc(1.25rem + env(safe-area-inset-bottom))" }}
       >
         {items.map((item) => {
           const isActive = pathname === item.href;

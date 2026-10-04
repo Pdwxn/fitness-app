@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Calendar, Check, ChevronRight, ClipboardList, Pencil } from "lucide-react";
@@ -9,6 +9,7 @@ import { StatusCard } from "@/components/ui/StatusCard";
 import { useDailyLogs } from "@/hooks/useDailyLogs";
 import { usePendingRoutine } from "@/hooks/usePendingRoutine";
 import { useRoutineCache } from "@/hooks/useRoutineCache";
+import { precacheRoutineMedia } from "@/lib/mediaCache";
 import { calendarDateForRoutineDay, getScheduledDay } from "@/lib/schedule";
 import { routinePeriodLabel } from "@/types/routine";
 import type { Routine } from "@/types/routine";
@@ -55,6 +56,14 @@ function currentWeekIndex(routine: Routine): number {
 export function RoutinePageContent({ locale }: RoutinePageContentProps) {
   const t = useTranslations("Routine");
   const { routine, isLoading, hasError, isOfflineFallback } = useRoutineCache();
+
+  // Photos and demos are only needed once the routine is on screen. Fetch them
+  // after a short pause so they never compete with this page's own data.
+  useEffect(() => {
+    if (!routine) return;
+    const timer = window.setTimeout(() => void precacheRoutineMedia(routine).catch(() => undefined), 1500);
+    return () => window.clearTimeout(timer);
+  }, [routine]);
   const { hasPending, isLoading: pendingLoading } = usePendingRoutine();
   const { logs } = useDailyLogs();
   const [selectedWeekId, setSelectedWeekId] = useState<string | null>(null);

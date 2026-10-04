@@ -5,11 +5,11 @@ import { LogoutButton } from "@/components/auth/LogoutButton";
 type PrivateHeaderProps = {
   title: string;
   description: string;
-  userLabel: string;
+  userLabel: Promise<string>;
 };
 
-export async function PrivateHeader({ title, description, userLabel }: PrivateHeaderProps) {
-  const t = await getTranslations("PrivateLayout");
+export async function PrivateHeader({ title, description, userLabel: userLabelPromise }: PrivateHeaderProps) {
+  const [t, userLabel] = await Promise.all([getTranslations("PrivateLayout"), userLabelPromise]);
 
   return (
     <header className="apex-card relative overflow-hidden rounded-[2rem] p-6 text-white">

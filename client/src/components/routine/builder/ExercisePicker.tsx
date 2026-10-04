@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { ChevronDown, Plus, Search, SearchX, X } from "lucide-react";
 
 import { useExerciseCatalog, useCatalogSyncStatus } from "@/hooks/useExerciseCatalog";
+import { syncExerciseCatalog } from "@/lib/sync";
 import { EMPTY_CATALOG_FILTERS, type CatalogFilters, type Exercise } from "@/types/exercise";
 
 import { ExerciseThumb } from "./ExerciseThumb";
@@ -61,6 +62,11 @@ export function ExercisePicker({ onPick, onAddCustom, onClose }: ExercisePickerP
   const [filters, setFilters] = useState<CatalogFilters>(EMPTY_CATALOG_FILTERS);
   const { exercises, facets, isLoading, isEmpty } = useExerciseCatalog(filters);
   const { neverSynced } = useCatalogSyncStatus();
+
+  // Fetched here, not at app start. The sync skips itself within 24h of the last one.
+  useEffect(() => {
+    void syncExerciseCatalog();
+  }, []);
 
   // Lock body scroll while the picker is open.
   useEffect(() => {

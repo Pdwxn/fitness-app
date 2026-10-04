@@ -250,7 +250,8 @@ export function startSilentSync(intervalMs = 30_000) {
   const runAll = () => {
     void syncPendingLogs();
     void syncPendingRoutines();
-    void syncExerciseCatalog();
+    // The exercise catalog isn't part of startup: it's fetched when the picker
+    // opens (see ExercisePicker), so launching the app stays light.
   };
   runAll();
   return window.setInterval(runAll, intervalMs);
