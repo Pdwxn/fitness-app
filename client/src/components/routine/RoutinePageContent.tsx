@@ -20,6 +20,30 @@ type RoutinePageContentProps = {
   locale: string;
 };
 
+const WEEK_STORAGE_KEY = "apex:routine-week";
+
+/**
+ * The week the user last picked for this routine. Kept in sessionStorage so it
+ * survives opening a day and coming back (the page remounts), and a reload.
+ */
+function readRememberedWeekId(routineId: string): string | null {
+  try {
+    const raw = window.sessionStorage.getItem(WEEK_STORAGE_KEY);
+    const stored = raw ? (JSON.parse(raw) as { routineId?: string; weekId?: string }) : null;
+    return stored?.routineId === routineId ? (stored.weekId ?? null) : null;
+  } catch {
+    return null;
+  }
+}
+
+function rememberWeekId(routineId: string, weekId: string) {
+  try {
+    window.sessionStorage.setItem(WEEK_STORAGE_KEY, JSON.stringify({ routineId, weekId }));
+  } catch {
+    /* private mode / storage disabled: the week just won't be remembered */
+  }
+}
+
 /** The week containing today, or the first week if the routine has no usable start date. */
 function currentWeekIndex(routine: Routine): number {
   const scheduled = getScheduledDay(routine, new Date());
@@ -33,7 +57,7 @@ export function RoutinePageContent({ locale }: RoutinePageContentProps) {
   const { routine, isLoading, hasError, isOfflineFallback } = useRoutineCache();
   const { hasPending, isLoading: pendingLoading } = usePendingRoutine();
   const { logs } = useDailyLogs();
-  const [selectedWeekIndex, setSelectedWeekIndex] = useState<number | null>(null);
+  const [selectedWeekId, setSelectedWeekId] = useState<string | null>(null);
 
   if (isLoading || pendingLoading) {
     return <StatusCard message={t("states.loading")} />;
@@ -47,7 +71,10 @@ export function RoutinePageContent({ locale }: RoutinePageContentProps) {
     return <RoutineChoiceScreen locale={locale} hasPending={hasPending} />;
   }
 
-  const weekIndex = selectedWeekIndex ?? currentWeekIndex(routine);
+  const rememberedIndex = routine.weeks.findIndex(
+    (w) => w.id === (selectedWeekId ?? readRememberedWeekId(routine.id)),
+  );
+  const weekIndex = rememberedIndex >= 0 ? rememberedIndex : currentWeekIndex(routine);
   const week = routine.weeks[weekIndex] ?? routine.weeks[0];
   const orderedDays = [...(week?.days ?? [])].sort((a, b) => a.day_number - b.day_number);
   const todayDayId = getScheduledDay(routine, new Date())?.day?.id ?? null;
@@ -92,7 +119,10 @@ export function RoutinePageContent({ locale }: RoutinePageContentProps) {
               key={w.id}
               type="button"
               aria-pressed={index === weekIndex}
-              onClick={() => setSelectedWeekIndex(index)}
+              onClick={() => {
+                setSelectedWeekId(w.id);
+                rememberWeekId(routine.id, w.id);
+              }}
               className={`flex h-[52px] items-center justify-center rounded-[26px] px-1 text-[15px] font-bold ${
                 index === weekIndex ? "bg-[#a6ff00] text-black" : "border border-white/[0.22] text-white"
               }`}
