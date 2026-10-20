@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { useNextRoutineStore } from "@/store/nextRoutineStore";
+import { useSyncIssuesStore } from "@/store/syncIssuesStore";
 
 function monthName(locale: string, month: number, year: number): string {
   const name = new Date(year, month - 1).toLocaleString(locale, { month: "long" });
@@ -14,12 +15,21 @@ function monthName(locale: string, month: number, year: number): string {
 export function NextRoutineWatcher({ locale }: { locale: string }) {
   const t = useTranslations("Routine");
   const tCoach = useTranslations("Coach.toast");
+  const tStates = useTranslations("States");
   const nextRoutine = useNextRoutineStore((s) => s.nextRoutine);
   const clearNextRoutine = useNextRoutineStore((s) => s.clearNextRoutine);
   const nextProposal = useNextRoutineStore((s) => s.nextProposal);
   const clearNextProposal = useNextRoutineStore((s) => s.clearNextProposal);
+  const droppedLogCount = useSyncIssuesStore((s) => s.droppedLogCount);
+  const clearDroppedLogs = useSyncIssuesStore((s) => s.clearDroppedLogs);
   const shownRef = useRef(false);
   const shownProposalRef = useRef(false);
+
+  useEffect(() => {
+    if (!droppedLogCount) return;
+    toast.error(tStates("syncDropped", { count: droppedLogCount }));
+    clearDroppedLogs();
+  }, [droppedLogCount, tStates, clearDroppedLogs]);
 
   useEffect(() => {
     if (!nextProposal || shownProposalRef.current) return;
