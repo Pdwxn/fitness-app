@@ -83,7 +83,7 @@ describe("ProgressContent", () => {
   it("shows the week's real volume, consistency, muscles and latest log", () => {
     renderPage();
 
-    expect(screen.getByText("1160")).toBeInTheDocument(); // 10x60 + 8x70 -- Intl may format as 1160 or 1.160
+    expect(screen.getByText("1.160")).toBeInTheDocument(); // 10x60 + 8x70, grouped (useGrouping: "always")
     expect(screen.getByRole("img", { name: "Consistencia 50%" })).toBeInTheDocument();
     expect(screen.getByText("Sin datos del periodo anterior")).toBeInTheDocument();
     expect(screen.getByText("pecho")).toBeInTheDocument();

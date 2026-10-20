@@ -65,7 +65,11 @@ export function ProgressContent({ locale }: { locale: string }) {
   }, [routine]);
   const recentLogs = useMemo(() => [...logs].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5), [logs]);
 
-  const number = new Intl.NumberFormat(intlLocale, { maximumFractionDigits: 1 });
+  // useGrouping: "always" (not the default "auto"): Spanish's CLDR data only
+  // groups digits from 10,000 up, so a perfectly normal "3460 kg" weekly
+  // volume (a handful of sets, added up) rendered with no separator at all --
+  // reads as an implausible one-shot lift instead of the running total it is.
+  const number = new Intl.NumberFormat(intlLocale, { maximumFractionDigits: 1, useGrouping: "always" });
   const shortDate = (date: string) => {
     const [year, month, day] = date.split("-").map(Number);
     return new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short" }).format(new Date(year, month - 1, day));
@@ -121,7 +125,7 @@ export function ProgressContent({ locale }: { locale: string }) {
       ) : null}
 
       <div className="grid gap-7 md:grid-cols-2 md:gap-x-12">
-        <Card title={t("volume.title")}>
+        <Card title={t("volume.title")} subtitle={t("volume.subtitle")}>
           <div className="flex items-baseline gap-2">
             <span className="text-5xl font-black leading-none">
               {number.format(Math.round(kgToUnitNumber(volume.total, unit)))}

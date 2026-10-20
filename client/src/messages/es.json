@@ -626,6 +626,7 @@
     "vsMonth": "vs mes anterior",
     "volume": {
       "title": "Volumen levantado",
+      "subtitle": "Suma de peso × repeticiones de todas tus series",
       "unit": "kg",
       "noPrevious": "Sin datos del periodo anterior",
       "chartAria": "Volumen diario del periodo"

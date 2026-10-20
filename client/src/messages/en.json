@@ -626,6 +626,7 @@
     "vsMonth": "vs previous month",
     "volume": {
       "title": "Volume lifted",
+      "subtitle": "Weight × reps added up across every set",
       "unit": "kg",
       "noPrevious": "No data from the previous period",
       "chartAria": "Daily volume for the period"
