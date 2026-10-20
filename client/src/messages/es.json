@@ -652,17 +652,24 @@
       "more": "Más series",
       "setCount": "{count, plural, one {# serie} other {# series}}",
       "zones": {
+        "trapezius": "Trapecio",
+        "deltoids": "Hombros",
         "chest": "Pecho",
-        "shoulders": "Hombros",
+        "upperBack": "Espalda alta",
+        "serratus": "Serrato",
         "biceps": "Bíceps",
         "triceps": "Tríceps",
         "forearms": "Antebrazos",
         "abs": "Core",
-        "back": "Espalda",
+        "obliques": "Oblicuos",
+        "lowerBack": "Espalda baja",
         "glutes": "Glúteos",
         "quads": "Cuádriceps",
         "hamstrings": "Femorales",
-        "calves": "Gemelos"
+        "adductors": "Aductores",
+        "hipFlexors": "Flexores de cadera",
+        "calves": "Gemelos",
+        "tibialis": "Tibial"
       },
       "empty": "Todavía no hay series registradas en este periodo."
     },
