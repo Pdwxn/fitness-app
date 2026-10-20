@@ -157,6 +157,39 @@ describe("routineBuilderStore", () => {
     ]);
   });
 
+  it("repeatWeekForRestOfMonth copies the chosen week's days into every other week", () => {
+    store().setDayName(0, 0, "Push");
+    store().addExercise(0, 0, { ...catalogExercise, name: "Bench", external_id: "bench" });
+    store().addDay(0);
+    store().setDayName(0, 1, "Rest");
+    store().toggleRestDay(0, 1, "Rest");
+
+    store().repeatWeekForRestOfMonth(0);
+
+    const { weeks } = store().draft;
+    expect(weeks).toHaveLength(4);
+    for (const week of weeks) {
+      expect(week.days.map((d) => [d.day_name, d.is_rest_day])).toEqual([
+        ["Push", false],
+        ["Rest", true],
+      ]);
+      expect(week.days[0].exercises.map((e) => e.name)).toEqual(["Bench"]);
+    }
+    // week_number stays correct per week even though the content was copied.
+    expect(weeks.map((w) => w.week_number)).toEqual([1, 2, 3, 4]);
+  });
+
+  it("repeatWeekForRestOfMonth lets each week keep editing independently afterward", () => {
+    store().setDayName(0, 0, "Push");
+    store().repeatWeekForRestOfMonth(0);
+
+    store().setDayName(1, 0, "Pull");
+
+    expect(store().draft.weeks[0].days[0].day_name).toBe("Push");
+    expect(store().draft.weeks[1].days[0].day_name).toBe("Pull");
+    expect(store().draft.weeks[2].days[0].day_name).toBe("Push");
+  });
+
   it("moveExercise at the edges is a no-op", () => {
     store().addExercise(0, 0);
     store().addExercise(0, 0);

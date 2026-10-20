@@ -1,10 +1,11 @@
 import { ApiError, authenticatedClientFetch } from "./api/authenticated-client";
 import { fetchFullExerciseCatalog, fetchRemovedExercises } from "./api/exercises";
 import { createManualRoutine } from "./api/routines";
-import { db, getMeta, META_KEYS, setMeta, type StatsEntry } from "./db";
+import { db, getMeta, META_KEYS, setMeta, type PendingSyncItem, type StatsEntry } from "./db";
 import { queryClient } from "./query-client";
 import { queryKeys } from "./query-keys";
 import { useNextRoutineStore } from "@/store/nextRoutineStore";
+import { useSyncIssuesStore } from "@/store/syncIssuesStore";
 import type { DailyLog, DailyLogBatchResponse, ProgressStats } from "@/types/progress";
 
 function getLogKey(log: Pick<DailyLog, "id" | "routine_day_id" | "date">) {
@@ -96,11 +97,58 @@ export async function getPendingLogs(): Promise<DailyLog[]> {
   return items.map((item) => item.log);
 }
 
+/** Saves logs the server accepted into Dexie/stats. Safe to call with an empty list. */
+async function applySyncedLogs(syncedLogs: DailyLog[]): Promise<void> {
+  if (!syncedLogs.length) return;
+  const localLogs = await db.dailyLogs.toArray();
+  const mergedLogs = mergeLogs(localLogs, syncedLogs);
+  await db.dailyLogs.clear();
+  await db.dailyLogs.bulkAdd(mergedLogs);
+  const pendingCount = await db.pendingSync.count();
+  await db.stats.put({ id: "progress", ...calculateStats(mergedLogs, pendingCount) });
+}
+
+function isPermanentFailure(error: unknown): boolean {
+  return error instanceof ApiError && error.status >= 400 && error.status < 500;
+}
+
+/**
+ * Fallback when the batch request was rejected (not a network error -- the
+ * server actively refused it): sends each log on its own, so a single log the
+ * server will never accept (its routine day was edited away, say) doesn't
+ * hold the rest of the queue hostage forever. Permanently-rejected logs are
+ * dropped and reported once via `useSyncIssuesStore`; network failures are
+ * left in the queue for the next attempt.
+ */
+async function syncPendingLogsOneByOne(pending: PendingSyncItem[]): Promise<boolean> {
+  let allOk = true;
+  const synced: DailyLog[] = [];
+
+  for (const item of pending) {
+    try {
+      const saved = await authenticatedClientFetch<DailyLog>("/api/v1/progress/logs/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(item.log),
+      });
+      await db.pendingSync.delete(item.id);
+      synced.push(saved);
+    } catch (error) {
+      allOk = false;
+      if (isPermanentFailure(error)) {
+        await db.pendingSync.delete(item.id);
+        useSyncIssuesStore.getState().reportDroppedLog();
+      }
+    }
+  }
+
+  await applySyncedLogs(synced);
+  return allOk;
+}
+
 export async function syncPendingLogs(): Promise<boolean> {
   const pending = await db.pendingSync.toArray();
   if (!pending.length) return true;
-
-  const pendingLogs = pending.map((item) => item.log);
 
   try {
     const response = await authenticatedClientFetch<DailyLogBatchResponse>("/api/v1/progress/logs/batch/", {
@@ -108,17 +156,11 @@ export async function syncPendingLogs(): Promise<boolean> {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ logs: pendingLogs }),
+      body: JSON.stringify({ logs: pending.map((item) => item.log) }),
     });
 
-    const localLogs = await db.dailyLogs.toArray();
-    const mergedLogs = mergeLogs(localLogs, response.logs);
-    await db.dailyLogs.clear();
-    await db.dailyLogs.bulkAdd(mergedLogs);
     await db.pendingSync.clear();
-
-    const mergedStats = calculateStats(mergedLogs, 0);
-    await db.stats.put({ id: "progress", ...mergedStats });
+    await applySyncedLogs(response.logs);
 
     if (response.next_routine) {
       useNextRoutineStore.getState().setNextRoutine(response.next_routine);
@@ -129,8 +171,9 @@ export async function syncPendingLogs(): Promise<boolean> {
     }
 
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    if (!isPermanentFailure(error)) return false; // network/server hiccup: keep everything, retry later
+    return syncPendingLogsOneByOne(pending);
   }
 }
 

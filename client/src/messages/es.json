@@ -11,7 +11,8 @@
     "notFoundDescription": "Puede que el enlace esté mal o que ya no exista.",
     "goHome": "Ir al inicio",
     "offline": "Sin conexión. Estás usando datos guardados en este dispositivo.",
-    "pendingSync": "{count, plural, one {# pendiente por sincronizar} other {# pendientes por sincronizar}}"
+    "pendingSync": "{count, plural, one {# pendiente por sincronizar} other {# pendientes por sincronizar}}",
+    "syncDropped": "{count, plural, one {No se pudo guardar un registro antiguo: la rutina cambió desde entonces.} other {No se pudieron guardar # registros antiguos: la rutina cambió desde entonces.}}"
   },
   "Home": {
     "eyebrow": "App de fitness con IA",
@@ -464,6 +465,13 @@
     "week": "Semana",
     "addWeek": "Agregar semana",
     "removeWeek": "Quitar semana",
+    "repeatWeek": {
+      "cta": "Repetir esta semana el resto del mes",
+      "title": "¿Repetir la Semana {week}?",
+      "body": "Se copiarán sus días y ejercicios a las otras semanas del mes, reemplazando lo que tengan. Podrás seguir editando cada semana por separado después.",
+      "confirm": "Repetir",
+      "cancel": "Cancelar"
+    },
     "focus": "Enfoque de la semana",
     "notes": "Notas de la semana",
     "day": "Día",

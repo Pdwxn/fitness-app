@@ -20,6 +20,7 @@ import {
   validateDraft,
 } from "@/store/routineBuilderStore";
 
+import { RepeatWeekButton } from "./RepeatWeekButton";
 import { RoutineWeekEditor } from "./RoutineWeekEditor";
 import { isBlankDraft, TemplatePicker } from "./TemplatePicker";
 import { describeValidationError } from "./validationMessage";
@@ -237,6 +238,8 @@ export function RoutineBuilderWizard({ locale, mode = "create" }: RoutineBuilder
             {t("removeWeek")}
           </button>
         </div>
+
+        {week ? <RepeatWeekButton weekIdx={weekIndex} weekNumber={week.week_number} /> : null}
       </div>
 
       {showErrors && errors.length > 0 ? (

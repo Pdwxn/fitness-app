@@ -109,6 +109,13 @@ type BuilderState = {
   reorderExercise: (weekIdx: number, dayIdx: number, from: number, to: number) => void;
   /** Replaces the draft with a template's week/day structure (no exercises: those are the user's pick). */
   applyTemplate: (days: TemplateDay[]) => void;
+  /**
+   * Fills the draft out to `MAX_WEEKS`, copying `weekIdx`'s days (and their
+   * exercises) into every other week so the user doesn't have to rebuild the
+   * same days 3 more times. Each week keeps editing independently after this
+   * -- it's a one-time copy, not a link between weeks.
+   */
+  repeatWeekForRestOfMonth: (weekIdx: number) => void;
 };
 
 export type TemplateDay = { name: string; rest?: boolean };
@@ -293,6 +300,19 @@ export const useRoutineBuilderStore = create<BuilderState>((set, get) => {
           },
         ],
       }),
+
+    repeatWeekForRestOfMonth: (weekIdx) => {
+      const { draft } = get();
+      const source = draft.weeks[weekIdx];
+      if (!source) return;
+      commit({
+        weeks: Array.from({ length: MAX_WEEKS }, (_, wi) => ({
+          ...(draft.weeks[wi] ?? emptyWeek(wi + 1)),
+          week_number: wi + 1,
+          days: source.days,
+        })),
+      });
+    },
   };
 });
 
