@@ -2,34 +2,62 @@ import type { BodyZone } from "@/components/progress/bodyShapes";
 
 export type { BodyZone };
 
+/**
+ * Real values seen in `StoredExercise.primary_muscles`/`secondary_muscles`
+ * (the `hasaneyldrm/exercises-dataset` import; checked directly against
+ * `server/apps/routines/data/exercises_db_v2.json`), plus the Spanish names
+ * the AI coach sometimes returns. Cross-checked against openGym's own
+ * mapping for the same dataset (same source, same vocabulary) rather than
+ * guessed from the English alone -- e.g. "lats"/"back"/"rhomboids" all land
+ * on upperBack, not a literal translation of each word.
+ */
 const ALIASES: Record<BodyZone, string[]> = {
-  chest: ["chest", "pecho", "pectoral", "pectorals", "pectorales"],
-  shoulders: ["shoulders", "shoulder", "delts", "delt", "deltoids", "deltoides", "hombro", "hombros"],
-  biceps: ["biceps", "bicep"],
-  triceps: ["triceps", "tricep"],
-  forearms: ["forearms", "forearm", "antebrazo", "antebrazos"],
-  abs: ["abs", "abdominals", "abdominales", "abdominal", "abdomen", "core", "obliques", "oblicuos", "serratus anterior"],
-  back: [
-    "back",
+  trapezius: ["traps", "trapezius", "levator scapulae", "trapecio", "trapecios"],
+  deltoids: [
+    "delts",
+    "deltoids",
+    "shoulders",
+    "rear deltoids",
+    "rotator cuff",
+    "hombro",
+    "hombros",
+    "deltoides",
+  ],
+  chest: ["pectorals", "chest", "upper chest", "pecho", "pectoral", "pectorales"],
+  upperBack: [
     "lats",
+    "upper back",
+    "back",
+    "latissimus dorsi",
+    "rhomboids",
     "dorsal",
     "dorsales",
     "espalda",
-    "upper back",
-    "traps",
-    "trapezius",
-    "trapecio",
-    "spine",
-    "lower back",
-    "lumbar",
-    "rhomboids",
+    "espalda alta",
     "romboides",
-    "levator scapulae",
   ],
-  glutes: ["glutes", "glute", "gluteo", "gluteos", "abductors", "abductor"],
-  quads: ["quads", "quadriceps", "cuadriceps", "quad", "adductors", "adductor"],
+  serratus: ["serratus anterior", "serrato"],
+  biceps: ["biceps", "brachialis", "bicep"],
+  triceps: ["triceps", "tricep"],
+  forearms: [
+    "forearms",
+    "grip muscles",
+    "wrist extensors",
+    "wrist flexors",
+    "forearm",
+    "antebrazo",
+    "antebrazos",
+  ],
+  abs: ["abs", "abdominals", "core", "lower abs", "abdominales", "abdominal", "abdomen"],
+  obliques: ["obliques", "oblicuos"],
+  lowerBack: ["spine", "lower back", "lumbar", "zona lumbar", "espalda baja"],
+  glutes: ["glutes", "abductors", "gluteo", "gluteos", "abductor", "abductores"],
+  quads: ["quads", "quadriceps", "cuadriceps", "quad"],
   hamstrings: ["hamstrings", "hamstring", "femoral", "femorales", "isquiotibiales"],
-  calves: ["calves", "calf", "gemelos", "pantorrillas", "soleo"],
+  adductors: ["adductors", "inner thighs", "groin", "adductor", "aductores", "ingle"],
+  hipFlexors: ["hip flexors", "flexores de cadera", "psoas"],
+  calves: ["calves", "soleus", "calf", "gemelos", "pantorrillas", "soleo"],
+  tibialis: ["shins", "tibialis", "tibial", "tibiales"],
 };
 
 const ZONE_BY_ALIAS = new Map<string, BodyZone>(
@@ -59,7 +87,8 @@ export function setsByZone(muscles: { muscle: string; sets: number }[]): Partial
   return totals;
 }
 
-export const HEAT_LEVELS = 5;
+/** Gray (untrained) + light yellow -> yellow -> orange -> red, in increasing intensity. */
+export const HEAT_LEVELS = 4;
 
 /** 0 (nothing) to HEAT_LEVELS, relative to the busiest zone. */
 export function heatLevel(sets: number, max: number): number {

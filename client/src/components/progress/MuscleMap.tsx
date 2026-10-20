@@ -1,31 +1,30 @@
-import {
-  BACK_SHAPES,
-  BODY_CENTER,
-  BODY_CENTER_PARTS,
-  BODY_SIDE_PARTS,
-  BODY_VIEWBOX,
-  FRONT_SHAPES,
-  type BodyShape,
-  type BodyZone,
-} from "./bodyShapes";
+"use client";
+
+import { useEffect, useState } from "react";
+
+import { useBodyVariant } from "@/hooks/useBodyVariant";
 import { HEAT_LEVELS, heatLevel } from "@/lib/muscleMap";
 
-const MIRROR = `translate(${BODY_CENTER * 2} 0) scale(-1 1)`;
+import { loadBodyFigures, type BodyFigure, type BodyFigures, type BodyZone } from "./bodyShapes";
 
-/** One step of the lime scale; 0 is the unworked base tone. */
+/** Gray (untrained) -> light yellow -> yellow -> orange -> red, in increasing intensity. */
+const HEAT_COLORS = ["#FDE68A", "#FACC15", "#FB923C", "#EF4444"];
+const UNTRAINED_FILL = "rgba(255,255,255,0.14)";
+
 export function heatFill(level: number): string {
-  return level === 0 ? "rgba(255,255,255,0.05)" : `rgba(166,255,0,${(0.2 + (level / HEAT_LEVELS) * 0.75).toFixed(2)})`;
+  if (level <= 0) return UNTRAINED_FILL;
+  return HEAT_COLORS[Math.min(level, HEAT_COLORS.length) - 1];
 }
 
 function Figure({
-  shapes,
+  figure,
   sets,
   max,
   label,
   zoneLabel,
   setsLabel,
 }: {
-  shapes: BodyShape[];
+  figure: BodyFigure;
   sets: Partial<Record<BodyZone, number>>;
   max: number;
   label: string;
@@ -34,33 +33,24 @@ function Figure({
 }) {
   return (
     <figure className="flex flex-col items-center gap-2">
-      <svg viewBox={BODY_VIEWBOX} role="img" aria-label={label} className="h-auto w-full max-w-[150px]">
-        <g fill="#141914" stroke="rgba(255,255,255,0.16)" strokeWidth="1" strokeLinejoin="round">
-          {BODY_CENTER_PARTS.map((d) => (
-            <path key={d} d={d} />
-          ))}
-          {BODY_SIDE_PARTS.map((d) => (
-            <g key={d}>
-              <path d={d} />
-              <path d={d} transform={MIRROR} />
-            </g>
+      <svg viewBox={figure.viewBox} role="img" aria-label={label} className="h-auto w-full max-w-[150px]">
+        <g fill="#141914" stroke="rgba(255,255,255,0.16)" strokeWidth="2" strokeLinejoin="round">
+          {figure.inert.map((d, i) => (
+            <path key={i} d={d} />
           ))}
         </g>
-        <g stroke="#020303" strokeWidth="1.5" strokeLinejoin="round">
-          {shapes.map((shape) => {
-            const count = sets[shape.zone] ?? 0;
+        <g stroke="#020303" strokeWidth="2" strokeLinejoin="round">
+          {figure.parts.map((part, partIndex) => {
+            const count = sets[part.zone] ?? 0;
             const fill = heatFill(heatLevel(count, max));
-            const title = `${zoneLabel(shape.zone)} · ${setsLabel(count)}`;
+            const title = `${zoneLabel(part.zone)} · ${setsLabel(count)}`;
             return (
-              <g key={shape.zone} fill={fill}>
-                <path d={shape.d}>
-                  <title>{title}</title>
-                </path>
-                {shape.mirror ? (
-                  <path d={shape.d} transform={MIRROR}>
+              <g key={`${part.zone}-${partIndex}`} fill={fill}>
+                {part.paths.map((d, pathIndex) => (
+                  <path key={pathIndex} d={d}>
                     <title>{title}</title>
                   </path>
-                ) : null}
+                ))}
               </g>
             );
           })}
@@ -89,13 +79,33 @@ export function MuscleMap({
   zoneLabel: (zone: BodyZone) => string;
   setsLabel: (count: number) => string;
 }) {
+  const gender = useBodyVariant();
+  const [figures, setFigures] = useState<BodyFigures | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    void loadBodyFigures().then((loaded) => {
+      if (alive) setFigures(loaded);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const max = Math.max(0, ...Object.values(sets).map((value) => value ?? 0));
+
+  if (!figures) {
+    // Keeps the card's height stable while the ~95 KB geometry loads, so nothing below it jumps.
+    return <div className="h-[260px] w-full animate-pulse rounded-2xl bg-white/[0.04]" aria-hidden="true" />;
+  }
+
+  const body = figures[gender];
 
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="flex w-full justify-center gap-6">
-        <Figure shapes={FRONT_SHAPES} sets={sets} max={max} label={frontLabel} zoneLabel={zoneLabel} setsLabel={setsLabel} />
-        <Figure shapes={BACK_SHAPES} sets={sets} max={max} label={backLabel} zoneLabel={zoneLabel} setsLabel={setsLabel} />
+        <Figure figure={body.front} sets={sets} max={max} label={frontLabel} zoneLabel={zoneLabel} setsLabel={setsLabel} />
+        <Figure figure={body.back} sets={sets} max={max} label={backLabel} zoneLabel={zoneLabel} setsLabel={setsLabel} />
       </div>
       <div className="flex items-center gap-3 text-sm font-medium text-white/60" aria-hidden="true">
         <span>{lessLabel}</span>

@@ -652,17 +652,24 @@
       "more": "More sets",
       "setCount": "{count, plural, one {# set} other {# sets}}",
       "zones": {
+        "trapezius": "Traps",
+        "deltoids": "Shoulders",
         "chest": "Chest",
-        "shoulders": "Shoulders",
+        "upperBack": "Upper back",
+        "serratus": "Serratus",
         "biceps": "Biceps",
         "triceps": "Triceps",
         "forearms": "Forearms",
         "abs": "Core",
-        "back": "Back",
+        "obliques": "Obliques",
+        "lowerBack": "Lower back",
         "glutes": "Glutes",
         "quads": "Quads",
         "hamstrings": "Hamstrings",
-        "calves": "Calves"
+        "adductors": "Adductors",
+        "hipFlexors": "Hip flexors",
+        "calves": "Calves",
+        "tibialis": "Shins"
       },
       "empty": "No sets logged in this period yet."
     },
