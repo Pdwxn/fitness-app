@@ -19,40 +19,40 @@ export const BODY_CENTER = 100;
 
 /** The plain silhouette (head, torso, one arm and one leg; the arm and leg are mirrored). */
 export const BODY_CENTER_PARTS = [
-  "M100 12 A16 16 0 1 1 99.9 12Z",
-  "M92 40 L108 40 L110 58 L90 58Z",
-  "M64 66 Q100 56 136 66 Q140 100 132 140 Q128 176 126 200 Q130 218 132 232 L68 232 Q70 218 74 200 Q72 176 68 140 Q60 100 64 66Z",
+  "M100 14 A18 18 0 1 1 99.9 14Z",
+  "M89 48 L111 48 L113 68 L87 68Z",
+  "M65 70 Q100 58 135 70 Q142 112 134 150 Q130 180 128 206 Q132 222 134 236 L66 236 Q68 222 72 206 Q70 180 66 150 Q58 112 65 70Z",
 ];
 export const BODY_SIDE_PARTS = [
-  "M62 72 Q48 74 46 92 L42 152 L58 154 L64 100Z",
-  "M42 154 L34 214 L46 218 L58 156Z",
-  "M40 216 A7 10 0 1 0 40.1 216Z",
-  "M72 228 L99 230 L97 322 L77 324 Q69 280 72 228Z",
-  "M77 324 L97 324 L93 402 L80 404Z",
-  "M80 404 A11 5 0 1 0 80.1 404Z",
+  "M64 74 Q46 78 44 100 L41 142 Q41 150 49 152 L59 148 L61 100 Q63 86 64 74Z",
+  "M41 152 L33 212 Q32 220 40 222 L52 218 L59 150Z",
+  "M33 220 A8 11 0 1 0 33.1 220Z",
+  "M68 238 Q84 232 97 240 L95 318 Q82 324 68 318 Q64 278 68 238Z",
+  "M70 322 Q85 318 96 324 Q98 352 92 376 Q88 392 80 394 Q72 392 70 376 Q66 352 70 322Z",
+  "M69 394 A13 6.5 0 1 0 69.1 394Z",
 ];
 
-const SHOULDER = "M62 70 Q46 74 46 98 Q55 102 63 97 Q67 82 62 70Z";
-const ARM = "M52 100 Q60 100 60 124 Q60 146 52 148 Q44 146 44 124 Q44 100 52 100Z";
-const FOREARM = "M46 160 Q54 160 54 184 Q54 208 46 212 Q38 208 38 184 Q38 160 46 160Z";
-const CALF = "M79 330 L95 330 L92 388 L83 390Z";
+const SHOULDER = "M62 76 Q46 80 44 99 Q53 105 61 100 Q65 88 62 76Z";
+const UPPER_ARM = "M50 102 Q58 102 58 126 Q58 146 50 148 Q42 146 42 126 Q42 102 50 102Z";
+const FOREARM = "M44 160 Q52 160 52 186 Q52 208 44 212 Q36 208 36 186 Q36 160 44 160Z";
+const CALF = "M72 326 Q85 322 93 328 Q95 352 90 374 Q86 388 80 390 Q74 388 72 374 Q68 352 72 326Z";
 
 export const FRONT_SHAPES: BodyShape[] = [
   { zone: "shoulders", d: SHOULDER, mirror: true },
-  { zone: "chest", d: "M66 76 Q84 70 98 80 L98 118 Q80 124 68 112 Q62 94 66 76Z", mirror: true },
-  { zone: "abs", d: "M85 128 L115 128 L114 196 Q100 202 86 196Z", mirror: false },
-  { zone: "biceps", d: ARM, mirror: true },
+  { zone: "chest", d: "M68 78 Q86 70 99 80 L99 118 Q89 126 76 120 Q66 104 68 78Z", mirror: true },
+  { zone: "abs", d: "M85 126 L115 126 L112 198 Q100 206 88 198Z", mirror: false },
+  { zone: "biceps", d: UPPER_ARM, mirror: true },
   { zone: "forearms", d: FOREARM, mirror: true },
-  { zone: "quads", d: "M74 236 Q88 230 98 236 L96 314 L78 316 Q71 282 74 236Z", mirror: true },
+  { zone: "quads", d: "M71 242 Q84 236 95 244 L93 314 Q80 320 71 314 Q67 280 71 242Z", mirror: true },
   { zone: "calves", d: CALF, mirror: true },
 ];
 
 export const BACK_SHAPES: BodyShape[] = [
   { zone: "shoulders", d: SHOULDER, mirror: true },
-  { zone: "back", d: "M68 68 Q100 60 132 68 L135 102 Q133 150 124 176 L118 196 L82 196 L76 176 Q67 150 65 102Z", mirror: false },
-  { zone: "triceps", d: ARM, mirror: true },
+  { zone: "back", d: "M66 70 Q100 60 134 70 L137 106 Q135 152 126 180 L120 200 L80 200 L74 180 Q65 152 63 106Z", mirror: false },
+  { zone: "triceps", d: UPPER_ARM, mirror: true },
   { zone: "forearms", d: FOREARM, mirror: true },
-  { zone: "glutes", d: "M72 204 Q86 198 99 208 L99 240 Q84 246 72 236Z", mirror: true },
-  { zone: "hamstrings", d: "M74 248 L98 248 L96 316 L78 318 Q71 284 74 248Z", mirror: true },
+  { zone: "glutes", d: "M70 206 Q85 198 98 208 Q100 226 96 240 Q84 248 70 240 Q66 224 70 206Z", mirror: true },
+  { zone: "hamstrings", d: "M72 250 L97 250 L94 316 Q82 322 72 316 Q68 284 72 250Z", mirror: true },
   { zone: "calves", d: CALF, mirror: true },
 ];
