@@ -11,7 +11,8 @@
     "notFoundDescription": "The link may be wrong or the page may no longer exist.",
     "goHome": "Go to home",
     "offline": "Offline. You're using data saved on this device.",
-    "pendingSync": "{count, plural, one {# item waiting to sync} other {# items waiting to sync}}"
+    "pendingSync": "{count, plural, one {# item waiting to sync} other {# items waiting to sync}}",
+    "syncDropped": "{count, plural, one {Couldn't save one old log: the routine has changed since.} other {Couldn't save # old logs: the routine has changed since.}}"
   },
   "Home": {
     "eyebrow": "AI fitness app",
@@ -464,6 +465,13 @@
     "week": "Week",
     "addWeek": "Add week",
     "removeWeek": "Remove week",
+    "repeatWeek": {
+      "cta": "Repeat this week for the rest of the month",
+      "title": "Repeat Week {week}?",
+      "body": "Its days and exercises will be copied to the other weeks of the month, replacing what they have. You can still edit each week separately afterward.",
+      "confirm": "Repeat",
+      "cancel": "Cancel"
+    },
     "focus": "Week focus",
     "notes": "Week notes",
     "day": "Day",
