@@ -5,13 +5,14 @@ import { ChevronRight, Clock, Play, Sparkles, TrendingUp, WifiOff, type LucideIc
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { AthleteSilhouette } from "@/components/ui/AthleteSilhouette";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { withTimeout } from "@/lib/supabase/timeout";
 
 async function loadSessionUser() {
   try {
     const supabase = await createSupabaseServerClient();
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } = await withTimeout(supabase.auth.getUser());
     return user;
   } catch {
     return null;

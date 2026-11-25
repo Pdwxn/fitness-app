@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { withTimeout } from "@/lib/supabase/timeout";
 
 /** Server-only: the current user's email/id, or a locale-appropriate fallback. Never throws. */
 export async function getSessionUserLabel(): Promise<string> {
@@ -10,7 +11,7 @@ export async function getSessionUserLabel(): Promise<string> {
     const supabase = await createSupabaseServerClient();
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } = await withTimeout(supabase.auth.getUser());
     return user?.email ?? user?.id ?? t("anonymous");
   } catch {
     return t("sessionUnavailable");

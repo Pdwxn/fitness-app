@@ -40,7 +40,14 @@ export async function middleware(request: NextRequest) {
     return intlResponse;
   }
 
-  const { response, user } = authSession;
+  const { response, user, degraded } = authSession;
+
+  // Supabase did not answer but a session cookie exists: serve the page and let
+  // the API enforce access, rather than showing the login screen to a user who
+  // is signed in.
+  if (degraded) {
+    return intlResponse;
+  }
 
   if (PROTECTED_SEGMENTS.has(firstSegment) && !user) {
     const loginUrl = request.nextUrl.clone();
