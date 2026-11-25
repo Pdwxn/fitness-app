@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useLiveQuery } from "dexie-react-hooks";
 
-import { authenticatedClientFetch } from "@/lib/api/authenticated-client";
 import { db } from "@/lib/db";
 import { queryKeys } from "@/lib/query-keys";
-import { getPendingLogs, mergeLogs, updateStatsLocally } from "@/lib/sync";
+import { getPendingLogs, mergeLogs, pullLogs } from "@/lib/sync";
 import type { DailyLog } from "@/types/progress";
 
 type UseDailyLogsOptions = {
@@ -17,19 +16,7 @@ function filterLogs(logs: DailyLog[], routineDayId?: string) {
 }
 
 async function fetchAndMergeLogs(routineDayId?: string): Promise<DailyLog[]> {
-  const query = routineDayId ? `?routine_day_id=${routineDayId}` : "";
-  const remoteLogs = await authenticatedClientFetch<DailyLog[]>(`/api/v1/progress/logs/${query}`);
-
-  const pendingLogs = await getPendingLogs();
-  const mergedLogs = mergeLogs(remoteLogs, pendingLogs);
-
-  const localLogs = await db.dailyLogs.toArray();
-  const allCachedLogs = mergeLogs(localLogs, mergedLogs);
-  await db.dailyLogs.clear();
-  await db.dailyLogs.bulkAdd(allCachedLogs);
-  await updateStatsLocally(allCachedLogs);
-
-  return filterLogs(mergedLogs, routineDayId);
+  return filterLogs(await pullLogs(), routineDayId);
 }
 
 /**

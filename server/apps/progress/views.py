@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.routines.models import Routine, RoutineDay
+from apps.shared.query import parse_updated_since
 from apps.routines.services.generation_service import (
     generate_monthly_routine_if_needed,
     get_routine_daily_notes,
@@ -113,6 +114,11 @@ class DailyLogListCreateView(APIView):
         routine_day_id = request.query_params.get("routine_day_id")
         if routine_day_id:
             logs = logs.filter(routine_day_id=routine_day_id)
+        # Delta sync: ">=" (not ">") so a log written in the same instant as the
+        # client's cursor is never skipped; the client merges duplicates by id.
+        updated_since = request.query_params.get("updated_since")
+        if updated_since:
+            logs = logs.filter(updated_at__gte=parse_updated_since(updated_since))
 
         serializer = DailyLogSerializer(logs, many=True)
         return Response(serializer.data)

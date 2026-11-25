@@ -88,6 +88,50 @@ export async function saveLogLocally(log: DailyLog): Promise<void> {
   await updateStatsIncrementally(log);
 }
 
+/** The rows of `merged` that correspond to `touched` -- the only ones that need writing back. */
+function rowsFor(merged: DailyLog[], touched: DailyLog[]): DailyLog[] {
+  const keys = new Set(touched.map(getLogKey));
+  return merged.filter((log) => keys.has(getLogKey(log)));
+}
+
+function newestLogUpdate(logs: DailyLog[], current: string | null): string | null {
+  return logs.reduce<string | null>((max, log) => {
+    if (!log.updated_at) return max;
+    if (!max) return log.updated_at;
+    return new Date(log.updated_at).getTime() > new Date(max).getTime() ? log.updated_at : max;
+  }, current);
+}
+
+/**
+ * Pulls daily logs from the server into Dexie and returns the full local set.
+ *
+ * After the first full download only what changed since the last pull is
+ * requested (`?updated_since=`), and only those rows are written -- the table
+ * is no longer wiped and refilled on every refetch. It always pulls the whole
+ * table (callers filter by routine day locally) so the cursor stays valid.
+ */
+export async function pullLogs(): Promise<DailyLog[]> {
+  const cursor = await getMeta(META_KEYS.logsSyncedAt);
+  const hasLocalLogs = (await db.dailyLogs.count()) > 0;
+  const since = cursor && hasLocalLogs ? cursor : null;
+
+  const query = since ? `?updated_since=${encodeURIComponent(since)}` : "";
+  const remoteLogs = await authenticatedClientFetch<DailyLog[]>(`/api/v1/progress/logs/${query}`);
+
+  const pendingLogs = await getPendingLogs();
+  const incoming = mergeLogs(remoteLogs, pendingLogs);
+  const localLogs = await db.dailyLogs.toArray();
+  const allLogs = mergeLogs(localLogs, incoming);
+
+  await db.dailyLogs.bulkPut(rowsFor(allLogs, incoming));
+  await db.stats.put({ id: "progress", ...calculateStats(allLogs, await db.pendingSync.count()) });
+
+  const newest = newestLogUpdate(remoteLogs, since);
+  if (newest) await setMeta(META_KEYS.logsSyncedAt, newest);
+
+  return allLogs;
+}
+
 export async function getLocalLogs(): Promise<DailyLog[]> {
   return db.dailyLogs.toArray();
 }
@@ -102,8 +146,7 @@ async function applySyncedLogs(syncedLogs: DailyLog[]): Promise<void> {
   if (!syncedLogs.length) return;
   const localLogs = await db.dailyLogs.toArray();
   const mergedLogs = mergeLogs(localLogs, syncedLogs);
-  await db.dailyLogs.clear();
-  await db.dailyLogs.bulkAdd(mergedLogs);
+  await db.dailyLogs.bulkPut(rowsFor(mergedLogs, syncedLogs));
   const pendingCount = await db.pendingSync.count();
   await db.stats.put({ id: "progress", ...calculateStats(mergedLogs, pendingCount) });
 }

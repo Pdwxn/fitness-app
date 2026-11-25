@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { db } from "@/lib/db";
+import { db, META_KEYS } from "@/lib/db";
 import { clearAllCaches } from "@/lib/mediaCache";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { STORAGE_KEYS } from "@/lib/storage";
@@ -27,6 +27,8 @@ export function LogoutButton({ label, loadingLabel }: LogoutButtonProps) {
       db.dailyLogs.clear(),
       db.pendingSync.clear(),
       db.stats.clear(),
+      // The logs cursor belongs to the user who just left; keeping it would make the next user skip their own history.
+      db.meta.delete(META_KEYS.logsSyncedAt),
       // Cached API responses and media belong to the user who just left.
       clearAllCaches().catch(() => undefined),
     ]);

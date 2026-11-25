@@ -44,6 +44,8 @@ export interface ProgressionPrefEntry {
 
 export const META_KEYS = {
   exercisesSyncedAt: "exercises_synced_at",
+  /** Newest `updated_at` among the daily logs already pulled; the next pull asks only for changes since. */
+  logsSyncedAt: "logs_synced_at",
   routineBuilderDraft: "routine_builder_draft",
   pushSubscribedAt: "push_subscribed_at",
 } as const;
