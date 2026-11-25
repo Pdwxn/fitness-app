@@ -116,3 +116,36 @@ class TestPerSetLogging:
         user, day, client = setup
         assert post_log(client, day, {"sets": [{"reps": "10", "weight_kg": "60"}]}).status_code == 200
         assert DailyLog.objects.get(user=user).exercises_done[0]["sets"][0]["completed"] is False
+
+
+@pytest.mark.django_db
+class TestLogListDeltaSync:
+    def _log(self, user, day, date):
+        return DailyLog.objects.create(user=user, routine_day=day, date=date, completed=True)
+
+    def test_updated_since_returns_only_logs_changed_since(self, setup):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        user, day, client = setup
+        old = self._log(user, day, "2026-06-20")
+        new = self._log(user, day, "2026-06-21")
+        cutoff = timezone.now() - timedelta(hours=1)
+        DailyLog.objects.filter(pk=old.pk).update(updated_at=cutoff - timedelta(days=1))
+
+        response = client.get(reverse("progress-logs"), {"updated_since": cutoff.isoformat()})
+
+        assert response.status_code == 200
+        assert [item["id"] for item in response.json()] == [str(new.id)]
+
+    def test_without_updated_since_returns_everything(self, setup):
+        user, day, client = setup
+        self._log(user, day, "2026-06-20")
+        self._log(user, day, "2026-06-21")
+
+        assert len(client.get(reverse("progress-logs")).json()) == 2
+
+    def test_invalid_updated_since_is_400(self, setup):
+        _, _, client = setup
+        assert client.get(reverse("progress-logs"), {"updated_since": "not-a-date"}).status_code == 400

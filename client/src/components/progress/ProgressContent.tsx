@@ -7,7 +7,6 @@ import { Info } from "lucide-react";
 
 import { StatusCard } from "@/components/ui/StatusCard";
 import { useDailyLogs } from "@/hooks/useDailyLogs";
-import { useProgressStats } from "@/hooks/useProgressStats";
 import { useRoutineCache } from "@/hooks/useRoutineCache";
 import { useWeightUnit } from "@/hooks/useWeightUnit";
 import { kgToUnitNumber } from "@/lib/units";
@@ -40,7 +39,6 @@ export function ProgressContent({ locale }: { locale: string }) {
   const intlLocale = useLocale();
   const [period, setPeriod] = useState<ProgressPeriod>("week");
   const [chosenExercise, setChosenExercise] = useState<string | null>(null);
-  const { isLoading: statsLoading, hasError: statsError, isOfflineFallback: statsOffline, stats } = useProgressStats();
   const { logs, isLoading: logsLoading, hasError: logsError, isOfflineFallback: logsOffline } = useDailyLogs();
   const { routine } = useRoutineCache();
   const unit = useWeightUnit();
@@ -81,9 +79,11 @@ export function ProgressContent({ locale }: { locale: string }) {
     );
   };
 
-  const isLoading = statsLoading || logsLoading;
-  const hasError = (statsError || logsError) && !stats && !logs.length;
-  const isOffline = statsOffline || logsOffline;
+  // Everything on this page is derived from the logs, so it must not wait on
+  // (or even request) the server-side totals.
+  const isLoading = logsLoading;
+  const hasError = logsError && !logs.length;
+  const isOffline = logsOffline;
 
   if (isLoading) return <StatusCard message={t("states.loading")} />;
   if (hasError) return <StatusCard message={t("states.error")} tone="error" />;

@@ -1,8 +1,6 @@
 import logging
 
 from django.conf import settings
-from django.utils import timezone
-from django.utils.dateparse import parse_datetime
 from django.utils.decorators import method_decorator
 from django.views.decorators.vary import vary_on_headers
 from rest_framework import status
@@ -13,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
-logger = logging.getLogger(__name__)
+from apps.shared.query import parse_updated_since
 
 from .models import Routine, RoutineEditProposal, StoredExercise
 from .serializers import (
@@ -34,6 +32,8 @@ from .services.generation_service import (
     persist_manual_routine,
     update_manual_routine,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def get_active_routine_queryset(user):
@@ -232,18 +232,9 @@ class ExerciseCatalogView(ListAPIView):
 
         updated_since = self.request.query_params.get("updated_since")
         if updated_since:
-            queryset = queryset.filter(updated_at__gt=_parse_updated_since(updated_since))
+            queryset = queryset.filter(updated_at__gt=parse_updated_since(updated_since))
 
         return queryset
-
-
-def _parse_updated_since(value):
-    parsed = parse_datetime(value)
-    if parsed is None:
-        raise ValidationError({"updated_since": "Must be an ISO-8601 datetime."})
-    if timezone.is_naive(parsed):
-        parsed = timezone.make_aware(parsed, timezone.get_current_timezone())
-    return parsed
 
 
 class ExerciseRemovedView(APIView):
@@ -262,7 +253,7 @@ class ExerciseRemovedView(APIView):
 
         rows = (
             StoredExercise.all_objects.filter(
-                deleted_at__isnull=False, updated_at__gt=_parse_updated_since(updated_since)
+                deleted_at__isnull=False, updated_at__gt=parse_updated_since(updated_since)
             )
             .order_by("external_id")
             .values("external_id", "updated_at")
