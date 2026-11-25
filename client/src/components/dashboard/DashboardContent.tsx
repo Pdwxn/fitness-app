@@ -3,12 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ClipboardList, Flame } from "lucide-react";
-import { useQueries } from "@tanstack/react-query";
 
 import { useDailyLogs } from "@/hooks/useDailyLogs";
-import { fetchActiveRoutine } from "@/hooks/useRoutineCache";
-import { fetchProgressStats } from "@/hooks/useProgressStats";
-import { queryKeys } from "@/lib/query-keys";
+import { useProgressStats } from "@/hooks/useProgressStats";
+import { useRoutineCache } from "@/hooks/useRoutineCache";
 import { getFromStorage, STORAGE_KEYS } from "@/lib/storage";
 import { computeStreak } from "@/lib/streak";
 import type { OnboardingProfile } from "@/types/onboarding";
@@ -81,28 +79,11 @@ function formatLastSync(timestamp: number | null) {
 }
 
 export function DashboardContent({ locale, labels }: DashboardContentProps) {
-  const [
-    { data: routine, isLoading: rtLoading, isError: rtError, dataUpdatedAt: lastSync },
-    { data: statsData },
-  ] = useQueries({
-    queries: [
-      {
-        queryKey: queryKeys.routine.active(),
-        queryFn: fetchActiveRoutine,
-        staleTime: 60_000,
-        retry: false,
-      },
-      {
-        queryKey: queryKeys.progress.stats(),
-        queryFn: fetchProgressStats,
-        staleTime: 30_000,
-      },
-    ],
-  });
-
-  const hasRoutineError = rtError && !routine;
-  const isOfflineFallback = rtError && Boolean(routine);
-  const stats = statsData ?? null;
+  // Both hooks read the copy kept on the device first and show it at once; the
+  // server answer then replaces it (same pattern as the routine page).
+  const { routine, isLoading: rtLoading, hasError: hasRoutineError, isOfflineFallback, lastSync } = useRoutineCache();
+  const { stats: statsData } = useProgressStats();
+  const stats = statsData;
 
   const activeRoutine = useMemo(() => {
     if (!routine) return labels.stats.pending;
