@@ -13,6 +13,8 @@ const routerPush = vi.fn();
 vi.mock("@/lib/supabase/client", () => ({
   createSupabaseBrowserClient: () => ({ auth: { signInWithPassword, signUp, signInWithOAuth } }),
 }));
+const prefetchHomeData = vi.fn();
+vi.mock("@/lib/prefetch", () => ({ prefetchHomeData: () => prefetchHomeData() }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: routerPush, refresh: vi.fn() }) }));
 
 const { LoginForm } = await import("../LoginForm");
@@ -30,6 +32,7 @@ beforeEach(() => {
   signInWithPassword.mockReset();
   signUp.mockReset();
   routerPush.mockReset();
+  prefetchHomeData.mockReset();
 });
 
 describe("LoginForm", () => {
@@ -44,6 +47,7 @@ describe("LoginForm", () => {
 
     expect(signInWithPassword).toHaveBeenCalledWith({ email: "a@b.co", password: "secret123" });
     expect(routerPush).toHaveBeenCalledWith("/es/dashboard");
+    expect(prefetchHomeData).toHaveBeenCalledTimes(1);
   });
 
   it("shows the error under the password field", async () => {

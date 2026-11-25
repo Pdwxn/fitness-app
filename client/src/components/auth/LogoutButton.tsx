@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { db, META_KEYS } from "@/lib/db";
+import { queryClient } from "@/lib/query-client";
+import { useNextRoutineStore } from "@/store/nextRoutineStore";
+import { useSyncIssuesStore } from "@/store/syncIssuesStore";
 import { clearAllCaches } from "@/lib/mediaCache";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { STORAGE_KEYS } from "@/lib/storage";
@@ -32,6 +35,12 @@ export function LogoutButton({ label, loadingLabel }: LogoutButtonProps) {
       // Cached API responses and media belong to the user who just left.
       clearAllCaches().catch(() => undefined),
     ]);
+    // In-memory state belongs to the user who just left too: without this the
+    // next sign-in in the same tab starts from their cached routine, stats and
+    // sync flags until each one happens to be refetched.
+    queryClient.clear();
+    useNextRoutineStore.setState({ nextRoutine: null, nextProposal: null });
+    useSyncIssuesStore.setState({ droppedLogCount: 0 });
     router.refresh();
     setIsLoading(false);
   }

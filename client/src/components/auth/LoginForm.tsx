@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Loader2, Lock, Mail } from "lucide-react";
 
+import { prefetchHomeData } from "@/lib/prefetch";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 import { AuthDivider } from "./AuthDivider";
@@ -38,6 +39,7 @@ export function LoginForm({ locale }: { locale: string }) {
       return;
     }
 
+    prefetchHomeData();
     router.push(`/${locale}/dashboard`);
     router.refresh();
   }

@@ -3,6 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import { db } from "@/lib/db";
+import { queryClient } from "@/lib/query-client";
+import { useNextRoutineStore } from "@/store/nextRoutineStore";
+import { useSyncIssuesStore } from "@/store/syncIssuesStore";
 import { makeFakeCaches } from "@/test/fakeCaches";
 
 const signOut = vi.fn(async () => undefined);
@@ -27,5 +30,19 @@ describe("LogoutButton", () => {
     await waitFor(() => expect(fakeCaches.store.size).toBe(0));
     expect(signOut).toHaveBeenCalled();
     expect(await db.stats.count()).toBe(0);
+  });
+
+  it("forgets the in-memory state of the user who left", async () => {
+    queryClient.setQueryData(["routine", "active"], { id: "routine-of-previous-user" });
+    useNextRoutineStore.getState().setNextRoutine({ id: "r", month: 1, year: 2026 });
+    useSyncIssuesStore.getState().reportDroppedLog();
+    vi.stubGlobal("caches", makeFakeCaches());
+
+    render(<LogoutButton label="Salir" loadingLabel="..." />);
+    await userEvent.click(screen.getByRole("button", { name: "Salir" }));
+
+    await waitFor(() => expect(queryClient.getQueryData(["routine", "active"])).toBeUndefined());
+    expect(useNextRoutineStore.getState().nextRoutine).toBeNull();
+    expect(useSyncIssuesStore.getState().droppedLogCount).toBe(0);
   });
 });

@@ -30,4 +30,12 @@ describe("StatsPreview", () => {
     expect(screen.getByText("Rutina activa").previousElementSibling).toHaveTextContent("Pendiente");
     expect(screen.getByText("Último sync").previousElementSibling).toHaveTextContent("Nunca");
   });
+
+  it("shows a dash, not a fake 0 or \"Never\", while the first load is in flight", () => {
+    render(<StatsPreview labels={labels} completedDays={null} totalExercises={null} activeRoutine="" lastSync={null} loading />);
+
+    expect(screen.getByText("Días completados").previousElementSibling).toHaveTextContent("—");
+    expect(screen.getByText("Ejercicios").previousElementSibling).toHaveTextContent("—");
+    expect(screen.getByText("Último sync").previousElementSibling).toHaveTextContent("—");
+  });
 });

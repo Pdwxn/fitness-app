@@ -8,11 +8,16 @@ type StatsPreviewProps = {
     pending: string;
     never: string;
   };
-  completedDays: number;
-  totalExercises: number;
+  /** `null` while the totals are still unknown (nothing stored yet, server not answered). */
+  completedDays: number | null;
+  totalExercises: number | null;
   activeRoutine: string;
   lastSync: string | null;
+  /** True while the first load is in flight: unknown values read "—" instead of a misleading 0 / "Never". */
+  loading?: boolean;
 };
+
+const UNKNOWN = "—";
 
 /** Totals at a glance: hairline-topped section, big figures, no boxes. */
 export function StatsPreview({
@@ -21,12 +26,13 @@ export function StatsPreview({
   totalExercises,
   activeRoutine,
   lastSync,
+  loading = false,
 }: StatsPreviewProps) {
   const stats = [
-    { label: labels.completedDays, value: String(completedDays), big: true },
-    { label: labels.totalExercises, value: String(totalExercises), big: true },
+    { label: labels.completedDays, value: completedDays === null ? UNKNOWN : String(completedDays), big: true },
+    { label: labels.totalExercises, value: totalExercises === null ? UNKNOWN : String(totalExercises), big: true },
     { label: labels.activeRoutine, value: activeRoutine || labels.pending, big: false },
-    { label: labels.lastSync, value: lastSync ?? labels.never, big: false },
+    { label: labels.lastSync, value: lastSync ?? (loading ? UNKNOWN : labels.never), big: false },
   ];
 
   return (

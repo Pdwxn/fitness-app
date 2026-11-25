@@ -169,10 +169,11 @@ export function DashboardContent({ locale, labels }: DashboardContentProps) {
 
       <StatsPreview
         labels={labels.stats}
-        completedDays={stats?.completed_days ?? 0}
-        totalExercises={stats?.total_exercises_completed ?? 0}
+        completedDays={stats ? stats.completed_days : null}
+        totalExercises={stats ? stats.total_exercises_completed : null}
         activeRoutine={activeRoutine}
         lastSync={formatLastSync(lastSync)}
+        loading={rtLoading}
       />
     </div>
   );
